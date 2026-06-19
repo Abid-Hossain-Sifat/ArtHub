@@ -4,7 +4,7 @@ import signupimg from '../../../public/Assets/Signup.png';
 import Image from 'next/image';
 import { Eye, EyeOff, Mail, Lock, User, Image as ImageIcon, ShoppingBag, Palette } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { signUp } from '@/lib/auth-client';
+import { signUp, signOut } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
@@ -102,13 +102,13 @@ const SignUpPage = () => {
         password,
         name,
         image: imageUrl || undefined,
-        role: resolvedRole,
-        callbackURL: '/sign-in'
+        role: resolvedRole
       });
 
       if (error) {
         toast.error(error.message || "Failed to create account!");
       } else {
+        await signOut();
         toast.success("Account created successfully!", {
           position: "top-right"
         });
@@ -270,7 +270,7 @@ const SignUpPage = () => {
                   </span>
                   <input
                     type="text"
-                    placeholder="Alex Rivera"
+                    placeholder="Enter your name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 text-sm transition-all text-slate-800 shadow-sm placeholder-slate-400 font-medium"
@@ -288,7 +288,7 @@ const SignUpPage = () => {
                   </span>
                   <input
                     type="email"
-                    placeholder="alex@example.com"
+                    placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 text-sm transition-all text-slate-800 shadow-sm placeholder-slate-400 font-medium"
