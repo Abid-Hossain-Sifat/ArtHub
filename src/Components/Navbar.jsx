@@ -9,24 +9,21 @@ import Logo from "../../public/Assets/Logo.png";
 import { useSession, authClient } from "@/lib/auth-client";
 
 const Navbar = () => {
-  const pathname = usePathname(); // 1. Proper validation hook call ekhane niye asha hoyeche
+  const pathname = usePathname();
   const router = useRouter();
 
-  // 2. Correct logic & spelling check ('dashboard')
-  if (pathname.includes('dashboard')) {
-    return null;
-  }
-
-  // Hamburger menu open close state
   const [isOpen, setIsOpen] = useState(false);
-
-  // Search Input Value track
   const [searchQuery, setSearchQuery] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Better Auth session state
+  // Auth hooks execution
   const { data: session, isPending } = useSession();
   const user = session?.user;
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  
+  if (pathname && pathname.includes('dashboard')) {
+    return null;
+  }
 
   const handleSignOut = async () => {
     try {
@@ -61,7 +58,7 @@ const Navbar = () => {
   return (
     <div className="border-b bg-white w-full relative">
       <div className="w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto h-[72px] flex items-center justify-between">
-        {/* Left */}
+        {/* Left Section */}
         <div className="flex items-center gap-14">
           <Link href="/">
             <div className="flex items-center shrink-0">
@@ -96,7 +93,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Right */}
+        {/* Right Section */}
         <div className="flex items-center gap-5">
           {/* Search input */}
           <div className="hidden lg:flex items-center bg-gray-100 rounded-full px-4 py-3 w-[300px]">
@@ -112,7 +109,9 @@ const Navbar = () => {
 
           {/* Desktop Auth Section */}
           <div className="hidden lg:block">
-            {user ? (
+            {isPending ? (
+              <div className="w-10 h-10 rounded-full bg-slate-100 animate-pulse" />
+            ) : user ? (
               <div className="relative shrink-0">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -121,7 +120,7 @@ const Navbar = () => {
                   <div className="w-10 h-10 rounded-full overflow-hidden border border-purple-500 shadow-sm shrink-0">
                     <img
                       src={user.image || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
-                      alt={user.name}
+                      alt={user.name || "User Profile"}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.currentTarget.src = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
@@ -192,30 +191,15 @@ const Navbar = () => {
       {isOpen && (
         <div className="absolute top-[73px] left-0 w-full bg-white border-b shadow-lg lg:hidden z-50 transition-all duration-300">
           <div className="max-w-[90%] md:max-w-[85%] mx-auto py-6 flex flex-col gap-6">
-            {/* Mobile Navigation Links */}
             <nav>
               <ul className="flex flex-col gap-4 text-[17px] font-medium">
-                <Link
-                  href="/"
-                  onClick={() => setIsOpen(false)}
-                  className={getLinkClass("/", true)}
-                >
+                <Link href="/" onClick={() => setIsOpen(false)} className={getLinkClass("/", true)}>
                   Home
                 </Link>
-
-                <Link
-                  href="/artworks"
-                  onClick={() => setIsOpen(false)}
-                  className={getLinkClass("/artworks", true)}
-                >
+                <Link href="/artworks" onClick={() => setIsOpen(false)} className={getLinkClass("/artworks", true)}>
                   Browse Artworks
                 </Link>
-
-                <Link
-                  href="/dashboard"
-                  onClick={() => setIsOpen(false)}
-                  className={getLinkClass("/dashboard", true)}
-                >
+                <Link href="/dashboard" onClick={() => setIsOpen(false)} className={getLinkClass("/dashboard", true)}>
                   Dashboard
                 </Link>
               </ul>
@@ -223,7 +207,6 @@ const Navbar = () => {
 
             <hr className="border-gray-100" />
 
-            {/* Mobile Search & Auth */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center bg-gray-100 rounded-full px-4 py-3 w-full">
                 <Search size={18} className="text-gray-500 mr-2" />
@@ -236,7 +219,7 @@ const Navbar = () => {
                 />
               </div>
 
-              {/* Mobile Auth */}
+              {/* Mobile Auth View */}
               {user ? (
                 <div className="flex flex-col gap-3">
                   <Link

@@ -1,11 +1,13 @@
 
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Logo from "../../../../public/Assets/Logo.png";
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSession, authClient } from "@/lib/auth-client";
+import { toast } from "react-hot-toast";
 
 // Lucide Icons Import
 import { LayoutDashboard, Users, Palette, Receipt, LogOut, Home, Menu, X } from 'lucide-react';
@@ -14,6 +16,35 @@ const AdminDashboardLayout = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter(); 
   const [isMobileOpen, setIsMobileOpen] = useState(false); 
+
+  const { data: session, isPending } = useSession();
+
+  useEffect(() => {
+    if (!isPending) {
+      if (!session) {
+        router.replace('/sign-in');
+      } else if (session.user?.role !== 'admin') {
+        router.replace('/unauthorized');
+      }
+    }
+  }, [session, isPending, router]);
+
+  const handleSignOut = async () => {
+    try {
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            toast.success("Successfully logged out!");
+            router.push('/');
+            router.refresh();
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error("Logout failed. Please try again.");
+    }
+  };
 
   const navLinks = [
     { name: 'Dashboard', href: '/dashboard/admin', icon: <LayoutDashboard className="w-5 h-5" /> },
@@ -60,7 +91,7 @@ const AdminDashboardLayout = ({ children }) => {
                   isActive ? 'text-white' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
                 }`}
               >
-                {/* Active Tab Slide Animation via Framer Motion */}
+                {/* Active Tab  */}
                 {isActive && (
                   <motion.div 
                     layoutId="activeIndicator"
@@ -92,7 +123,7 @@ const AdminDashboardLayout = ({ children }) => {
 
         {/* Sign Out Button */}
         <button 
-          onClick={() => console.log("Logging out...")}
+          onClick={handleSignOut}
           className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
         >
           <LogOut className="w-5 h-5" />
@@ -101,6 +132,20 @@ const AdminDashboardLayout = ({ children }) => {
       </div>
     </div>
   );
+
+  if (isPending || !session || session.user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 w-full">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="relative w-12 h-12">
+            <div className="absolute inset-0 rounded-full border-4 border-purple-100"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-[#7C3AED] border-t-transparent animate-spin"></div>
+          </div>
+          <p className="text-sm font-semibold text-slate-600">Verifying administrator access...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-50 relative overflow-x-hidden">
