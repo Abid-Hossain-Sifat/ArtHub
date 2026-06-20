@@ -9,14 +9,19 @@ import Logo from "../../public/Assets/Logo.png";
 import { useSession, authClient } from "@/lib/auth-client";
 
 const Navbar = () => {
+  const pathname = usePathname(); // 1. Proper validation hook call ekhane niye asha hoyeche
+  const router = useRouter();
+
+  // 2. Correct logic & spelling check ('dashboard')
+  if (pathname.includes('dashboard')) {
+    return null;
+  }
+
   // Hamburger menu open close state
   const [isOpen, setIsOpen] = useState(false);
 
   // Search Input Value track
   const [searchQuery, setSearchQuery] = useState("");
-
-  const pathname = usePathname();
-  const router = useRouter();
 
   // Better Auth session state
   const { data: session, isPending } = useSession();

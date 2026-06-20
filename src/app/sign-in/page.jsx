@@ -28,19 +28,22 @@ const SignInPage = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await signIn.email({
-        email,
-        password,
-        callbackURL: '/'
-      });
-
-      if (error) {
-        toast.error(error.message || "Failed to sign in. Please check your credentials.");
-      } else {
-        toast.success("Successfully signed in!");
-        router.push('/');
-        router.refresh();
-      }
+      await signIn.email(
+        {
+          email,
+          password,
+        },
+        {
+          onSuccess: () => {
+            toast.success("Successfully signed in!");
+            router.push('/');
+            router.refresh();
+          },
+          onError: (ctx) => {
+            toast.error(ctx.error.message || "Failed to sign in. Please check your credentials.");
+          }
+        }
+      );
     } catch (err) {
       console.error(err);
       toast.error("An error occurred during sign in!");
