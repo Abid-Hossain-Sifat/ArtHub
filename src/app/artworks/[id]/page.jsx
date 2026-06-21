@@ -16,7 +16,7 @@ const ArtWorkDetailsPage = async ({ params }) => {
 
   // Get active session from backend
   const reqHeaders = await headers();
-  const sessionRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}`, {
+  const sessionRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/get-session`, {
     headers: reqHeaders,
     cache: 'no-store'
   });
