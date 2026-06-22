@@ -4,8 +4,27 @@ import Image from 'next/image';
 import { useSession } from '@/lib/auth-client';
 import { getInitials, isRemote } from '@/lib/avatar';
 import { LayoutGrid, ShoppingBag, DollarSign } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { DashboardSkeleton } from '@/Components/Skeleton';
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  show: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { type: "spring", stiffness: 100, damping: 15 } 
+  }
+};
 
 const ArtistDashboardpage = () => {
   const { data: session, isPending } = useSession();
@@ -79,12 +98,24 @@ const ArtistDashboardpage = () => {
     ]
   };
 
+  if (isPending || !stats.ready) {
+    return <DashboardSkeleton />;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-12 font-sans">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="min-h-screen bg-gray-50/50 p-6 md:p-12 font-sans"
+    >
       <div className="max-w-6xl mx-auto space-y-12">
         
         {/* --- Header --- */}
-        <div className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left">
+        <motion.div 
+          variants={itemVariants} 
+          className="flex flex-col md:flex-row items-center gap-6 text-center md:text-left"
+        >
           <div className="p-1 rounded-xl border-2 border-purple-300 shadow-sm bg-white overflow-hidden">
             <div className="relative w-24 h-24 rounded-lg overflow-hidden">
               {dashboardData.profileImg ? (
@@ -112,10 +143,13 @@ const ArtistDashboardpage = () => {
               {dashboardData.subtitle}
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* --- Stats --- */}
+        <motion.div 
+          variants={itemVariants} 
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
           {dashboardData.stats.map((stat) => (
             <div 
               key={stat.id} 
@@ -153,10 +187,10 @@ const ArtistDashboardpage = () => {
               </div>
             </div>
           ))}
-        </div>
+        </motion.div>
 
       </div>
-    </div>
+    </motion.div>
   );
 };
 

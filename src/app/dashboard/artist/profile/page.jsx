@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getInitials, isRemote } from '@/lib/avatar';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ProfileSkeleton } from '@/Components/Skeleton';
 import {
   Camera,
   Pencil,
@@ -179,8 +181,13 @@ const ProfilePage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#7C3AED] border-t-transparent" />
+      <div className="w-full min-h-screen bg-[#F8F9FC] p-6 lg:p-10 font-sans text-slate-800">
+        <div className="mb-8 max-w-[1440px] mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-[#0F172A] animate-pulse">Profile Management</h1>
+          </div>
+        </div>
+        <ProfileSkeleton />
       </div>
     );
   }
@@ -341,82 +348,97 @@ const ProfilePage = () => {
 
       </div>
 
-      {/* EDIT PROFILE MODAL RENDER PORTAL */}
-      {editOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-slate-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-900">Edit profile</h2>
-                <p className="text-sm text-slate-500">Change your display name, email address or avatar picture.</p>
-              </div>
-              <button onClick={() => setEditOpen(false)} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 transition-colors">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="mt-6 space-y-5">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Name</label>
-                  <input
-                    type="text"
-                    value={profile.name}
-                    onChange={(e) => handleProfileField('name', e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white transition-all text-slate-800"
-                  />
+      {/* EDIT IDENTITY PROFILE MODAL */}
+      <AnimatePresence>
+        {editOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-slate-100"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Edit profile</h2>
+                  <p className="text-sm text-slate-500">Change your display name, email address or avatar picture.</p>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
-                  <input
-                    type="email"
-                    value={profile.email}
-                    onChange={(e) => handleProfileField('email', e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white transition-all text-slate-800"
-                  />
-                </div>
+                <button onClick={() => setEditOpen(false)} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 transition-colors">
+                  <X className="h-5 w-5" />
+                </button>
               </div>
 
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Profile picture source</p>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                  <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-white border border-slate-200 p-1">
-                    {previewImage ? (
-                      <Image src={previewImage} alt="preview" fill className="object-contain rounded-xl p-1" />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">No image</div>
-                    )}
+              <div className="mt-6 space-y-5">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Name</label>
+                    <input
+                      type="text"
+                      value={profile.name}
+                      onChange={(e) => handleProfileField('name', e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white transition-all text-slate-800"
+                    />
                   </div>
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs">
-                    <Camera className="h-4 w-4 text-slate-500" />
-                    <span>{uploadingImage ? 'Uploading…' : 'Upload custom file'}</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarSelect} disabled={uploadingImage} />
-                  </label>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
+                    <input
+                      type="email"
+                      value={profile.email}
+                      onChange={(e) => handleProfileField('email', e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white transition-all text-slate-800"
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Profile picture source</p>
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-white border border-slate-200 p-1">
+                      {previewImage ? (
+                        <Image src={previewImage} alt="preview" fill className="object-contain rounded-xl p-1" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">No image</div>
+                      )}
+                    </div>
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs">
+                      <Camera className="h-4 w-4 text-slate-500" />
+                      <span>{uploadingImage ? 'Uploading…' : 'Upload custom file'}</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAvatarSelect} disabled={uploadingImage} />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:justify-end pt-2">
+                  <button onClick={() => setEditOpen(false)} className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveProfile}
+                    disabled={savingProfile || uploadingImage}
+                    className="rounded-xl bg-[#7C3AED] px-5 py-2.5 text-xs font-bold text-white hover:bg-violet-600 disabled:opacity-70 transition-colors shadow-sm"
+                  >
+                    {savingProfile ? 'Saving…' : 'Save changes'}
+                  </button>
                 </div>
               </div>
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end pt-2">
-                <button onClick={() => setEditOpen(false)} className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors">
-                  Cancel
-                </button>
-                <button
-                  onClick={saveProfile}
-                  disabled={savingProfile || uploadingImage}
-                  className="rounded-xl bg-[#7C3AED] px-5 py-2.5 text-xs font-bold text-white hover:bg-violet-600 disabled:opacity-70 transition-colors shadow-sm"
-                >
-                  {savingProfile ? 'Saving…' : 'Save changes'}
-                </button>
-              </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* PASSWORD UPDATE PORTAL MODAL */}
-      {passwordOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-slate-100">
-            <div className="flex items-center justify-between">
+      <AnimatePresence>
+        {passwordOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-slate-100"
+            >
+              <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-semibold text-slate-900">Change password</h2>
                 <p className="text-sm text-slate-500">Provide authentication parameters securely below.</p>
@@ -468,9 +490,10 @@ const ProfilePage = () => {
                 {savingPassword ? 'Updating…' : 'Update password'}
               </button>
             </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 };

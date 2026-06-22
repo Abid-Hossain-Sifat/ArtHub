@@ -1,9 +1,11 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { Pencil, Trash2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import { TableSkeleton } from '@/Components/Skeleton';
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -156,8 +158,42 @@ const ArtistArtworkManage = () => {
 
   if (isPending) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#7C3AED]"></div>
+      <div className="w-full min-h-screen bg-[#F8F9FC] p-6 lg:p-10 font-sans text-slate-800 animate-pulse">
+        {/* Header */}
+        <div className="mb-8 space-y-2">
+          <div className="h-8 bg-slate-200 rounded w-64" />
+          <div className="h-4 bg-slate-200 rounded w-96" />
+        </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          {[...Array(3)].map((_, idx) => (
+            <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+              <div className="h-3 bg-slate-200 rounded w-24" />
+              <div className="h-8 bg-slate-200 rounded w-16" />
+            </div>
+          ))}
+        </div>
+        {/* Table Skeleton */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">
+          <div className="h-6 bg-slate-200 rounded w-48" />
+          <div className="space-y-3 pt-4">
+            {[...Array(5)].map((_, idx) => (
+              <div key={idx} className="flex justify-between items-center py-3 border-b border-slate-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-200 rounded-lg" />
+                  <div className="h-4 bg-slate-200 rounded w-32" />
+                </div>
+                <div className="h-4 bg-slate-200 rounded w-20" />
+                <div className="h-4 bg-slate-200 rounded w-12" />
+                <div className="h-4 bg-slate-200 rounded w-16" />
+                <div className="flex gap-2">
+                  <div className="w-8 h-8 bg-slate-200 rounded-lg" />
+                  <div className="w-8 h-8 bg-slate-200 rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -206,11 +242,7 @@ const ArtistArtworkManage = () => {
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
               {loading ? (
-                <tr>
-                  <td className="px-6 py-10 text-center text-slate-500" colSpan={5}>
-                    Loading artworks...
-                  </td>
-                </tr>
+                <TableSkeleton rows={4} />
               ) : artworks.length === 0 ? (
                 <tr>
                   <td className="px-6 py-10 text-center text-slate-500" colSpan={5}>
@@ -288,115 +320,129 @@ const ArtistArtworkManage = () => {
         </div>
       </div>
 
-      {selectedArtwork && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8">
-          <div className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-semibold text-slate-900">Edit Artwork</h2>
-                <p className="text-sm text-slate-500">Update title, description, category, or price.</p>
+      <AnimatePresence>
+        {selectedArtwork && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 py-8">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-2xl font-semibold text-slate-900">Edit Artwork</h2>
+                  <p className="text-sm text-slate-500">Update title, description, category, or price.</p>
+                </div>
+                <button onClick={closeEditModal} className="text-slate-400 hover:text-slate-700">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <button onClick={closeEditModal} className="text-slate-400 hover:text-slate-700">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Title</span>
-                <input
-                  value={formState.title}
-                  onChange={(e) => handleFormChange('title', e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-500"
-                />
-              </label>
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Category</span>
-                <input
-                  value={formState.category}
-                  onChange={(e) => handleFormChange('category', e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-500"
-                />
-              </label>
-            </div>
-
-            <div className="space-y-2 mt-5 text-sm text-slate-700">
-              <label>Description</label>
-              <textarea
-                rows={4}
-                value={formState.description}
-                onChange={(e) => handleFormChange('description', e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-500"
-              />
-            </div>
-
-            <div className="w-full max-w-xs mt-5 text-sm text-slate-700">
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Price (USD)</span>
-                <input
-                  value={formState.price}
-                  onChange={(e) => handleFormChange('price', e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-500"
-                />
-              </label>
-            </div>
-
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                onClick={closeEditModal}
-                className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving}
-                className="rounded-2xl bg-[#7C3AED] px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-600 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {deleteArtwork && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8">
-          <div className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-semibold text-slate-900">Delete artwork?</h2>
-                <p className="mt-2 text-sm text-slate-500">
-                  Are you sure you want to delete <span className="font-semibold text-slate-900">{deleteArtwork.title}</span>? This action will remove it permanently.
-                </p>
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <label className="space-y-2 text-sm text-slate-700">
+                  <span>Title</span>
+                  <input
+                    value={formState.title}
+                    onChange={(e) => handleFormChange('title', e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-500"
+                  />
+                </label>
+                <label className="space-y-2 text-sm text-slate-700">
+                  <span>Category</span>
+                  <input
+                    value={formState.category}
+                    onChange={(e) => handleFormChange('category', e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-500"
+                  />
+                </label>
               </div>
-              <button onClick={closeDeleteModal} className="text-slate-400 hover:text-slate-700">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                onClick={closeDeleteModal}
-                className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={deleting}
-                className="rounded-2xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {deleting ? 'Deleting...' : 'Delete Permanently'}
-              </button>
-            </div>
+              <div className="space-y-2 mt-5 text-sm text-slate-700">
+                <label>Description</label>
+                <textarea
+                  rows={4}
+                  value={formState.description}
+                  onChange={(e) => handleFormChange('description', e.target.value)}
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-500"
+                />
+              </div>
+
+              <div className="w-full max-w-xs mt-5 text-sm text-slate-700">
+                <label className="space-y-2 text-sm text-slate-700">
+                  <span>Price (USD)</span>
+                  <input
+                    value={formState.price}
+                    onChange={(e) => handleFormChange('price', e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-violet-500"
+                  />
+                </label>
+              </div>
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="rounded-2xl bg-[#7C3AED] px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-600 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+
+        {deleteArtwork && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 py-8">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-semibold text-slate-900">Delete artwork?</h2>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Are you sure you want to delete <span className="font-semibold text-slate-900">{deleteArtwork.title}</span>? This action will remove it permanently.
+                  </p>
+                </div>
+                <button onClick={closeDeleteModal} className="text-slate-400 hover:text-slate-700">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={closeDeleteModal}
+                  className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="rounded-2xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {deleting ? 'Deleting...' : 'Delete Permanently'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

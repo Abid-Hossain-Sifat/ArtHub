@@ -4,9 +4,29 @@ import React from 'react';
 import { useSession } from "@/lib/auth-client";
 import { Sparkles, Heart, CreditCard, Compass, Clock, Star } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { DashboardSkeleton } from '@/Components/Skeleton';
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  show: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { type: "spring", stiffness: 100, damping: 15 } 
+  }
+};
 
 const UserDashboardPage = () => {
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
   const user = session?.user;
 
   const stats = [
@@ -21,10 +41,22 @@ const UserDashboardPage = () => {
     { id: 3, type: 'purchase', title: 'Purchased "Abstract Genesis"', artist: 'Sarah Jenkins', date: '1 week ago', price: '$970.00' },
   ];
 
+  if (isPending) {
+    return <DashboardSkeleton />;
+  }
+
   return (
-    <div className="space-y-8 select-none">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-8 select-none"
+    >
       {/* Welcome Header Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#7C3AED] to-[#A78BFA] rounded-3xl p-8 text-white shadow-xl shadow-purple-500/10">
+      <motion.div 
+        variants={itemVariants} 
+        className="relative overflow-hidden bg-gradient-to-r from-[#7C3AED] to-[#A78BFA] rounded-3xl p-8 text-white shadow-xl shadow-purple-500/10"
+      >
         <div className="relative z-10 max-w-2xl">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-widest mb-4">
             <Sparkles className="w-3.5 h-3.5" />
@@ -40,10 +72,10 @@ const UserDashboardPage = () => {
         {/* Background decorative circles */}
         <div className="absolute right-0 top-0 -mt-10 -mr-10 w-48 h-48 rounded-full bg-white/10 blur-2xl"></div>
         <div className="absolute left-1/2 bottom-0 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
-      </div>
+      </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat, idx) => (
           <div key={idx} className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
@@ -58,10 +90,10 @@ const UserDashboardPage = () => {
             </div>
           </div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Recent Purchases & Activities */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Activity List */}
         <div className="lg:col-span-2 bg-white border border-slate-100 rounded-2xl p-6 shadow-sm flex flex-col">
@@ -108,7 +140,7 @@ const UserDashboardPage = () => {
           </div>
 
           <Link href="/artworks" className="mt-8 relative z-10">
-            <button className="w-full py-3 bg-white text-slate-950 font-bold text-xs rounded-xl shadow-lg hover:bg-slate-100 transition-colors">
+            <button className="w-full py-3 bg-white text-slate-950 font-bold text-xs rounded-xl shadow-lg hover:bg-slate-100 transition-colors cursor-pointer">
               Browse Gallery
             </button>
           </Link>
@@ -117,8 +149,8 @@ const UserDashboardPage = () => {
           <div className="absolute right-0 bottom-0 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl"></div>
         </div>
 
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

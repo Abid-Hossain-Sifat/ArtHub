@@ -48,9 +48,9 @@ const AdminDashboardLayout = ({ children }) => {
 
   const navLinks = [
     { name: 'Dashboard', href: '/dashboard/admin', icon: <LayoutDashboard className="w-5 h-5" /> },
-    { name: 'Users', href: '/dashboard/admin/users', icon: <Users className="w-5 h-5" /> },
-    { name: 'ArtWorks', href: '/dashboard/admin/artworks', icon: <Palette className="w-5 h-5" /> },
-    { name: 'Transactions', href: '/dashboard/admin/transactions', icon: <Receipt className="w-5 h-5" /> },
+    { name: 'Manage Users', href: '/dashboard/admin/manage-user', icon: <Users className="w-5 h-5" /> },
+    { name: 'Manage ArtWorks', href: '/dashboard/admin/manage-artworks', icon: <Palette className="w-5 h-5" /> },
+    { name: 'All Transactions', href: '/dashboard/admin/all-transactions', icon: <Receipt className="w-5 h-5" /> },
   ];
 
   // Sidebar Content 

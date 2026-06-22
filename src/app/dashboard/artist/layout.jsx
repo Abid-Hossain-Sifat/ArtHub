@@ -161,12 +161,12 @@ const ArtistDashboardLayout = ({ children }) => {
   return (
     <div className="flex min-h-screen bg-slate-50 relative overflow-x-hidden">
       
-      {/* 1. DESKTOP VIEWPORT */}
+      {/* DESKTOP VIEWPORT */}
       <aside className="hidden lg:block w-64 border-r border-slate-100 bg-white sticky top-0 h-screen">
         <SidebarContent />
       </aside>
 
-      {/* 2. MOBILE & TABLET VIEWPORT */}
+      {/* MOBILE & TABLET VIEWPORT */}
       <AnimatePresence>
         {isMobileOpen && (
           <>
@@ -192,7 +192,7 @@ const ArtistDashboardLayout = ({ children }) => {
         )}
       </AnimatePresence>
 
-      {/* 3. MAIN APP AREA */}
+      {/* MAIN APP AREA */}
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* Mobile Top Header */}

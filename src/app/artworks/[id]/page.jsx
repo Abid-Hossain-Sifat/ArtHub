@@ -1,32 +1,67 @@
-import React from 'react';
+"use client";
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { ShoppingCart, Edit3, Trash2, MessageSquare, AlertCircle, Calendar } from 'lucide-react';
-import { headers } from 'next/headers';
+import { useSession } from '@/lib/auth-client';
 import { artworkCollection } from '../../../lib/data';
+import { DetailsSkeleton } from '@/Components/Skeleton';
 
-const ArtWorkDetailsPage = async ({ params }) => {
-  const { id } = await params;
-  const artworks = await artworkCollection();
-  const artwork = artworks.find(art => (art._id === id || encodeURIComponent(art.title) === id));
+const ArtWorkDetailsPage = () => {
+  const params = useParams();
+  const id = params?.id;
+  const { data: session, isPending: sessionLoading } = useSession();
+  const [artwork, setArtwork] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  if (!artwork) {
+  useEffect(() => {
+    if (!id) return;
+    let isCancelled = false;
+
+    const fetchArtwork = async () => {
+      try {
+        setLoading(true);
+        const artworks = await artworkCollection();
+        const found = artworks.find(art => (art._id === id || encodeURIComponent(art.title) === id));
+        if (!isCancelled) {
+          if (found) {
+            setArtwork(found);
+          } else {
+            setError(true);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load artwork detail:", err);
+        if (!isCancelled) {
+          setError(true);
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchArtwork();
+    return () => {
+      isCancelled = true;
+    };
+  }, [id]);
+
+  if (loading || sessionLoading) {
+    return <DetailsSkeleton />;
+  }
+
+  if (error || !artwork) {
     notFound();
   }
 
-  // Get active session from backend
-  const reqHeaders = await headers();
-  const sessionRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/get-session`, {
-    headers: reqHeaders,
-    cache: 'no-store'
-  });
-  
-  const sessionData = sessionRes.ok ? await sessionRes.json() : null;
-  
   const user = {
-    isLoggedIn: !!sessionData?.user,
-    id: sessionData?.user?.id || null,
-    role: sessionData?.user?.role || 'user'
+    isLoggedIn: !!session?.user,
+    id: session?.user?.id || null,
+    role: session?.user?.role || 'user'
   };
 
   const isArtistOwner = user.isLoggedIn && user.id === artwork.artistId;

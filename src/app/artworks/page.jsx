@@ -3,7 +3,30 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion'; // Framer motion import kora hoyeche
 import { artworkCollection, artworkFilters } from '../../lib/data';
+import { CardSkeleton } from '@/Components/Skeleton';
+
+// Animation variants definitions
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } },
+  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
+};
+
+const dropdownVariants = {
+  hidden: { opacity: 0, y: -10, scale: 0.95 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.15, ease: "easeOut" } },
+  exit: { opacity: 0, y: -10, scale: 0.95, transition: { duration: 0.12, ease: "easeIn" } }
+};
 
 const ArtworksPage = () => {
   const [artworks, setArtworks] = useState([]);
@@ -69,17 +92,27 @@ const ArtworksPage = () => {
       <div className="w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto py-14">
 
         {/* Header */}
-        <div className="mb-10 max-w-2xl">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-10 max-w-2xl"
+        >
           <h1 className="text-4xl md:text-[42px] font-extrabold text-[#0f172a] tracking-tight leading-tight">
             Explore Masterpieces
           </h1>
           <p className="text-slate-500 mt-3 text-[15px] md:text-base font-medium leading-relaxed max-w-xl">
             Discover unique creations from the world's leading artists. Curated for the discerning collector.
           </p>
-        </div>
+        </motion.div>
 
-        {/* Search, Filter & shorting */}
-        <div className="bg-white border border-slate-200/60 rounded-2xl p-4 mb-12 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Search, Filter & sorting  */}
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="bg-white border border-slate-200/60 rounded-2xl p-4 mb-12 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] flex flex-col md:flex-row items-center justify-between gap-4"
+        >
           <div className="relative w-full md:w-85 flex items-center bg-slate-50 border border-slate-100 rounded-xl px-3.5 py-2.5 focus-within:border-violet-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-violet-50 transition-all duration-200">
             <Search size={18} className="text-slate-400 mr-2.5 shrink-0" />
             <input
@@ -103,32 +136,40 @@ const ArtworksPage = () => {
                 <span>{selectedCategory || "Category"}</span>
                 <ChevronDown size={14} className={selectedCategory ? "text-violet-500" : "text-slate-400"} />
               </button>
-              {isCategoryOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setIsCategoryOpen(false)} />
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200/85 rounded-xl shadow-lg z-50 py-1.5 border-slate-100">
-                    <button
-                      onClick={() => { setSelectedCategory(''); setIsCategoryOpen(false); }}
-                      className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
-                        !selectedCategory ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
-                      }`}
+              <AnimatePresence>
+                {isCategoryOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsCategoryOpen(false)} />
+                    <motion.div 
+                      variants={dropdownVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                      className="absolute right-0 mt-2 w-48 bg-white border border-slate-200/85 rounded-xl shadow-lg z-50 py-1.5 border-slate-100 origin-top-right"
                     >
-                      All Categories
-                    </button>
-                    {categories.map((cat) => (
                       <button
-                        key={cat}
-                        onClick={() => { setSelectedCategory(cat); setIsCategoryOpen(false); }}
+                        onClick={() => { setSelectedCategory(''); setIsCategoryOpen(false); }}
                         className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
-                          selectedCategory === cat ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
+                          !selectedCategory ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
                         }`}
                       >
-                        {cat}
+                        All Categories
                       </button>
-                    ))}
-                  </div>
-                </>
-              )}
+                      {categories.map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => { setSelectedCategory(cat); setIsCategoryOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
+                            selectedCategory === cat ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Status Filter */}
@@ -142,32 +183,40 @@ const ArtworksPage = () => {
                 <span className="capitalize">{selectedStatus || "Status"}</span>
                 <ChevronDown size={14} className={selectedStatus ? "text-violet-500" : "text-slate-400"} />
               </button>
-              {isStatusOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setIsStatusOpen(false)} />
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200/85 rounded-xl shadow-lg z-50 py-1.5 border-slate-100">
-                    <button
-                      onClick={() => { setSelectedStatus(''); setIsStatusOpen(false); }}
-                      className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
-                        !selectedStatus ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
-                      }`}
+              <AnimatePresence>
+                {isStatusOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsStatusOpen(false)} />
+                    <motion.div 
+                      variants={dropdownVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                      className="absolute right-0 mt-2 w-48 bg-white border border-slate-200/85 rounded-xl shadow-lg z-50 py-1.5 border-slate-100 origin-top-right"
                     >
-                      All Statuses
-                    </button>
-                    {statuses.map((stat) => (
                       <button
-                        key={stat}
-                        onClick={() => { setSelectedStatus(stat); setIsStatusOpen(false); }}
-                        className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer capitalize ${
-                          selectedStatus === stat ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
+                        onClick={() => { setSelectedStatus(''); setIsStatusOpen(false); }}
+                        className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
+                          !selectedStatus ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
                         }`}
                       >
-                        {stat}
+                        All Statuses
                       </button>
-                    ))}
-                  </div>
-                </>
-              )}
+                      {statuses.map((stat) => (
+                        <button
+                          key={stat}
+                          onClick={() => { setSelectedStatus(stat); setIsStatusOpen(false); }}
+                          className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer capitalize ${
+                            selectedStatus === stat ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
+                          }`}
+                        >
+                          {stat}
+                        </button>
+                      ))}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Sorting */}
@@ -189,137 +238,158 @@ const ArtworksPage = () => {
                 </span>
                 <SlidersHorizontal size={14} className={selectedSort ? "text-violet-600" : "text-slate-500"} />
               </button>
-              {isSortOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} />
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200/85 rounded-xl shadow-lg z-50 py-1.5 border-slate-100">
-                    <button
-                      onClick={() => { setSelectedSort(''); setIsSortOpen(false); }}
-                      className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
-                        !selectedSort ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
-                      }`}
+              <AnimatePresence>
+                {isSortOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsSortOpen(false)} />
+                    <motion.div 
+                      variants={dropdownVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                      className="absolute right-0 mt-2 w-48 bg-white border border-slate-200/85 rounded-xl shadow-lg z-50 py-1.5 border-slate-100 origin-top-right"
                     >
-                      Newest
-                    </button>
-                    <button
-                      onClick={() => { setSelectedSort('a-z'); setIsSortOpen(false); }}
-                      className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
-                        selectedSort === 'a-z' ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
-                      }`}
-                    >
-                      A to Z
-                    </button>
-                    <button
-                      onClick={() => { setSelectedSort('z-a'); setIsSortOpen(false); }}
-                      className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
-                        selectedSort === 'z-a' ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
-                      }`}
-                    >
-                      Z to A
-                    </button>
-                    <button
-                      onClick={() => { setSelectedSort('low-to-high'); setIsSortOpen(false); }}
-                      className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
-                        selectedSort === 'low-to-high' ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
-                      }`}
-                    >
-                      Price: Low to High
-                    </button>
-                    <button
-                      onClick={() => { setSelectedSort('high-to-low'); setIsSortOpen(false); }}
-                      className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
-                        selectedSort === 'high-to-low' ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
-                      }`}
-                    >
-                      Price: High to Low
-                    </button>
-                  </div>
-                </>
-              )}
+                      <button
+                        onClick={() => { setSelectedSort(''); setIsSortOpen(false); }}
+                        className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
+                          !selectedSort ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
+                        }`}
+                      >
+                        Newest
+                      </button>
+                      <button
+                        onClick={() => { setSelectedSort('a-z'); setIsSortOpen(false); }}
+                        className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
+                          selectedSort === 'a-z' ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
+                        }`}
+                      >
+                        A to Z
+                      </button>
+                      <button
+                        onClick={() => { setSelectedSort('z-a'); setIsSortOpen(false); }}
+                        className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
+                          selectedSort === 'z-a' ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
+                        }`}
+                      >
+                        Z to A
+                      </button>
+                      <button
+                        onClick={() => { setSelectedSort('low-to-high'); setIsSortOpen(false); }}
+                        className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
+                          selectedSort === 'low-to-high' ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
+                        }`}
+                      >
+                        Price: Low to High
+                      </button>
+                      <button
+                        onClick={() => { setSelectedSort('high-to-low'); setIsSortOpen(false); }}
+                        className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
+                          selectedSort === 'high-to-low' ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
+                        }`}
+                      >
+                        Price: High to Low
+                      </button>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Responsive Grid Layout */}
-        {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-            {[1, 2, 3, 4].map((n) => (
-              <div key={n} className="bg-white rounded-[24px] overflow-hidden border border-slate-100 p-2 animate-pulse shadow-sm">
-                <div className="aspect-square w-full rounded-[18px] bg-slate-200" />
-                <div className="p-3.5 pt-4 space-y-3">
-                  <div className="h-5 bg-slate-200 rounded w-3/4 animate-pulse" />
-                  <div className="h-4 bg-slate-200 rounded w-1/2 animate-pulse" />
-                  <div className="flex justify-between items-center mt-4">
-                    <div className="h-6 bg-slate-200 rounded w-1/3 animate-pulse" />
-                    <div className="h-4 bg-slate-200 rounded w-1/4 animate-pulse" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : artworks.length === 0 ? (
-          <div className="text-center py-24 text-slate-400 font-medium bg-white rounded-3xl border border-dashed border-slate-200 shadow-sm">
-            No artworks found matching your search.
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-            {artworks.map((artwork) => {
-              const isAvailable = artwork.status?.toLowerCase() === 'available';
-              const artworkId = artwork._id || encodeURIComponent(artwork.title);
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div 
+              key="skeleton-grid"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8"
+            >
+              {[...Array(4)].map((_, idx) => (
+                <CardSkeleton key={idx} />
+              ))}
+            </motion.div>
+          ) : artworks.length === 0 ? (
+            <motion.div 
+              key="empty-state"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center py-24 text-slate-400 font-medium bg-white rounded-3xl border border-dashed border-slate-200 shadow-sm"
+            >
+              No artworks found matching your search.
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="artworks-grid"
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8"
+            >
+              {artworks.map((artwork) => {
+                const isAvailable = artwork.status?.toLowerCase() === 'available';
+                const artworkId = artwork._id || encodeURIComponent(artwork.title);
 
-              return (
-                <div
-                  key={artwork._id || artwork.title}
-                  className="group bg-white rounded-[24px] overflow-hidden border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_10px_30px_-10px_rgba(124,58,237,0.12)] hover:border-violet-500/50 transition-all duration-300 flex flex-col p-2"
-                >
-                  {/* Image Container */}
-                  <Link href={`/artworks/${artworkId}`} className="relative aspect-square w-full rounded-[18px] bg-slate-50 overflow-hidden shrink-0 shadow-inner cursor-pointer">
-                    <img
-                      src={artwork.image}
-                      alt={artwork.title}
-                      className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
-                      loading="lazy"
-                    />
-                    {artwork.status && (
-                      <span className={`absolute top-3 left-3 text-[9px] font-extrabold tracking-widest uppercase px-2.5 py-1 rounded-md shadow-sm border ${
-                        isAvailable
-                          ? 'bg-[#e2f9f0]/90 backdrop-blur-sm text-[#10b981] border-[#bbf7d0]/60'
-                          : 'bg-[#f1f5f9]/90 backdrop-blur-sm text-[#64748b] border-[#e2e8f0]/60'
-                      }`}>
-                        {artwork.status}
-                      </span>
-                    )}
-                  </Link>
+                return (
+                  <motion.div
+                    layout 
+                    variants={cardVariants}
+                    key={artwork._id || artwork.title}
+                    whileHover={{ y: -6 }}
+                    className="group bg-white rounded-[24px] overflow-hidden border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_30px_-8px_rgba(124,58,237,0.14)] hover:border-violet-400/60 transition-colors duration-300 flex flex-col p-2"
+                  >
+                    {/* Image Container */}
+                    <Link href={`/artworks/${artworkId}`} className="relative aspect-square w-full rounded-[18px] bg-slate-50 overflow-hidden shrink-0 shadow-inner cursor-pointer">
+                      <img
+                        src={artwork.image}
+                        alt={artwork.title}
+                        className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500 ease-out"
+                        loading="lazy"
+                      />
+                      {artwork.status && (
+                        <span className={`absolute top-3 left-3 text-[9px] font-extrabold tracking-widest uppercase px-2.5 py-1 rounded-md shadow-sm border ${
+                          isAvailable
+                            ? 'bg-[#e2f9f0]/90 backdrop-blur-sm text-[#10b981] border-[#bbf7d0]/60'
+                            : 'bg-[#f1f5f9]/90 backdrop-blur-sm text-[#64748b] border-[#e2e8f0]/60'
+                        }`}>
+                          {artwork.status}
+                        </span>
+                      )}
+                    </Link>
 
-                  {/* Text Content Area */}
-                  <div className="p-3.5 pt-4 flex flex-col flex-grow justify-between">
-                    <div>
-                      <Link href={`/artworks/${artworkId}`}>
-                        <h3 className="font-bold text-[#0f172a] text-[16px] md:text-[17px] tracking-tight line-clamp-1 group-hover:text-violet-600 transition-colors duration-200 cursor-pointer">
-                          {artwork.title || "Untitled"}
-                        </h3>
-                      </Link>
-                      <p className="text-xs italic font-medium text-slate-400 mt-0.5">
-                        by {artwork.artistName}
-                      </p>
+                    {/* Text Content Area */}
+                    <div className="p-3.5 pt-4 flex flex-col flex-grow justify-between">
+                      <div>
+                        <Link href={`/artworks/${artworkId}`}>
+                          <h3 className="font-bold text-[#0f172a] text-[16px] md:text-[17px] tracking-tight line-clamp-1 group-hover:text-violet-600 transition-colors duration-200 cursor-pointer">
+                            {artwork.title || "Untitled"}
+                          </h3>
+                        </Link>
+                        <p className="text-xs italic font-medium text-slate-400 mt-0.5">
+                          by {artwork.artistName}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 pt-1 flex items-center justify-between">
+                        <span className="text-[17px] md:text-[18px] font-extrabold text-violet-600 tracking-tight">
+                          ${artwork.price?.toLocaleString()}
+                        </span>
+
+                        <Link href={`/artworks/${artworkId}`} className="flex items-center gap-1 text-xs font-bold text-violet-600 hover:text-violet-700 transition-colors duration-150 cursor-pointer">
+                          <span>Details</span>
+                          <span className="text-[10px] transform group-hover:translate-x-1 transition-transform duration-200">➔</span>
+                        </Link>
+                      </div>
                     </div>
-
-                    <div className="mt-4 pt-1 flex items-center justify-between">
-                      <span className="text-[17px] md:text-[18px] font-extrabold text-violet-600 tracking-tight">
-                        ${artwork.price?.toLocaleString()}
-                      </span>
-
-                      <Link href={`/artworks/${artworkId}`} className="flex items-center gap-1 text-xs font-bold text-violet-600 hover:text-violet-700 transition-colors duration-150 cursor-pointer">
-                        <span>Details</span>
-                        <span className="text-[10px] transform group-hover:translate-x-0.5 transition-transform duration-200">➔</span>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

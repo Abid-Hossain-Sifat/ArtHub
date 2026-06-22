@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, LogOut, LayoutDashboard, User as UserIcon, ChevronDown } from "lucide-react";
 import Logo from "../../public/Assets/Logo.png";
 import { useSession, authClient } from "@/lib/auth-client";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -66,7 +67,7 @@ const Navbar = () => {
     <div className="border-b bg-white/80 backdrop-blur-md w-full sticky top-0 z-50">
       <div className="w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto h-[72px] grid grid-cols-2 lg:grid-cols-3 items-center">
         
-        {/* 1. Left Section: Logo */}
+        {/* Logo */}
         <div className="flex items-center justify-start">
           <Link href="/">
             <div className="flex items-center shrink-0 hover:opacity-90 transition">
@@ -82,7 +83,7 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* 2. Center Section: Desktop Navigation */}
+        {/* Desktop Navigation */}
         <div className="hidden lg:flex items-center justify-center">
           <nav>
             <ul className="flex items-center gap-10 text-[16px] font-medium">
@@ -99,7 +100,7 @@ const Navbar = () => {
           </nav>
         </div>
 
-        {/* 3. Right Section: Auth Button / Profile Dropdown & Hamburger */}
+        {/* Profile Dropdown & Hamburger */}
         <div className="flex items-center justify-end gap-4">
           {/* Desktop Auth */}
           <div className="hidden lg:block">
@@ -134,40 +135,48 @@ const Navbar = () => {
                   <ChevronDown size={16} className={`text-slate-500 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                {dropdownOpen && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)}></div>
-                    <div className="absolute right-0 mt-2.5 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-20 transition-all transform origin-top-right">
-                      <Link
-                        href="/profile"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 font-medium transition first:rounded-t-2xl"
+                <AnimatePresence>
+                  {dropdownOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)}></div>
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className="absolute right-0 mt-2.5 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-20 origin-top-right"
                       >
-                        <UserIcon size={16} className="text-slate-400" />
-                        Profile
-                      </Link>
+                        <Link
+                          href="/profile"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 font-medium transition first:rounded-t-2xl"
+                        >
+                          <UserIcon size={16} className="text-slate-400" />
+                          Profile
+                        </Link>
 
-                      <Link
-                        href="/dashboard"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 font-medium transition"
-                      >
-                        <LayoutDashboard size={16} className="text-slate-400" />
-                        Dashboard
-                      </Link>
+                        <Link
+                          href="/dashboard"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 font-medium transition"
+                        >
+                          <LayoutDashboard size={16} className="text-slate-400" />
+                          Dashboard
+                        </Link>
 
-                      <div className="border-t border-slate-100 my-1"></div>
+                        <div className="border-t border-slate-100 my-1"></div>
 
-                      <button
-                        onClick={handleSignOut}
-                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-semibold transition text-left cursor-pointer last:rounded-b-2xl"
-                      >
-                        <LogOut size={16} className="text-red-500" />
-                        Log Out
-                      </button>
-                    </div>
-                  </>
-                )}
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-semibold transition text-left cursor-pointer last:rounded-b-2xl"
+                        >
+                          <LogOut size={16} className="text-red-500" />
+                          Log Out
+                        </button>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
               </div>
             ) : (
               <Link href="/sign-in">
@@ -189,88 +198,96 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu Dropdown */}
-      {isOpen && (
-        <div className="absolute top-[73px] left-0 w-full bg-white border-b shadow-lg lg:hidden z-50 transition-all duration-300">
-          <div className="max-w-[90%] md:max-w-[85%] mx-auto py-6 flex flex-col gap-6">
-            <nav>
-              <ul className="flex flex-col gap-2 text-[16px] font-medium">
-                <Link href="/" onClick={() => setIsOpen(false)} className={getLinkClass("/", true)}>
-                  Home
-                </Link>
-                <Link href="/artworks" onClick={() => setIsOpen(false)} className={getLinkClass("/artworks", true)}>
-                  Browse Artworks
-                </Link>
-                <Link href="/dashboard" onClick={() => setIsOpen(false)} className={getLinkClass("/dashboard", true)}>
-                  Dashboard
-                </Link>
-              </ul>
-            </nav>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="absolute top-[73px] left-0 w-full bg-white border-b shadow-lg lg:hidden z-50 overflow-hidden"
+          >
+            <div className="max-w-[90%] md:max-w-[85%] mx-auto py-6 flex flex-col gap-6">
+              <nav>
+                <ul className="flex flex-col gap-2 text-[16px] font-medium">
+                  <Link href="/" onClick={() => setIsOpen(false)} className={getLinkClass("/", true)}>
+                    Home
+                  </Link>
+                  <Link href="/artworks" onClick={() => setIsOpen(false)} className={getLinkClass("/artworks", true)}>
+                    Browse Artworks
+                  </Link>
+                  <Link href="/dashboard" onClick={() => setIsOpen(false)} className={getLinkClass("/dashboard", true)}>
+                    Dashboard
+                  </Link>
+                </ul>
+              </nav>
 
-            {/* Mobile Auth View */}
-            {user ? (
-              <div className="flex flex-col gap-2 border-t border-gray-100 pt-4">
-                <div className="flex items-center gap-3 px-4 py-2 mb-2">
-                  {/* Mobile Avatar */}
-                  <div className="w-9 h-9 rounded-full overflow-hidden border border-purple-500 flex items-center justify-center shrink-0">
-                    {profileImg ? (
-                      <Image
-                        src={profileImg}
-                        alt={user.name || "User Profile"}
-                        width={36}
-                        height={36}
-                        className="w-full h-full object-cover"
-                        unoptimized={profileImg.startsWith('http')}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white text-sm font-extrabold tracking-wider shadow-inner select-none">
-                        {getInitials(user.name)}
-                      </div>
-                    )}
+              {/* Mobile Auth View */}
+              {user ? (
+                <div className="flex flex-col gap-2 border-t border-gray-100 pt-4">
+                  <div className="flex items-center gap-3 px-4 py-2 mb-2">
+                    {/* Mobile Avatar */}
+                    <div className="w-9 h-9 rounded-full overflow-hidden border border-purple-500 flex items-center justify-center shrink-0">
+                      {profileImg ? (
+                        <Image
+                          src={profileImg}
+                          alt={user.name || "User Profile"}
+                          width={36}
+                          height={36}
+                          className="w-full h-full object-cover"
+                          unoptimized={profileImg.startsWith('http')}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white text-sm font-extrabold tracking-wider shadow-inner select-none">
+                          {getInitials(user.name)}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-sm font-bold text-slate-800">{user.name}</span>
                   </div>
-                  <span className="text-sm font-bold text-slate-800">{user.name}</span>
-                </div>
 
-                <Link
-                  href="/profile"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-xl font-medium transition"
-                >
-                  <UserIcon size={16} className="text-slate-400" />
-                  Profile
-                </Link>
+                  <Link
+                    href="/profile"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-xl font-medium transition"
+                  >
+                    <UserIcon size={16} className="text-slate-400" />
+                    Profile
+                  </Link>
 
-                <Link
-                  href="/dashboard"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-xl font-medium transition"
-                >
-                  <LayoutDashboard size={16} className="text-slate-400" />
-                  Dashboard
-                </Link>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-xl font-medium transition"
+                  >
+                    <LayoutDashboard size={16} className="text-slate-400" />
+                    Dashboard
+                  </Link>
 
-                <button
-                  onClick={() => {
-                    handleSignOut();
-                    setIsOpen(false);
-                  }}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl font-semibold transition text-left cursor-pointer"
-                >
-                  <LogOut size={16} className="text-red-500" />
-                  Log Out
-                </button>
-              </div>
-            ) : (
-              <div className="border-t border-gray-100 pt-4">
-                <Link href="/sign-in" onClick={() => setIsOpen(false)}>
-                  <button className="w-full px-6 py-3 rounded-full bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white font-medium transition-all text-center active:scale-95 hover:opacity-95 shadow-md shadow-purple-500/10">
-                    Sign In
+                  <button
+                    onClick={() => {
+                      handleSignOut();
+                      setIsOpen(false);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl font-semibold transition text-left cursor-pointer"
+                  >
+                    <LogOut size={16} className="text-red-500" />
+                    Log Out
                   </button>
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+                </div>
+              ) : (
+                <div className="border-t border-gray-100 pt-4">
+                  <Link href="/sign-in" onClick={() => setIsOpen(false)}>
+                    <button className="w-full px-6 py-3 rounded-full bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white font-medium transition-all text-center active:scale-95 hover:opacity-95 shadow-md shadow-purple-500/10">
+                      Sign In
+                    </button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

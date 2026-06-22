@@ -5,6 +5,8 @@ import { Plus, List, CheckCircle2 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
+import { FormSkeleton } from "@/Components/Skeleton";
 
 const AddArtworkPage = () => {
   const router = useRouter();
@@ -66,7 +68,7 @@ const AddArtworkPage = () => {
     let uploadedUrl = "";
 
     try {
-      // 1. Upload to ImgBB
+      // Upload to ImgBB
       const formData = new FormData();
       formData.append("image", imageFile);
 
@@ -86,7 +88,7 @@ const AddArtworkPage = () => {
         return;
       }
 
-      // 2. Post to backend
+      // Post to backend
       const payload = {
         title,
         category,
@@ -98,7 +100,7 @@ const AddArtworkPage = () => {
         artistId: session?.user?.id
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:11111'}/artworks`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/artworks`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -126,14 +128,24 @@ const AddArtworkPage = () => {
 
   if (isPending) {
     return (
-      <div className="p-6 md:p-10 bg-gray-50 min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#7C3AED]"></div>
+      <div className="p-6 md:p-10 bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <div className="h-8 bg-slate-200 rounded w-64 animate-pulse" />
+          </div>
+          <FormSkeleton />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 md:p-10 bg-gray-50 min-h-screen">
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="p-6 md:p-10 bg-gray-50 min-h-screen"
+    >
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-semibold text-gray-900">
@@ -273,11 +285,10 @@ const AddArtworkPage = () => {
               <button
                 type="submit"
                 disabled={!imageFile || submitting}
-                className={`px-8 py-3 rounded-lg flex items-center gap-2.5 transition font-medium text-white ${
-                  imageFile && !submitting
+                className={`px-8 py-3 rounded-lg flex items-center gap-2.5 transition font-medium text-white ${imageFile && !submitting
                     ? "bg-[#7C3AED] hover:bg-[#6D28D9] shadow-sm cursor-pointer"
                     : "bg-[#7C3AED] opacity-50 cursor-not-allowed"
-                }`}
+                  }`}
               >
                 {submitting ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -290,7 +301,7 @@ const AddArtworkPage = () => {
           </form>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
