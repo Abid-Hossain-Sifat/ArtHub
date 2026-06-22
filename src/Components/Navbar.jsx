@@ -18,6 +18,7 @@ const Navbar = () => {
   // Auth hooks execution
   const { data: session, isPending } = useSession();
   const user = session?.user;
+  const profileImg = user?.image?.trim() ? user.image : null;
 
   if (pathname && pathname.includes('dashboard')) {
     return null;
@@ -39,7 +40,7 @@ const Navbar = () => {
     }
   };
 
-  // ইউজারের নামের প্রথম অক্ষরগুলো (Initials) বের করার ফাংশন
+  
   const getInitials = (name) => {
     if (!name) return "U"; 
     const parts = name.trim().split(" ");
@@ -112,14 +113,16 @@ const Navbar = () => {
                 >
                   {/* Avatar Section */}
                   <div className="w-9 h-9 rounded-full overflow-hidden border border-purple-500 shadow-sm shrink-0 flex items-center justify-center">
-                    {user.image ? (
-                      <img
-                        src={user.image}
+                    {profileImg ? (
+                      <Image
+                        src={profileImg}
                         alt={user.name || "User Profile"}
+                        width={36}
+                        height={36}
                         className="w-full h-full object-cover"
+                        unoptimized={profileImg.startsWith('http')}
                       />
                     ) : (
-                      /* নামের অক্ষর একটু বড় (text-sm font-extrabold) করা হয়েছে */
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white text-sm font-extrabold tracking-wider shadow-inner select-none">
                         {getInitials(user.name)}
                       </div>
@@ -209,14 +212,16 @@ const Navbar = () => {
                 <div className="flex items-center gap-3 px-4 py-2 mb-2">
                   {/* Mobile Avatar */}
                   <div className="w-9 h-9 rounded-full overflow-hidden border border-purple-500 flex items-center justify-center shrink-0">
-                    {user.image ? (
-                      <img
-                        src={user.image}
+                    {profileImg ? (
+                      <Image
+                        src={profileImg}
                         alt={user.name || "User Profile"}
+                        width={36}
+                        height={36}
                         className="w-full h-full object-cover"
+                        unoptimized={profileImg.startsWith('http')}
                       />
                     ) : (
-                      /* মোবাইল রূপেও নামের অক্ষর বড় (text-sm font-extrabold) করা হয়েছে */
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white text-sm font-extrabold tracking-wider shadow-inner select-none">
                         {getInitials(user.name)}
                       </div>

@@ -70,7 +70,7 @@ const SignInPage = () => {
   return (
     <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A] flex items-center justify-center font-sans antialiased py-6 sm:py-12 md:py-16 px-4">
       
-      {/* মূল কন্টেইনার */}
+      {/* main */}
       <motion.div 
         variants={containerVariants}
         initial="hidden"

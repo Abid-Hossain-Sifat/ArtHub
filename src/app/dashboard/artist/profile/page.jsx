@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getInitials, isRemote } from '@/lib/avatar';
 import {
   Camera,
   Pencil,
@@ -212,16 +213,17 @@ const ProfilePage = () => {
                 <div className="w-32 h-32 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm overflow-hidden flex items-center justify-center p-2 relative">
                   {previewImage ? (
                     <Image
-                      src={previewImage} 
-                      alt={profile.name} 
+                      src={previewImage}
+                      alt={profile.name}
                       width={128}
                       height={128}
                       priority
+                      unoptimized={isRemote(previewImage)}
                       className="w-full h-full object-contain rounded-xl"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-slate-400">
-                      {profile.name?.slice(0, 2).toUpperCase() || 'A'}
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white text-3xl font-extrabold tracking-wider select-none rounded-xl">
+                      {getInitials(profile.name)}
                     </div>
                   )}
                 </div>
