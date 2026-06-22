@@ -1,51 +1,234 @@
-import React from 'react'
-import { Camera, Pencil, Lock, Image as ImageIcon, DollarSign, Award, ShieldCheck, Calendar } from 'lucide-react'
-import Image from 'next/image'
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import {
+  Camera,
+  Pencil,
+  Lock,
+  Image as ImageIcon,
+  Calendar,
+  ShieldCheck,
+  X,
+  DollarSign,
+  Award
+} from 'lucide-react';
+import { useSession, updateUser, changePassword, changeEmail } from '@/lib/auth-client';
+import { toast } from 'react-hot-toast';
+
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:11111';
+const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
 const ProfilePage = () => {
-  // Dynamic Admin User Context Node
-  const user = {
-    name: 'ArtHub Admin',
-    email: 'admin@arthub.com',
-    role: 'admin',
-    emailVerified: false,
-    avatar: 'https://i.ibb.co/0jqjkYBg/Logo.png',
-    bio: 'Digital impressionist based in Barcelona, exploring the intersection of traditional light theory and modern generative algorithms.',
-    createdAt: 'Joined June 2026'
+  const { data: session, isPending } = useSession();
+  const user = session?.user;
+  const [profile, setProfile] = useState({ name: '', email: '', image: '', role: '' });
+  const [previewImage, setPreviewImage] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [stats, setStats] = useState({ total: 0, sold: 0, available: 0 });
+
+  useEffect(() => {
+    if (!user) return;
+
+    setProfile({
+      name: user.name || '',
+      email: user.email || '',
+      image: user.image || '',
+      role: user.role || 'artist',
+    });
+    setPreviewImage(user.image || '');
+  }, [user]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const loadStats = async () => {
+      try {
+        const response = await fetch(`${backendUrl}/artworks?artistId=${encodeURIComponent(user.id)}`);
+        if (!response.ok) return;
+
+        const artworks = await response.json();
+        const total = Array.isArray(artworks) ? artworks.length : 0;
+        const sold = Array.isArray(artworks)
+          ? artworks.filter((item) => item.isSold || item.status?.toLowerCase() === 'sold').length
+          : 0;
+
+        setStats({ total, sold, available: total - sold });
+      } catch (error) {
+        console.error('Error loading artwork stats:', error);
+      }
+    };
+
+    loadStats();
+  }, [user?.id]);
+
+  const isLoading = isPending || !user;
+
+  const handleProfileField = (field, value) => {
+    setProfile((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handlePasswordField = (field, value) => {
+    setPasswordForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const uploadImageToImgbb = async (file) => {
+    if (!imgbbKey) {
+      toast.error('IMGBB API key is missing.');
+      return null;
+    }
+
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error(result.error?.message || 'Upload failed');
+      }
+
+      return result.data.url;
+    } catch (error) {
+      console.error('ImgBB upload error:', error);
+      toast.error('Avatar upload failed.');
+      return null;
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleAvatarSelect = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const tmpUrl = URL.createObjectURL(file);
+    setPreviewImage(tmpUrl);
+
+    const imageUrl = await uploadImageToImgbb(file);
+    if (imageUrl) {
+      handleProfileField('image', imageUrl);
+      toast.success('Avatar uploaded successfully.');
+    }
+  };
+
+  const saveProfile = async () => {
+    if (!profile.name.trim()) {
+      toast.error('Name is required.');
+      return;
+    }
+
+    setSavingProfile(true);
+    try {
+      await updateUser({ name: profile.name, image: profile.image || undefined });
+
+      if (profile.email !== user.email) {
+        await changeEmail({ newEmail: profile.email });
+      }
+
+      toast.success('Profile updated.');
+      setEditOpen(false);
+      window.location.reload();
+    } catch (error) {
+      console.error('Profile save failed:', error);
+      toast.error(error.message || 'Could not update profile.');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const changePasswordSubmit = async () => {
+    if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      toast.error('Complete all password fields.');
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error('New passwords do not match.');
+      return;
+    }
+    if (passwordForm.newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters.');
+      return;
+    }
+
+    setSavingPassword(true);
+    try {
+      await changePassword({ currentPassword: passwordForm.currentPassword, newPassword: passwordForm.newPassword });
+      toast.success('Password changed successfully.');
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setPasswordOpen(false);
+    } catch (error) {
+      console.error('Password change failed:', error);
+      toast.error(error.message || 'Could not change password.');
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#7C3AED] border-t-transparent" />
+      </div>
+    );
   }
 
   return (
     <div className="w-full min-h-screen bg-[#F8F9FC] p-6 lg:p-10 font-sans text-slate-800">
       
       {/* Top Profile Header Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-[#0F172A]">Profile Management</h1>
-        <p className="text-slate-500 text-sm mt-1">Manage your studio identity, artwork stats, and account security.</p>
+      <div className="mb-8 max-w-[1440px] mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-[#0F172A]">Profile Management</h1>
+          <p className="text-slate-500 text-sm mt-1">Manage your studio identity, artwork stats, and account security.</p>
+        </div>
+        <Link href="/dashboard" className="self-start sm:self-auto inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all">
+          Back to dashboard
+        </Link>
       </div>
       
-      {/* Container tracking layout config w-9xl system mapping width */}
-      <div className="w-full max-w-[1440px] bg-white rounded-3xl border border-slate-100 shadow-sm p-6 lg:p-10">
+      {/* Container tracking layout config w-9xl layout constraint system */}
+      <div className="w-full max-w-[1440px] mx-auto bg-white rounded-3xl border border-slate-100 shadow-sm p-6 lg:p-10">
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-stretch">
           
+          {/* Main profile identity segment info pane row */}
           <div className="lg:col-span-2 flex flex-col sm:flex-row gap-10 items-start">
             
             <div className="flex flex-col items-center sm:items-start gap-6 flex-shrink-0 w-full sm:w-auto">
               
               <div className="relative group cursor-pointer mx-auto sm:mx-0">
-                <div className="w-32 h-32 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm overflow-hidden flex items-center justify-center p-2">
-                  <Image
-                    src={user.avatar} 
-                    alt={user.name} 
-                    width={128}
-                    height={128}
-                    priority
-                    className="w-full h-full object-contain rounded-xl"
-                  />
+                <div className="w-32 h-32 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm overflow-hidden flex items-center justify-center p-2 relative">
+                  {previewImage ? (
+                    <Image
+                      src={previewImage} 
+                      alt={profile.name} 
+                      width={128}
+                      height={128}
+                      priority
+                      className="w-full h-full object-contain rounded-xl"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-slate-400">
+                      {profile.name?.slice(0, 2).toUpperCase() || 'A'}
+                    </div>
+                  )}
                 </div>
                 
-                {/* Floating Camera Actions Selector */}
+                {/* Floating Camera Upload Button Trigger */}
                 <button 
+                  onClick={() => setEditOpen(true)}
                   className="absolute -bottom-1 -right-1 bg-white text-slate-700 hover:text-slate-900 p-2 rounded-full border border-slate-200 shadow-md transition-all duration-200 hover:scale-105"
                   title="Update Profile Picture"
                 >
@@ -56,48 +239,62 @@ const ProfilePage = () => {
               {/* Stacked Vertical Interaction Buttons Layer */}
               <div className="flex flex-col gap-3 w-full sm:w-40">
                 {/* Edit Action Button */}
-                <button className="inline-flex items-center justify-center gap-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 w-full">
+                <button 
+                  onClick={() => setEditOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 w-full"
+                >
                   <Pencil className="w-3.5 h-3.5" />
                   Edit Profile
                 </button>
 
                 {/* Password Action Button */}
-                <button className="inline-flex items-center justify-center gap-2 bg-[#DCE4EC] hover:bg-[#D1DCE8] text-slate-600 hover:text-slate-800 px-4 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 w-full">
+                <button 
+                  onClick={() => setPasswordOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 bg-[#DCE4EC] hover:bg-[#D1DCE8] text-slate-600 hover:text-slate-800 px-4 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 w-full"
+                >
                   <Lock className="w-3.5 h-3.5" />
                   Change Password
                 </button>
               </div>
             </div>
 
-            {/* [SECOND FIELD - BLUE): Comprehensive Metadata Profile Details */}
+            {/* Comprehensive Metadata Profile Details */}
             <div className="flex-1 space-y-4 text-center sm:text-left w-full h-full flex flex-col justify-start pt-2">
               
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-center sm:justify-start">
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900">{user.name}</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900">{profile.name}</h2>
                 
                 <span className="inline-flex items-center gap-1 px-3 py-0.5 text-[11px] font-semibold rounded-full bg-[#F3E8FF] text-[#7C3AED] border border-[#E9D5FF]/30 capitalize">
                   <ShieldCheck className="w-3 h-3" />
-                  {user.role}
+                  {profile.role}
                 </span>
               </div>
 
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-slate-500">{user.email}</p>
+                <p className="text-sm font-semibold text-slate-500">{profile.email}</p>
                 {!user.emailVerified && (
                   <p className="text-[10px] text-amber-600 font-medium bg-amber-50 border border-amber-100 rounded-md px-2 py-0.5 inline-block">
                     Pending Verification
                   </p>
                 )}
               </div>
+
+              <div className="space-y-1">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">System Bio Summary</h4>
+                <p className="text-slate-600 text-xs md:text-sm font-normal leading-relaxed max-w-lg">
+                  Creative partner at ArtHub workspace network ecosystem. Manage assets parameters securely.
+                </p>
+              </div>
               
               <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-slate-400 font-medium pt-4 mt-auto">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>{user.createdAt}</span>
+                <span>Account Sync: Active</span>
               </div>
             </div>
 
           </div>
 
+          {/* Studio Analytics Section Side Pane */}
           <div className="w-full bg-[#F8F9FC]/80 border border-slate-100 rounded-2xl p-6 space-y-6 flex flex-col justify-between">
             
             <div className="space-y-4">
@@ -105,6 +302,7 @@ const ProfilePage = () => {
               
               {/* Analytics Metrics List */}
               <div className="flex flex-col gap-3.5">
+                {/* Metric Item 1 */}
                 <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 bg-purple-50 rounded-xl text-[#7C3AED]">
@@ -112,9 +310,10 @@ const ProfilePage = () => {
                     </div>
                     <p className="text-xs text-slate-500 font-semibold">Total Artworks</p>
                   </div>
-                  <p className="text-lg font-bold text-slate-900">42</p>
+                  <p className="text-lg font-bold text-slate-900">{stats.total}</p>
                 </div>
 
+                {/* Metric Item 2 */}
                 <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
@@ -122,9 +321,17 @@ const ProfilePage = () => {
                     </div>
                     <p className="text-xs text-slate-500 font-semibold">Total Sold</p>
                   </div>
-                  <p className="text-lg font-bold text-slate-900">0</p>
+                  <p className="text-lg font-bold text-slate-900">{stats.sold}</p>
                 </div>
               </div>
+            </div>
+
+            {/* Tier Status Alert Note Block */}
+            <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-start gap-3 shadow-sm">
+              <Award className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+              <p className="text-[11px] text-slate-500 leading-normal">
+                You are currently verified as <span className="font-semibold text-slate-800">System Admin Control</span> tier level. Live endpoints sync is fully responsive.
+              </p>
             </div>
           </div>
 
@@ -132,8 +339,138 @@ const ProfilePage = () => {
 
       </div>
 
-    </div>
-  )
-}
+      {/* EDIT PROFILE MODAL RENDER PORTAL */}
+      {editOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Edit profile</h2>
+                <p className="text-sm text-slate-500">Change your display name, email address or avatar picture.</p>
+              </div>
+              <button onClick={() => setEditOpen(false)} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
 
-export default ProfilePage
+            <div className="mt-6 space-y-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Name</label>
+                  <input
+                    type="text"
+                    value={profile.name}
+                    onChange={(e) => handleProfileField('name', e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white transition-all text-slate-800"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
+                  <input
+                    type="email"
+                    value={profile.email}
+                    onChange={(e) => handleProfileField('email', e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white transition-all text-slate-800"
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Profile picture source</p>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-white border border-slate-200 p-1">
+                    {previewImage ? (
+                      <Image src={previewImage} alt="preview" fill className="object-contain rounded-xl p-1" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">No image</div>
+                    )}
+                  </div>
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs">
+                    <Camera className="h-4 w-4 text-slate-500" />
+                    <span>{uploadingImage ? 'Uploading…' : 'Upload custom file'}</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarSelect} disabled={uploadingImage} />
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end pt-2">
+                <button onClick={() => setEditOpen(false)} className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors">
+                  Cancel
+                </button>
+                <button
+                  onClick={saveProfile}
+                  disabled={savingProfile || uploadingImage}
+                  className="rounded-xl bg-[#7C3AED] px-5 py-2.5 text-xs font-bold text-white hover:bg-violet-600 disabled:opacity-70 transition-colors shadow-sm"
+                >
+                  {savingProfile ? 'Saving…' : 'Save changes'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PASSWORD UPDATE PORTAL MODAL */}
+      {passwordOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-slate-900">Change password</h2>
+                <p className="text-sm text-slate-500">Provide authentication parameters securely below.</p>
+              </div>
+              <button onClick={() => setPasswordOpen(false)} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Current password</label>
+                <input
+                  type="password"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => handlePasswordField('currentPassword', e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white text-slate-800"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">New password</label>
+                <input
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => handlePasswordField('newPassword', e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white text-slate-800"
+                />
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Confirm new password</label>
+                <input
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => handlePasswordField('confirmPassword', e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white text-slate-800"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <button onClick={() => setPasswordOpen(false)} className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={changePasswordSubmit}
+                disabled={savingPassword}
+                className="rounded-xl bg-[#7C3AED] px-5 py-2.5 text-xs font-bold text-white hover:bg-violet-600 disabled:opacity-70 transition-colors shadow-sm"
+              >
+                {savingPassword ? 'Updating…' : 'Update password'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProfilePage;
