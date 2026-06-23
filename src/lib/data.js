@@ -19,3 +19,30 @@ export const artworkFilters = async () => {
     const data = await res.json();
     return data;
 }
+
+export const userDetails = async () =>{
+    const res = await fetch (process.env.NEXT_PUBLIC_USER_API_URL);
+    const data = await res.json();
+    return data;
+}
+
+
+export const updateUserRole = async (id, role) => {
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_USER_API_URL}/${id}`,
+    {
+      method: "PATCH",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        role
+      })
+    }
+  );
+
+  return await res.json();
+}

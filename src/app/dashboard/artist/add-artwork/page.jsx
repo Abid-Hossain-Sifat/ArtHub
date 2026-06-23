@@ -201,6 +201,11 @@ const AddArtworkPage = () => {
                   <option value="Painting">Painting</option>
                   <option value="Digital Art">Digital Art</option>
                   <option value="Sculpture">Sculpture</option>
+                  <option value="Sculpture">Nature</option>
+                  <option value="Sculpture">Horizon</option>
+                  <option value="Sculpture">Landscape</option>
+                  <option value="Sculpture">Photography</option>
+                  <option value="Sculpture">Fantasy</option>
                 </select>
               </div>
             </div>

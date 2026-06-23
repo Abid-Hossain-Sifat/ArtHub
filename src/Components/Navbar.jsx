@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Image from "next/image";
 import Link from "next/link";
@@ -41,7 +41,6 @@ const Navbar = () => {
     }
   };
 
-  
   const getInitials = (name) => {
     if (!name) return "U"; 
     const parts = name.trim().split(" ");

@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useEffect } from 'react';
 import Logo from "../../../../public/Assets/Logo.png";
@@ -8,6 +7,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSession, authClient } from "@/lib/auth-client";
 import { toast } from "react-hot-toast";
+
+import { DashboardSkeleton } from '../../../Components/Skeleton'; 
 
 // Lucide Icons Import
 import { LayoutDashboard, Users, Palette, Receipt, LogOut, Home, Menu, X } from 'lucide-react';
@@ -133,20 +134,6 @@ const AdminDashboardLayout = ({ children }) => {
     </div>
   );
 
-  if (isPending || !session || session.user?.role !== 'admin') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 w-full">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="relative w-12 h-12">
-            <div className="absolute inset-0 rounded-full border-4 border-purple-100"></div>
-            <div className="absolute inset-0 rounded-full border-4 border-[#7C3AED] border-t-transparent animate-spin"></div>
-          </div>
-          <p className="text-sm font-semibold text-slate-600">Verifying administrator access...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex min-h-screen bg-slate-50 relative overflow-x-hidden">
       
@@ -203,7 +190,12 @@ const AdminDashboardLayout = ({ children }) => {
 
         {/* Dynamic Inner Pages Render */}
         <main className="flex-1 p-4 md:p-6 bg-[#F8FAFC] overflow-y-auto">
-          {children}
+          {isPending || !session || session.user?.role !== 'admin' ? (
+            /* VERIFICATION SKELETON REPLACEMENT LAYER */
+            <DashboardSkeleton />
+          ) : (
+            children
+          )}
         </main>
       </div>
     </div>
