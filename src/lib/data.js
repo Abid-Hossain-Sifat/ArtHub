@@ -20,6 +20,17 @@ export const artworkFilters = async () => {
     return data;
 }
 
+export const deleteArtwork = async (id) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/${id}`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  return await res.json();
+};
+
 export const userDetails = async () =>{
     const res = await fetch (process.env.NEXT_PUBLIC_USER_API_URL);
     const data = await res.json();
@@ -46,3 +57,5 @@ export const updateUserRole = async (id, role) => {
 
   return await res.json();
 }
+
+
