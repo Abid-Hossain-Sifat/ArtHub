@@ -1,22 +1,24 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from '../../../../public/Assets/Logo.png';
-import { useSession, authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { toast } from "react-hot-toast";
 
-// Lucide Icons Import
 import { 
   LayoutDashboard, 
-  ShoppingBag, 
+  History,
+  ShoppingBag,
+  MessageSquare,
+  CreditCard,
+  UserCircle, 
   Home, 
   LogOut, 
   Menu, 
-  X,
-  UserCircle
+  X 
 } from 'lucide-react';
 
 const UserDashboardLayout = ({ children }) => {
@@ -24,20 +26,6 @@ const UserDashboardLayout = ({ children }) => {
   const router = useRouter();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  const { data: session, isPending } = useSession();
-
-  // Route protection
-  useEffect(() => {
-    if (!isPending) {
-      if (!session) {
-        router.replace('/sign-in');
-      } else if (session.user?.role !== 'user') {
-        router.replace('/unauthorized');
-      }
-    }
-  }, [session, isPending, router]);
-
-  // Sign out handler
   const handleSignOut = async () => {
     try {
       await authClient.signOut({
@@ -57,10 +45,14 @@ const UserDashboardLayout = ({ children }) => {
 
   const navLinks = [
     { name: 'Dashboard', href: '/dashboard/user', icon: <LayoutDashboard className="w-5 h-5" /> },
-    { name: 'Browse Artworks', href: '/artworks', icon: <ShoppingBag className="w-5 h-5" /> },
+    { name: 'Purchase History', href: '/dashboard/user/purchase-history', icon: <History className="w-5 h-5" /> },
+    { name: 'Bought Artworks', href: '/dashboard/user/bought-artworks', icon: <ShoppingBag className="w-5 h-5" /> },
+    { name: 'My Comments', href: '/dashboard/user/my-comments', icon: <MessageSquare className="w-5 h-5" /> },
+    { name: 'Subscription', href: '/dashboard/user/subscription', icon: <CreditCard className="w-5 h-5" /> },
+    { name: 'Profile', href: '/dashboard/user/profile', icon: <UserCircle className="w-5 h-5" /> },
   ];
 
-  // Sidebar Content
+  // Sidebar Content Component
   const SidebarContent = () => (
     <div className="flex flex-col justify-between h-full p-6 bg-white select-none">
       
@@ -70,13 +62,12 @@ const UserDashboardLayout = ({ children }) => {
         <div className="flex items-center justify-between px-2 py-3">
           <Image 
             src={Logo} 
-            alt="ArtHub Logo" 
+            alt="Logo" 
             width={130} 
             height={40} 
             priority
             className="object-contain"
           />
-          {/* Close button for mobile screen drawer */}
           <button 
             onClick={() => setIsMobileOpen(false)}
             className="lg:hidden p-1 text-slate-500 hover:text-slate-800 transition-colors"
@@ -91,25 +82,31 @@ const UserDashboardLayout = ({ children }) => {
             const isActive = pathname === link.href;
             
             return (
-              <Link
+              <motion.div
                 key={link.href}
-                href={link.href}
-                onClick={() => setIsMobileOpen(false)}
-                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl font-medium transition-colors duration-200 relative z-10 ${
-                  isActive ? 'text-white' : 'text-slate-500 hover:bg-purple-50/50 hover:text-purple-600'
-                }`}
+                whileHover={{ x: isActive ? 0 : 4 }} 
+                whileTap={{ scale: 0.98 }} 
+                transition={{ type: "tween", duration: 0.15 }}
               >
-                {/* Active Tab Slide Animation */}
-                {isActive && (
-                  <motion.div 
-                    layoutId="activeUserIndicator"
-                    className="absolute inset-0 bg-[#7C3AED] rounded-xl shadow-md shadow-purple-200 -z-10"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  />
-                )}
-                {link.icon}
-                <span className="text-[15px]">{link.name}</span>
-              </Link>
+                <Link
+                  href={link.href}
+                  onClick={() => setIsMobileOpen(false)}
+                  className={`flex items-center gap-4 px-4 py-3.5 rounded-xl font-medium transition-colors duration-200 relative z-10 ${
+                    isActive ? 'text-white' : 'text-slate-500 hover:bg-purple-50/50 hover:text-purple-600'
+                  }`}
+                >
+                  {/* Active Tab Slide Animation */}
+                  {isActive && (
+                    <motion.div 
+                      layoutId="activeUserIndicator"
+                      className="absolute inset-0 bg-[#7C3AED] rounded-xl shadow-md shadow-purple-200 -z-10"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  {link.icon}
+                  <span className="text-[15px]">{link.name}</span>
+                </Link>
+              </motion.div>
             );
           })}
         </nav>
@@ -118,52 +115,40 @@ const UserDashboardLayout = ({ children }) => {
       {/* BOTTOM SECTION */}
       <div className="border-t border-slate-100 pt-4 space-y-1">
         {/* Home Button */}
-        <button 
-          onClick={() => {
-            setIsMobileOpen(false);
-            router.push('/');
-          }}
-          className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200"
-        >
-          <Home className="w-5 h-5" />
-          <span className="text-[15px]">Home</span>
-        </button>
+        <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }}>
+          <Link 
+            href="/"
+            onClick={() => setIsMobileOpen(false)}
+            className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200"
+          >
+            <Home className="w-5 h-5" />
+            <span className="text-[15px]">Home</span>
+          </Link>
+        </motion.div>
 
         {/* Logout Button */}
-        <button 
-          onClick={handleSignOut}
-          className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
-        >
-          <LogOut className="w-5 h-5" />
-          <span className="text-[15px]">Logout</span>
-        </button>
+        <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }}>
+          <button 
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="text-[15px]">Logout</span>
+          </button>
+        </motion.div>
       </div>
     </div>
   );
 
-  if (isPending || !session || session.user?.role !== 'user') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 w-full">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="relative w-12 h-12">
-            <div className="absolute inset-0 rounded-full border-4 border-purple-100"></div>
-            <div className="absolute inset-0 rounded-full border-4 border-[#7C3AED] border-t-transparent animate-spin"></div>
-          </div>
-          <p className="text-sm font-semibold text-slate-600">Verifying collector access...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex min-h-screen bg-slate-50 relative overflow-x-hidden w-full">
       
-      {/* DESKTOP VIEWPORT */}
+      {/* DESKTOP VIEWPORT SIDEBAR */}
       <aside className="hidden lg:block w-64 border-r border-slate-100 bg-white sticky top-0 h-screen">
         <SidebarContent />
       </aside>
 
-      {/* MOBILE & TABLET VIEWPORT */}
+      {/* MOBILE & TABLET VIEWPORT SIDEBAR */}
       <AnimatePresence>
         {isMobileOpen && (
           <>
@@ -196,7 +181,7 @@ const UserDashboardLayout = ({ children }) => {
         <header className="lg:hidden w-full bg-white border-b border-slate-100 p-4 flex items-center justify-between sticky top-0 z-30">
           <Image 
             src={Logo} 
-            alt="ArtHub Logo" 
+            alt="Logo" 
             width={100} 
             height={32} 
             className="object-contain"
@@ -209,9 +194,16 @@ const UserDashboardLayout = ({ children }) => {
           </button>
         </header>
 
-        {/* Dynamic Inner Pages Render Area */}
+        {/* Content Render Area */}
         <main className="flex-1 p-4 md:p-6 bg-[#F8FAFC] overflow-y-auto">
-          {children}
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+          >
+            {children}
+          </motion.div>
         </main>
       </div>
     </div>
