@@ -1,11 +1,11 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from '../../../../public/Assets/Logo.png';
-import { authClient } from "@/lib/auth-client";
+import { signOut, useSession } from "@/lib/auth-client";
 import { toast } from "react-hot-toast";
 
 import { 
@@ -25,18 +25,24 @@ const UserDashboardLayout = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { data: session, isPending } = useSession();
+
+  useEffect(() => {
+    if (!isPending) {
+      if (!session) {
+        router.replace('/sign-in');
+      } else if (session.user?.role !== 'user') {
+        router.replace('/unauthorized');
+      }
+    }
+  }, [session, isPending, router]);
 
   const handleSignOut = async () => {
     try {
-      await authClient.signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            toast.success("Successfully logged out!");
-            router.push('/');
-            router.refresh();
-          }
-        }
-      });
+      await signOut();
+      toast.success("Successfully logged out!");
+      router.push('/');
+      router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
       toast.error("Logout failed. Please try again.");
@@ -139,6 +145,20 @@ const UserDashboardLayout = ({ children }) => {
       </div>
     </div>
   );
+
+  if (isPending || !session || session.user?.role !== 'user') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 w-full">
+        <div className="flex flex-col items-center gap-4 text-center px-4">
+          <div className="relative w-12 h-12">
+            <div className="absolute inset-0 rounded-full border-4 border-purple-100"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-[#7C3AED] border-t-transparent animate-spin"></div>
+          </div>
+          <p className="text-sm font-semibold text-slate-600">Checking access for your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-50 relative overflow-x-hidden w-full">

@@ -1,11 +1,11 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SignInImg from "../../../public/Assets/Login.png";
 import Image from 'next/image';
 import Link from 'next/link';
 import { Eye, EyeOff, Mail, Lock, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { signIn } from '@/lib/auth-client';
+import { signIn, useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 
@@ -17,6 +17,20 @@ const SignInPage = () => {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+  const { data: session, isPending } = useSession();
+
+  useEffect(() => {
+    if (!isPending && session) {
+      const role = session.user?.role;
+      if (role === 'admin') {
+        router.replace('/dashboard/admin');
+      } else if (role === 'artist') {
+        router.replace('/dashboard/artist');
+      } else {
+        router.replace('/');
+      }
+    }
+  }, [session, isPending, router]);
 
   // Handle Sign In
   const handleSignIn = async (e) => {
@@ -26,7 +40,7 @@ const SignInPage = () => {
       return;
     }
 
-    setLoading(true);
+      setLoading(true);
     try {
       await signIn.email(
         {
@@ -36,12 +50,11 @@ const SignInPage = () => {
         {
           onSuccess: () => {
             toast.success("Successfully signed in!");
-            router.push('/');
             router.refresh();
           },
           onError: (ctx) => {
             toast.error(ctx.error.message || "Failed to sign in. Please check your credentials.");
-          }
+          },
         }
       );
     } catch (err) {
@@ -57,7 +70,7 @@ const SignInPage = () => {
     try {
       await signIn.social({
         provider: "google",
-        callbackURL: "http://localhost:3000/",
+        callbackURL: `${window.location.origin}/sign-in`,
       });
     } catch (err) {
       console.error(err);

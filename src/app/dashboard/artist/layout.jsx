@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from '../../../../public/Assets/Logo.png';
-import { useSession, authClient } from "@/lib/auth-client";
+import { useSession, signOut } from "@/lib/auth-client";
 import { toast } from "react-hot-toast";
 
 // Lucide Icons Import
@@ -40,15 +40,10 @@ const ArtistDashboardLayout = ({ children }) => {
 
   const handleSignOut = async () => {
     try {
-      await authClient.signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            toast.success("Successfully logged out!");
-            router.push('/');
-            router.refresh();
-          }
-        }
-      });
+      await signOut();
+      toast.success("Successfully logged out!");
+      router.push('/');
+      router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
       toast.error("Logout failed. Please try again.");

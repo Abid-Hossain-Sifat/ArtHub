@@ -6,7 +6,7 @@ import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, LogOut, LayoutDashboard, User as UserIcon, ChevronDown } from "lucide-react";
 import Logo from "../../public/Assets/Logo.png";
-import { useSession, authClient } from "@/lib/auth-client";
+import { useSession, signOut } from "@/lib/auth-client";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
@@ -33,15 +33,10 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     try {
-      await authClient.signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            setDropdownOpen(false);
-            router.push('/');
-            router.refresh();
-          }
-        }
-      });
+      await signOut();
+      setDropdownOpen(false);
+      router.push('/');
+      router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
     }

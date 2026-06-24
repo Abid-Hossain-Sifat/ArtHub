@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSession, authClient } from "@/lib/auth-client";
+import { useSession, signOut } from "@/lib/auth-client";
 import { toast } from "react-hot-toast";
 
 import { DashboardSkeleton } from '../../../Components/Skeleton'; 
@@ -32,15 +32,10 @@ const AdminDashboardLayout = ({ children }) => {
 
   const handleSignOut = async () => {
     try {
-      await authClient.signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            toast.success("Successfully logged out!");
-            router.push('/');
-            router.refresh();
-          }
-        }
-      });
+      await signOut();
+      toast.success("Successfully logged out!");
+      router.push('/');
+      router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
       toast.error("Logout failed. Please try again.");
