@@ -21,6 +21,9 @@ const AddArtworkPage = () => {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
 
+  const [isCustom, setIsCustom] = useState(false);
+  const [customCategory, setCustomCategory] = useState("");
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -55,8 +58,8 @@ const AddArtworkPage = () => {
       toast.error("Please select an artwork image first");
       return;
     }
-    if (!category) {
-      toast.error("Please select a category");
+    if (!finalCategory) {
+      toast.error("Please select or enter a category");
       return;
     }
     if (!price) {
@@ -91,22 +94,25 @@ const AddArtworkPage = () => {
       // Post to backend
       const payload = {
         title,
-        category,
+        category: finalCategory,
         description,
         price: parseFloat(price),
         image: uploadedUrl,
         artistName: session?.user?.name,
         artistEmail: session?.user?.email,
-        artistId: session?.user?.id
+        artistId: session?.user?.id,
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/artworks`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/artworks`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload)
-      });
+      );
 
       const data = await res.json();
       if (res.ok && data.success) {
@@ -140,7 +146,7 @@ const AddArtworkPage = () => {
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -191,22 +197,55 @@ const AddArtworkPage = () => {
               </div>
               <div className="space-y-2">
                 <label className="font-medium text-gray-700">Category</label>
-                <select
-                  className={inputClass}
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  required
-                >
-                  <option value="">Select a category</option>
-                  <option value="Painting">Painting</option>
-                  <option value="Digital Art">Digital Art</option>
-                  <option value="Sculpture">Sculpture</option>
-                  <option value="Sculpture">Nature</option>
-                  <option value="Sculpture">Horizon</option>
-                  <option value="Sculpture">Landscape</option>
-                  <option value="Sculpture">Photography</option>
-                  <option value="Sculpture">Fantasy</option>
-                </select>
+
+                {isCustom ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Type custom category"
+                      value={customCategory}
+                      onChange={(e) => setCustomCategory(e.target.value)}
+                      className={inputClass}
+                      required
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCustom(false);
+                        setCustomCategory("");
+                      }}
+                      className="px-3 text-red-500 font-semibold"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <select
+                    className={inputClass}
+                    value={category}
+                    onChange={(e) => {
+                      if (e.target.value === "other") {
+                        setIsCustom(true);
+                      } else {
+                        setCategory(e.target.value);
+                      }
+                    }}
+                    required
+                  >
+                    <option value="">Select a category</option>
+                    <option value="Painting">Painting</option>
+                    <option value="Digital Art">Digital Art</option>
+                    <option value="Sculpture">Sculpture</option>
+                    <option value="Nature">Nature</option>
+                    <option value="Horizon">Horizon</option>
+                    <option value="Landscape">Landscape</option>
+                    <option value="Photography">Photography</option>
+                    <option value="Fantasy">Fantasy</option>
+
+                    <option value="other">+ Add Custom Category</option>
+                  </select>
+                )}
               </div>
             </div>
 
@@ -290,10 +329,11 @@ const AddArtworkPage = () => {
               <button
                 type="submit"
                 disabled={!imageFile || submitting}
-                className={`px-8 py-3 rounded-lg flex items-center gap-2.5 transition font-medium text-white ${imageFile && !submitting
+                className={`px-8 py-3 rounded-lg flex items-center gap-2.5 transition font-medium text-white ${
+                  imageFile && !submitting
                     ? "bg-[#7C3AED] hover:bg-[#6D28D9] shadow-sm cursor-pointer"
                     : "bg-[#7C3AED] opacity-50 cursor-not-allowed"
-                  }`}
+                }`}
               >
                 {submitting ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>

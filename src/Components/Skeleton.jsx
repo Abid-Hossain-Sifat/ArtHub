@@ -130,6 +130,36 @@ export const DashboardSkeleton = () => (
         </div>
       ))}
     </div>
+
+    {/* Charts Section */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* Area Chart */}
+      <div className="lg:col-span-2 bg-white border border-slate-100 rounded-2xl p-6 shadow-sm space-y-6">
+        <div className="flex justify-between items-center">
+          <div className="space-y-2">
+            <div className="h-5 bg-slate-200 rounded w-32" />
+            <div className="h-3 bg-slate-200 rounded w-48" />
+          </div>
+          <div className="h-8 bg-slate-200 rounded-full w-36" />
+        </div>
+        <div className="h-[200px] bg-slate-100 rounded-xl w-full" />
+      </div>
+
+      {/* Pie Chart */}
+      <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm flex flex-col justify-between space-y-4">
+        <div>
+          <div className="h-5 bg-slate-200 rounded w-40" />
+          <div className="h-3 bg-slate-200 rounded w-28 mt-2" />
+        </div>
+        <div className="flex justify-center items-center py-4">
+          <div className="w-36 h-36 rounded-full border-[14px] border-slate-200 flex items-center justify-center" />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="h-4 bg-slate-200 rounded w-full" />
+          <div className="h-4 bg-slate-200 rounded w-full" />
+        </div>
+      </div>
+    </div>
     
     {/* Activities & Explore banner */}
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
