@@ -34,6 +34,10 @@ const ArtworksPage = () => {
   const [statuses, setStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
   // Filter States
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -67,6 +71,11 @@ const ArtworksPage = () => {
     loadFilters();
   }, []);
 
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, selectedCategory, selectedStatus, selectedSort]);
+
   useEffect(() => {
     const loadArtworks = async () => {
       setLoading(true);
@@ -75,9 +84,17 @@ const ArtworksPage = () => {
           search: debouncedSearch,
           category: selectedCategory,
           status: selectedStatus,
-          sort: selectedSort
+          sort: selectedSort,
+          page: currentPage,
+          limit: 12
         });
-        setArtworks(data || []);
+        if (data && data.artworks) {
+          setArtworks(data.artworks || []);
+          setTotalPages(data.totalPages || 1);
+        } else {
+          setArtworks(data || []);
+          setTotalPages(1);
+        }
       } catch (error) {
         console.error("Error fetching artworks:", error);
       } finally {
@@ -85,7 +102,7 @@ const ArtworksPage = () => {
       }
     };
     loadArtworks();
-  }, [debouncedSearch, selectedCategory, selectedStatus, selectedSort]);
+  }, [debouncedSearch, selectedCategory, selectedStatus, selectedSort, currentPage]);
 
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] text-slate-900 antialiased selection:bg-violet-100 selection:text-violet-900">
@@ -390,6 +407,67 @@ const ArtworksPage = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex items-center justify-center gap-2.5 mt-14"
+          >
+            <motion.button
+              whileHover={currentPage > 1 ? { scale: 1.05 } : {}}
+              whileTap={currentPage > 1 ? { scale: 0.95 } : {}}
+              onClick={() => {
+                setCurrentPage(prev => Math.max(prev - 1, 1));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 transition-all shadow-sm hover:bg-slate-50 hover:text-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <span>🡐</span> Previous
+            </motion.button>
+
+            <div className="flex items-center gap-1.5">
+              {[...Array(totalPages)].map((_, index) => {
+                const pageNumber = index + 1;
+                const isActive = pageNumber === currentPage;
+                return (
+                  <motion.button
+                    key={pageNumber}
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setCurrentPage(pageNumber);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className={`w-9 h-9 flex items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer ${
+                      isActive 
+                        ? 'bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white' 
+                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                    }`}
+                  >
+                    {pageNumber}
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            <motion.button
+              whileHover={currentPage < totalPages ? { scale: 1.05 } : {}}
+              whileTap={currentPage < totalPages ? { scale: 0.95 } : {}}
+              onClick={() => {
+                setCurrentPage(prev => Math.min(prev + 1, totalPages));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 transition-all shadow-sm hover:bg-slate-50 hover:text-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              Next <span>🡒</span>
+            </motion.button>
+          </motion.div>
+        )}
       </div>
     </div>
   );

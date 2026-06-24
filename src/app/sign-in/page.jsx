@@ -52,6 +52,19 @@ const SignInPage = () => {
     }
   };
 
+  // Handle Google Sign In
+  const handleGoogleSignIn = async () => {
+    try {
+      await signIn.social({
+        provider: "google",
+        callbackURL: "http://localhost:3000/",
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error("Google sign in failed!");
+    }
+  };
+
   // Framer Motion Variants
   const containerVariants = {
     hidden: { opacity: 0, y: 30 },
@@ -163,7 +176,8 @@ const SignInPage = () => {
             <motion.div variants={itemVariants} className="mb-5">
               <button
                 type="button"
-                className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+                onClick={handleGoogleSignIn}
+                className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm cursor-pointer"
               >
                 <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
                   <path

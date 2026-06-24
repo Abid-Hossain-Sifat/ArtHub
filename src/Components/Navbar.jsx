@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, LogOut, LayoutDashboard, User as UserIcon, ChevronDown } from "lucide-react";
 import Logo from "../../public/Assets/Logo.png";
@@ -19,7 +19,13 @@ const Navbar = () => {
   // Auth hooks execution
   const { data: session, isPending } = useSession();
   const user = session?.user;
-  const profileImg = user?.image?.trim() ? user.image : null;
+  const [imageError, setImageError] = useState(false);
+  
+  useEffect(() => {
+    setImageError(false);
+  }, [user?.id]);
+
+  const profileImg = user?.image?.trim() && !imageError ? user.image : null;
 
   if (pathname && pathname.includes('dashboard')) {
     return null;
@@ -121,6 +127,7 @@ const Navbar = () => {
                         height={36}
                         className="w-full h-full object-cover"
                         unoptimized={profileImg.startsWith('http')}
+                        onError={() => setImageError(true)}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white text-sm font-extrabold tracking-wider shadow-inner select-none">
@@ -235,6 +242,7 @@ const Navbar = () => {
                           height={36}
                           className="w-full h-full object-cover"
                           unoptimized={profileImg.startsWith('http')}
+                          onError={() => setImageError(true)}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white text-sm font-extrabold tracking-wider shadow-inner select-none">

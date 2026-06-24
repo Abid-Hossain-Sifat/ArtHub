@@ -1,10 +1,12 @@
 export const artworkCollection = async (queryParams = {}) => {
-    const { search, category, status, sort } = queryParams;
+    const { search, category, status, sort, page, limit } = queryParams;
     const params = new URLSearchParams();
     if (search) params.append('search', search);
     if (category) params.append('category', category);
     if (status) params.append('status', status);
     if (sort) params.append('sort', sort);
+    if (page) params.append('page', page);
+    if (limit) params.append('limit', limit);
 
     const queryString = params.toString();
     const url = queryString ? `${process.env.NEXT_PUBLIC_API_URL}?${queryString}` : (process.env.NEXT_PUBLIC_API_URL);
