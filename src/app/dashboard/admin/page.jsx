@@ -33,7 +33,23 @@ const monthlyRevenue = [
   { month: "Nov", artwork: 14200, subscription: 10100 },
 ];
 
-const CATEGORY_COLORS = ["#534AB7", "#3C3489", "#AFA9EC", "#7F77DD", "#CECBF6"];
+const CATEGORY_COLORS = [
+  "#207CE5", // Blue
+  "#E03131", // Red
+  "#22B371", // Green
+  "#F59F00", // Yellow/Orange
+  "#845EF7", // Purple
+  "#EE5A24", // Deep Orange
+  "#ED17BD", // Magenta/Pink
+  "#00C2CB", // Cyan/Teal
+  "#BE4BDB", // Violet
+  "#1098AD", // Ocean Blue
+  "#FF922B", // Light Orange
+  "#63E6BE", // Mint Green
+  "#F783AC", // Hot Pink
+  "#A9E34B", // Lime Green
+  "#A34E31"  // Brown/Terra Cotta
+];
 
 const containerVariants = {
   hidden: { opacity: 0 },

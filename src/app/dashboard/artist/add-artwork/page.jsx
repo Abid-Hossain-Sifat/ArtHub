@@ -24,6 +24,8 @@ const AddArtworkPage = () => {
   const [isCustom, setIsCustom] = useState(false);
   const [customCategory, setCustomCategory] = useState("");
 
+  const finalCategory = isCustom ? customCategory : category;
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
