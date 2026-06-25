@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { userDetails, updateUserRole } from "../../../../lib/data";
 import { TableSkeleton } from "../../../../Components/Skeleton"; 
+import Image from "next/image";
 
 export function getInitials(name) {
   if (!name) return "U";
@@ -150,11 +151,14 @@ const AdminDashboardUsers = () => {
                     {/* Avatar */}
                     <td className="p-4 whitespace-nowrap">
                       {isRemote(user.image) ? (
-                        <img
-                          src={user.image}
-                          alt={user.name || "User"}
-                          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border border-gray-200 shadow-sm"
-                        />
+                        <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border border-gray-200 shadow-sm">
+                          <Image
+                            src={user.image}
+                            alt={user.name || "User"}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
                       ) : (
                         <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white flex items-center justify-center font-bold text-xs tracking-wider shadow-inner">
                           {getInitials(user.name)}
@@ -225,11 +229,14 @@ const AdminDashboardUsers = () => {
             <div className="mt-4 space-y-4">
               <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
                 {isRemote(selectedUser.image) ? (
-                  <img
-                    src={selectedUser.image}
-                    alt=""
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border border-gray-200 shadow-sm"
-                  />
+                  <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border border-gray-200 shadow-sm">
+                    <Image
+                      src={selectedUser.image}
+                      alt={selectedUser.name || "User"}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                 ) : (
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-md">
                     {getInitials(selectedUser.name)}

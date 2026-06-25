@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { purchaseHistory } from "@/lib/data";
 import { useSession } from "@/lib/auth-client";
 import { getInitials, isRemote } from "@/lib/avatar";
+import Image from "next/image";
 
 // Mock data list (9 items total)
 
@@ -106,11 +107,14 @@ const SalesHistoryPage = () => {
                       >
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-4">
-                            <img
-                              src={row.artworkImage}
-                              alt={row.artworkTitle}
-                              className="w-12 h-12 rounded-xl object-cover bg-slate-100"
-                            />
+                            <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                              <Image
+                                src={row.artworkImage}
+                                alt={row.artworkTitle}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
 
                             <div>
                               <h4 className="font-bold text-[#0F172A] text-[15px]">
@@ -125,12 +129,13 @@ const SalesHistoryPage = () => {
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full overflow-hidden border border-purple-500 shadow-sm shrink-0 flex items-center justify-center">
+                            <div className="relative w-8 h-8 rounded-full overflow-hidden border border-purple-500 shadow-sm shrink-0 flex items-center justify-center">
                               {isRemote(row.buyerImage) ? (
-                                <img
+                                <Image
                                   src={row.buyerImage}
                                   alt={row.buyerName}
-                                  className="w-full h-full object-cover"
+                                  fill
+                                  className="object-cover"
                                 />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white text-[10px] font-extrabold tracking-wider shadow-inner select-none">
@@ -196,11 +201,14 @@ const SalesHistoryPage = () => {
                     {/* Top Row: Image, Title and Badge */}
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
-                        <img
-                          src={row.artworkImage}
-                          alt={row.artworkTitle}
-                          className="w-14 h-14 rounded-xl object-cover bg-slate-100 shrink-0"
-                        />
+                        <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                          <Image
+                            src={row.artworkImage}
+                            alt={row.artworkTitle}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
                         <div className="min-w-0">
                           <h4 className="font-bold text-[#0F172A] text-[14px] truncate">
                             {row.artworkTitle}
@@ -218,12 +226,13 @@ const SalesHistoryPage = () => {
                     {/* Bottom Row: Buyer Info and Price/Date */}
                     <div className="flex items-center justify-between text-xs pt-2.5 border-t border-dashed border-[#E2E8F0]">
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-6 h-6 rounded-full overflow-hidden border border-purple-500 shadow-sm shrink-0 flex items-center justify-center">
+                        <div className="relative w-6 h-6 rounded-full overflow-hidden border border-purple-500 shadow-sm shrink-0 flex items-center justify-center">
                           {isRemote(row.buyerImage) ? (
-                            <img
+                            <Image
                               src={row.buyerImage}
                               alt={row.buyerName}
-                              className="w-full h-full object-cover shrink-0"
+                              fill
+                              className="object-cover"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white text-[8px] font-extrabold tracking-wider shadow-inner select-none">

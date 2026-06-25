@@ -6,6 +6,7 @@ import { Pencil, Trash2, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TableSkeleton } from '@/Components/Skeleton';
+import Image from 'next/image';
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -258,9 +259,9 @@ const ArtistArtworkManage = () => {
                     <tr key={artwork._id || artwork.id} className="hover:bg-slate-50/50 transition-colors duration-150">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-100 shadow-sm">
+                          <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-100 shadow-sm relative">
                             {artwork.image ? (
-                              <img src={artwork.image} alt={artwork.title} className="w-full h-full object-cover" />
+                              <Image src={artwork.image} alt={artwork.title} fill className="object-cover" />
                             ) : (
                               <span className="text-lg">🎨</span>
                             )}

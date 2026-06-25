@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { artworkCollection, deleteArtwork } from "../../../../lib/data";
+import Image from "next/image";
 
 const AdminDashboardArtworks = () => {
   const [artworks, setArtworks] = useState([]);
@@ -268,11 +269,14 @@ const AdminDashboardArtworks = () => {
                     className="hover:bg-slate-50/50 transition-colors"
                   >
                     <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
-                      <img
-                        src={artwork.image || "https://via.placeholder.com/48"}
-                        alt={artwork.title}
-                        className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-xl shadow-sm border border-slate-100"
-                      />
+                      <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden shadow-sm border border-slate-100">
+                        <Image
+                          src={artwork.image || "https://via.placeholder.com/48"}
+                          alt={artwork.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
                     </td>
 
                     <td className="py-4 px-4 sm:px-6 whitespace-nowrap">

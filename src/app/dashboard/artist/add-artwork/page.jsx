@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { FormSkeleton } from "@/Components/Skeleton";
+import Image from "next/image";
 
 const AddArtworkPage = () => {
   const router = useRouter();
@@ -297,11 +298,15 @@ const AddArtworkPage = () => {
                   ) : imagePreview ? (
                     <div className="flex flex-col items-center gap-3">
                       <CheckCircle2 className="w-10 h-10 text-green-500" />
-                      <img
-                        src={imagePreview}
-                        alt="Uploaded Preview"
-                        className="w-24 h-16 rounded object-cover"
-                      />
+                      <div className="relative w-24 h-16 rounded overflow-hidden">
+                        <Image
+                          src={imagePreview}
+                          alt="Uploaded Preview"
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </div>
                       <span className="text-xs text-gray-500 font-medium max-w-[200px] truncate">
                         {imageName}
                       </span>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 const UserDashboardPurchaseHistoryPage = () => {
   const [loading, setLoading] = useState(true);
@@ -119,9 +120,9 @@ const UserDashboardPurchaseHistoryPage = () => {
                     {/* Artwork Column with Image */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-100 shadow-sm flex-shrink-0">
+                        <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-100 shadow-sm flex-shrink-0 relative">
                           {item.image ? (
-                            <img src={item.image} alt={item.artworkName} className="w-full h-full object-cover" />
+                            <Image src={item.image} alt={item.artworkName} fill className="object-cover" />
                           ) : (
                             <span className="text-lg">🎨</span>
                           )}

@@ -303,8 +303,8 @@ const SignUpPage = () => {
                 <div className="relative group">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
                     {imagePreview ? (
-                      <div className="w-5 h-5 rounded-full overflow-hidden border border-purple-500 shadow-sm">
-                        <img src={imagePreview} alt="Icon Preview" className="w-full h-full object-cover" />
+                      <div className="w-5 h-5 rounded-full overflow-hidden border border-purple-500 shadow-sm relative">
+                        <Image src={imagePreview} alt="Icon Preview" fill className="object-cover" unoptimized />
                       </div>
                     ) : (
                       <ImageIcon size={16} className="group-focus-within:text-purple-500 transition-colors" />
