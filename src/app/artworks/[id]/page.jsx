@@ -106,6 +106,7 @@ const ArtWorkDetailsPage = () => {
             buyerId: session.user.id,
             buyerName: session.user.name,
             buyerEmail: session.user.email,
+            buyerImage: session.user.image || null,
           }),
         },
       );

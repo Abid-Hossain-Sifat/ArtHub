@@ -61,3 +61,12 @@ export const updateUserRole = async (id, role) => {
 }
 
 
+export const purchaseHistory = async (artistId) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SALES_HISTORY_API_URL}?artistId=${artistId}`
+  );
+
+  return await res.json();
+};
+
+
