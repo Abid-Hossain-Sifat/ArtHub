@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, ChevronDown, SlidersHorizontal } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion'; // Framer motion import kora hoyeche
+import { motion, AnimatePresence } from 'framer-motion'; 
 import { artworkCollection, artworkFilters } from '../../lib/data';
 import { CardSkeleton } from '@/Components/Skeleton';
+import Image from 'next/image';
 
 // Animation variants definitions
 const containerVariants = {
@@ -106,31 +107,32 @@ const ArtworksPage = () => {
 
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] text-slate-900 antialiased selection:bg-violet-100 selection:text-violet-900">
-      <div className="w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto py-14">
+      <div className="w-full max-w-[95%] sm:max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto py-8 sm:py-14">
 
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-10 max-w-2xl"
+          className="mb-8 sm:mb-10 max-w-2xl text-center sm:text-left"
         >
-          <h1 className="text-4xl md:text-[42px] font-extrabold text-[#0f172a] tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-[42px] font-extrabold text-[#0f172a] tracking-tight leading-tight">
             Explore Masterpieces
           </h1>
-          <p className="text-slate-500 mt-3 text-[15px] md:text-base font-medium leading-relaxed max-w-xl">
+          <p className="text-slate-500 mt-2.5 sm:mt-3 text-sm sm:text-[15px] md:text-base font-medium leading-relaxed max-w-xl mx-auto sm:mx-0">
             Discover unique creations from the world's leading artists. Curated for the discerning collector.
           </p>
         </motion.div>
 
-        {/* Search, Filter & sorting  */}
+        {/* Search, Filter & sorting */}
         <motion.div 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-white border border-slate-200/60 rounded-2xl p-4 mb-12 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] flex flex-col md:flex-row items-center justify-between gap-4"
+          className="bg-white border border-slate-200/60 rounded-2xl p-4 mb-8 sm:mb-12 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] flex flex-col lg:flex-row items-center justify-between gap-4"
         >
-          <div className="relative w-full md:w-85 flex items-center bg-slate-50 border border-slate-100 rounded-xl px-3.5 py-2.5 focus-within:border-violet-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-violet-50 transition-all duration-200">
+          {/* Search Box */}
+          <div className="relative w-full lg:max-w-md flex items-center bg-slate-50 border border-slate-100 rounded-xl px-3.5 py-2.5 focus-within:border-violet-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-violet-50 transition-all duration-200">
             <Search size={18} className="text-slate-400 mr-2.5 shrink-0" />
             <input
               type="text"
@@ -141,17 +143,19 @@ const ArtworksPage = () => {
             />
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto justify-end overflow-visible">
+          {/* Filters Container */}
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2.5 w-full lg:w-auto justify-stretch sm:justify-end overflow-visible">
+            
             {/* Category Filter */}
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <button
                 onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 hover:text-slate-900 transition-all duration-150 cursor-pointer shrink-0 shadow-sm ${
+                className={`flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto px-4 py-2.5 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 hover:text-slate-900 transition-all duration-150 cursor-pointer shrink-0 shadow-sm ${
                   selectedCategory ? 'bg-violet-50 text-violet-700 border-violet-200' : 'bg-white text-slate-600'
                 }`}
               >
-                <span>{selectedCategory || "Category"}</span>
-                <ChevronDown size={14} className={selectedCategory ? "text-violet-500" : "text-slate-400"} />
+                <span className="truncate">{selectedCategory || "Category"}</span>
+                <ChevronDown size={14} className={`shrink-0 ${selectedCategory ? "text-violet-500" : "text-slate-400"}`} />
               </button>
               <AnimatePresence>
                 {isCategoryOpen && (
@@ -162,7 +166,7 @@ const ArtworksPage = () => {
                       initial="hidden"
                       animate="visible"
                       exit="hidden"
-                      className="absolute right-0 mt-2 w-48 bg-white border border-slate-200/85 rounded-xl shadow-lg z-50 py-1.5 border-slate-100 origin-top-right"
+                      className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-full sm:w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1.5 origin-top-right"
                     >
                       <button
                         onClick={() => { setSelectedCategory(''); setIsCategoryOpen(false); }}
@@ -176,7 +180,7 @@ const ArtworksPage = () => {
                         <button
                           key={cat}
                           onClick={() => { setSelectedCategory(cat); setIsCategoryOpen(false); }}
-                          className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
+                          className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer truncate ${
                             selectedCategory === cat ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
                           }`}
                         >
@@ -190,15 +194,15 @@ const ArtworksPage = () => {
             </div>
 
             {/* Status Filter */}
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <button
                 onClick={() => setIsStatusOpen(!isStatusOpen)}
-                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 hover:text-slate-900 transition-all duration-150 cursor-pointer shrink-0 shadow-sm ${
+                className={`flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto px-4 py-2.5 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 hover:text-slate-900 transition-all duration-150 cursor-pointer shrink-0 shadow-sm ${
                   selectedStatus ? 'bg-violet-50 text-violet-700 border-violet-200' : 'bg-white text-slate-600'
                 }`}
               >
-                <span className="capitalize">{selectedStatus || "Status"}</span>
-                <ChevronDown size={14} className={selectedStatus ? "text-violet-500" : "text-slate-400"} />
+                <span className="capitalize truncate">{selectedStatus || "Status"}</span>
+                <ChevronDown size={14} className={`shrink-0 ${selectedStatus ? "text-violet-500" : "text-slate-400"}`} />
               </button>
               <AnimatePresence>
                 {isStatusOpen && (
@@ -209,7 +213,7 @@ const ArtworksPage = () => {
                       initial="hidden"
                       animate="visible"
                       exit="hidden"
-                      className="absolute right-0 mt-2 w-48 bg-white border border-slate-200/85 rounded-xl shadow-lg z-50 py-1.5 border-slate-100 origin-top-right"
+                      className="absolute right-0 mt-2 w-full sm:w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1.5 origin-top-right"
                     >
                       <button
                         onClick={() => { setSelectedStatus(''); setIsStatusOpen(false); }}
@@ -223,7 +227,7 @@ const ArtworksPage = () => {
                         <button
                           key={stat}
                           onClick={() => { setSelectedStatus(stat); setIsStatusOpen(false); }}
-                          className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer capitalize ${
+                          className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer capitalize truncate ${
                             selectedStatus === stat ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
                           }`}
                         >
@@ -237,14 +241,14 @@ const ArtworksPage = () => {
             </div>
 
             {/* Sorting */}
-            <div className="relative">
+            <div className="relative col-span-2 sm:col-span-1 w-full sm:w-auto">
               <button
                 onClick={() => setIsSortOpen(!isSortOpen)}
-                className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl border border-slate-200 hover:bg-slate-50 hover:border-violet-600 transition-all duration-150 cursor-pointer shrink-0 shadow-sm ${
+                className={`flex items-center justify-between sm:justify-start gap-2.5 w-full sm:w-auto px-4 py-2.5 text-xs font-bold rounded-xl border border-slate-200 hover:bg-slate-50 hover:border-violet-600 transition-all duration-150 cursor-pointer shrink-0 shadow-sm ${
                   selectedSort ? 'bg-violet-50 text-violet-700 border-violet-300' : 'bg-white text-slate-700'
                 }`}
               >
-                <span>
+                <span className="truncate">
                   Sort By: {
                     selectedSort === 'a-z' ? 'A to Z' :
                     selectedSort === 'z-a' ? 'Z to A' :
@@ -253,7 +257,7 @@ const ArtworksPage = () => {
                     'Newest'
                   }
                 </span>
-                <SlidersHorizontal size={14} className={selectedSort ? "text-violet-600" : "text-slate-500"} />
+                <SlidersHorizontal size={14} className={`shrink-0 ${selectedSort ? "text-violet-600" : "text-slate-500"}`} />
               </button>
               <AnimatePresence>
                 {isSortOpen && (
@@ -264,7 +268,7 @@ const ArtworksPage = () => {
                       initial="hidden"
                       animate="visible"
                       exit="hidden"
-                      className="absolute right-0 mt-2 w-48 bg-white border border-slate-200/85 rounded-xl shadow-lg z-50 py-1.5 border-slate-100 origin-top-right"
+                      className="absolute right-0 mt-2 w-full sm:w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1.5 origin-top-right"
                     >
                       <button
                         onClick={() => { setSelectedSort(''); setIsSortOpen(false); }}
@@ -322,7 +326,7 @@ const ArtworksPage = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8"
+              className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8"
             >
               {[...Array(4)].map((_, idx) => (
                 <CardSkeleton key={idx} />
@@ -334,7 +338,7 @@ const ArtworksPage = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="text-center py-24 text-slate-400 font-medium bg-white rounded-3xl border border-dashed border-slate-200 shadow-sm"
+              className="text-center py-16 sm:py-24 px-4 text-slate-400 font-medium bg-white rounded-3xl border border-dashed border-slate-200 shadow-sm text-sm sm:text-base"
             >
               No artworks found matching your search.
             </motion.div>
@@ -344,7 +348,7 @@ const ArtworksPage = () => {
               variants={containerVariants}
               initial="hidden"
               animate="show"
-              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8"
+              className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8"
             >
               {artworks.map((artwork) => {
                 const isAvailable = artwork.status?.toLowerCase() === 'available';
@@ -359,13 +363,16 @@ const ArtworksPage = () => {
                     className="group bg-white rounded-[24px] overflow-hidden border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_30px_-8px_rgba(124,58,237,0.14)] hover:border-violet-400/60 transition-colors duration-300 flex flex-col p-2"
                   >
                     {/* Image Container */}
-                    <Link href={`/artworks/${artworkId}`} className="relative aspect-square w-full rounded-[18px] bg-slate-50 overflow-hidden shrink-0 shadow-inner cursor-pointer">
-                      <img
+                    <Link href={`/artworks/${artworkId}`} className="relative aspect-square w-full rounded-[18px] bg-slate-50 overflow-hidden shrink-0 shadow-inner cursor-pointer group">
+                      <Image
                         src={artwork.image}
                         alt={artwork.title}
-                        className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500 ease-out"
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                        className="object-cover group-hover:scale-[1.04] transition-transform duration-500 ease-out"
                         loading="lazy"
                       />
+                      
                       {artwork.status && (
                         <span className={`absolute top-3 left-3 text-[9px] font-extrabold tracking-widest uppercase px-2.5 py-1 rounded-md shadow-sm border ${
                           isAvailable
@@ -381,21 +388,21 @@ const ArtworksPage = () => {
                     <div className="p-3.5 pt-4 flex flex-col flex-grow justify-between">
                       <div>
                         <Link href={`/artworks/${artworkId}`}>
-                          <h3 className="font-bold text-[#0f172a] text-[16px] md:text-[17px] tracking-tight line-clamp-1 group-hover:text-violet-600 transition-colors duration-200 cursor-pointer">
+                          <h3 className="font-bold text-[#0f172a] text-[15px] sm:text-[16px] md:text-[17px] tracking-tight line-clamp-1 group-hover:text-violet-600 transition-colors duration-200 cursor-pointer">
                             {artwork.title || "Untitled"}
                           </h3>
                         </Link>
-                        <p className="text-xs italic font-medium text-slate-400 mt-0.5">
+                        <p className="text-[11px] sm:text-xs italic font-medium text-slate-400 mt-0.5">
                           by {artwork.artistName}
                         </p>
                       </div>
 
-                      <div className="mt-4 pt-1 flex items-center justify-between">
-                        <span className="text-[17px] md:text-[18px] font-extrabold text-violet-600 tracking-tight">
+                      <div className="mt-4 pt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <span className="text-[15px] sm:text-[17px] md:text-[18px] font-extrabold text-violet-600 tracking-tight">
                           ${artwork.price?.toLocaleString()}
                         </span>
 
-                        <Link href={`/artworks/${artworkId}`} className="flex items-center gap-1 text-xs font-bold text-violet-600 hover:text-violet-700 transition-colors duration-150 cursor-pointer">
+                        <Link href={`/artworks/${artworkId}`} className="flex items-center gap-1 text-[11px] sm:text-xs font-bold text-violet-600 hover:text-violet-700 transition-colors duration-150 cursor-pointer">
                           <span>Details</span>
                           <span className="text-[10px] transform group-hover:translate-x-1 transition-transform duration-200">➔</span>
                         </Link>
@@ -414,7 +421,7 @@ const ArtworksPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex items-center justify-center gap-2.5 mt-14"
+            className="flex flex-wrap items-center justify-center gap-3 mt-10 sm:mt-14"
           >
             <motion.button
               whileHover={currentPage > 1 ? { scale: 1.05 } : {}}
@@ -424,9 +431,9 @@ const ArtworksPage = () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               disabled={currentPage === 1}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 transition-all shadow-sm hover:bg-slate-50 hover:text-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 transition-all shadow-sm hover:bg-slate-50 hover:text-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              <span>🡐</span> Previous
+              <span>🡐</span> <span className="hidden sm:inline">Previous</span>
             </motion.button>
 
             <div className="flex items-center gap-1.5">
@@ -442,7 +449,7 @@ const ArtworksPage = () => {
                       setCurrentPage(pageNumber);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className={`w-9 h-9 flex items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer ${
+                    className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer ${
                       isActive 
                         ? 'bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white' 
                         : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800'
@@ -462,9 +469,9 @@ const ArtworksPage = () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               disabled={currentPage === totalPages}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 transition-all shadow-sm hover:bg-slate-50 hover:text-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 transition-all shadow-sm hover:bg-slate-50 hover:text-slate-800 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              Next <span>🡒</span>
+              <span className="hidden sm:inline">Next</span> <span>🡒</span>
             </motion.button>
           </motion.div>
         )}

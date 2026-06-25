@@ -1,36 +1,45 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import SignInImg from "../../../public/Assets/Login.png";
-import Image from 'next/image';
-import Link from 'next/link';
-import { Eye, EyeOff, Mail, Lock, Sparkles } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { signIn, useSession } from '@/lib/auth-client';
-import { useRouter } from 'next/navigation';
-import { toast } from 'react-hot-toast';
+import Image from "next/image";
+import Link from "next/link";
+import { Eye, EyeOff, Mail, Lock, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { signIn, useSession } from "@/lib/auth-client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 const SignInPage = () => {
   // States
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, isPending } = useSession();
 
   useEffect(() => {
     if (!isPending && session) {
+      const redirect = searchParams.get("redirect");
+
+      if (redirect) {
+        router.replace(redirect);
+        return;
+      }
+
       const role = session.user?.role;
-      if (role === 'admin') {
-        router.replace('/dashboard/admin');
-      } else if (role === 'artist') {
-        router.replace('/dashboard/artist');
+
+      if (role === "admin") {
+        router.replace("/dashboard/admin");
+      } else if (role === "artist") {
+        router.replace("/dashboard/artist");
       } else {
-        router.replace('/');
+        router.replace("/");
       }
     }
-  }, [session, isPending, router]);
+  }, [session, isPending, router, searchParams]);
 
   // Handle Sign In
   const handleSignIn = async (e) => {
@@ -40,7 +49,7 @@ const SignInPage = () => {
       return;
     }
 
-      setLoading(true);
+    setLoading(true);
     try {
       await signIn.email(
         {
@@ -53,9 +62,12 @@ const SignInPage = () => {
             router.refresh();
           },
           onError: (ctx) => {
-            toast.error(ctx.error.message || "Failed to sign in. Please check your credentials.");
+            toast.error(
+              ctx.error.message ||
+                "Failed to sign in. Please check your credentials.",
+            );
           },
-        }
+        },
       );
     } catch (err) {
       console.error(err);
@@ -81,33 +93,30 @@ const SignInPage = () => {
   // Framer Motion Variants
   const containerVariants = {
     hidden: { opacity: 0, y: 30 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.1 }
-    }
+      transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.1 },
+    },
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 15 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
   };
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A] flex items-center justify-center font-sans antialiased py-6 sm:py-12 md:py-16 px-4">
-      
       {/* main */}
-      <motion.div 
+      <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
         className="w-full max-w-[1140px] bg-white rounded-[24px] sm:rounded-[32px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col md:flex-row overflow-hidden items-stretch"
       >
-        
         {/* form side*/}
         <div className="w-full md:w-1/2 flex flex-col justify-center px-4 py-8 sm:px-8 md:px-12 lg:px-16 self-center order-2 md:order-1">
           <div className="w-full max-w-[420px] mx-auto">
-            
             {/* Form Title Header */}
             <motion.div variants={itemVariants} className="mb-6">
               <h2 className="text-[24px] sm:text-[30px] lg:text-[34px] font-black tracking-tight text-[#0F172A] leading-tight mb-2 text-center md:text-left">
@@ -120,10 +129,11 @@ const SignInPage = () => {
 
             {/* Input Form Fields */}
             <form className="space-y-4" onSubmit={handleSignIn}>
-              
               {/* Email Address field */}
               <motion.div variants={itemVariants}>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1.5 tracking-wide uppercase">Email Address</label>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1.5 tracking-wide uppercase">
+                  Email Address
+                </label>
                 <div className="relative group">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within:text-purple-500 transition-colors">
                     <Mail size={16} />
@@ -141,7 +151,9 @@ const SignInPage = () => {
 
               {/* Password field */}
               <motion.div variants={itemVariants}>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1.5 tracking-wide uppercase">Password</label>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1.5 tracking-wide uppercase">
+                  Password
+                </label>
                 <div className="relative group">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within:text-purple-500 transition-colors">
                     <Lock size={16} />
@@ -179,9 +191,14 @@ const SignInPage = () => {
             </form>
 
             {/* Divider */}
-            <motion.div variants={itemVariants} className="flex items-center my-5">
+            <motion.div
+              variants={itemVariants}
+              className="flex items-center my-5"
+            >
               <div className="flex-1 border-t border-slate-200"></div>
-              <span className="px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Or login with</span>
+              <span className="px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Or login with
+              </span>
               <div className="flex-1 border-t border-slate-200"></div>
             </motion.div>
 
@@ -215,59 +232,68 @@ const SignInPage = () => {
             </motion.div>
 
             {/* SignUp Page Link */}
-            <motion.div variants={itemVariants} className="mt-6 text-center text-xs font-semibold text-slate-500">
-              Don't have an account?{' '}
-              <Link href="/sign-up" className="text-[#7042F4] font-bold hover:underline transition-colors">
+            <motion.div
+              variants={itemVariants}
+              className="mt-6 text-center text-xs font-semibold text-slate-500"
+            >
+              Don't have an account?{" "}
+              <Link
+                href="/sign-up"
+                className="text-[#7042F4] font-bold hover:underline transition-colors"
+              >
                 Sign Up
               </Link>
             </motion.div>
-
           </div>
         </div>
 
         {/* image side */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           className="hidden md:flex w-1/2 relative p-3 items-stretch self-stretch order-1 md:order-2"
         >
           <div className="relative w-full min-h-full rounded-[24px] overflow-hidden shadow-inner flex">
-            <Image 
-              src={SignInImg} 
-              alt="ArtHub Security Hub" 
+            <Image
+              src={SignInImg}
+              alt="ArtHub Security Hub"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               style={{ objectFit: "cover" }}
               priority
               className="transition-transform duration-700 hover:scale-105"
             />
-            
+
             {/* Top tooltip */}
-            <motion.div 
-              animate={{ 
+            <motion.div
+              animate={{
                 boxShadow: [
                   "0 0 10px 2px rgba(112,66,244,0.2), 0 4px 20px rgba(0,0,0,0.3)",
                   "0 0 22px 6px rgba(255,71,166,0.5), 0 4px 20px rgba(0,0,0,0.3)",
-                  "0 0 10px 2px rgba(112,66,244,0.2), 0 4px 20px rgba(0,0,0,0.3)"
+                  "0 0 10px 2px rgba(112,66,244,0.2), 0 4px 20px rgba(0,0,0,0.3)",
                 ],
                 borderColor: [
                   "rgba(255,255,255,0.15)",
                   "rgba(255,71,166,0.6)",
                   "rgba(112,66,244,0.6)",
-                  "rgba(255,255,255,0.15)"
-                ]
+                  "rgba(255,255,255,0.15)",
+                ],
               }}
               transition={{
                 duration: 3,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: "easeInOut",
               }}
               className="absolute top-4 right-4 lg:top-8 lg:right-8 bg-black/40 backdrop-blur-md px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-[10px] lg:text-[11px] font-bold uppercase tracking-widest text-white border z-10 select-none"
             >
               <motion.span
                 animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
                 className="mr-1 text-purple-400"
               >
                 ✦
@@ -282,14 +308,17 @@ const SignInPage = () => {
                   <Sparkles size={16} className="animate-pulse" />
                 </div>
                 <div>
-                  <p className="text-xs lg:text-sm font-bold tracking-tight">Welcome Back to ArtHub</p>
-                  <p className="text-[11px] lg:text-xs text-white/80">Your digital assets are waiting for you.</p>
+                  <p className="text-xs lg:text-sm font-bold tracking-tight">
+                    Welcome Back to ArtHub
+                  </p>
+                  <p className="text-[11px] lg:text-xs text-white/80">
+                    Your digital assets are waiting for you.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
         </motion.div>
-
       </motion.div>
     </div>
   );

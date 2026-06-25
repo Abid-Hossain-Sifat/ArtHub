@@ -20,7 +20,7 @@ import {
 import { useSession, updateUser, changePassword, changeEmail } from '@/lib/auth-client';
 import { toast } from 'react-hot-toast';
 
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:11111';
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
 const ProfilePage = () => {
