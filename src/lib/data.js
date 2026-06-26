@@ -181,3 +181,12 @@ export const getTransactions = async () => {
 
   return await res.json();
 };
+
+
+export const getDailyTransactions = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/transactions/daily`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch daily transactions");
+  return await res.json();
+};
