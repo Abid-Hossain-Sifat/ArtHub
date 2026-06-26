@@ -156,3 +156,28 @@ export const getUserComments = async (userId) => {
 
   return await res.json();
 };
+
+export const getSubscriptionHistory = async (userId) => {
+  const url = userId
+    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/subscription-history?userId=${userId}`
+    : `${process.env.NEXT_PUBLIC_BACKEND_URL}/subscription-history`;
+
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch subscription history");
+  }
+
+  return await res.json();
+};
+
+
+export const getTransactions = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/transactions`);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch transactions");
+  }
+
+  return await res.json();
+};
