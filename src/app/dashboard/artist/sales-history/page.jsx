@@ -23,7 +23,7 @@ const SalesHistoryPage = () => {
       try {
         setIsLoading(true);
 
-        const data = await purchaseHistory(session.user.id);
+        const data = await purchaseHistory(undefined, session.user.id);
 
         setSalesData(data);
       } catch (error) {

@@ -1,21 +1,27 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { Palette, ListTodo, ShieldCheck } from 'lucide-react';
-import UserDash from '../../../../public/Assets/UserDash.png';
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import { Palette, ListTodo, ShieldCheck } from "lucide-react";
+import UserDash from "../../../../public/Assets/UserDash.png";
+import { authClient } from "@/lib/auth-client";
+import { userDetails, purchaseHistory } from "@/lib/data";
 
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.08 }
-  }
+    transition: { staggerChildren: 0.08 },
+  },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 20 } }
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 260, damping: 20 },
+  },
 };
 
 const DashboardSkeleton = () => {
@@ -39,7 +45,10 @@ const DashboardSkeleton = () => {
       {/* Cards Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {[1, 2, 3].map((index) => (
-          <div key={index} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.01)] flex flex-col justify-between min-h-[140px]">
+          <div
+            key={index}
+            className="bg-white p-5 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.01)] flex flex-col justify-between min-h-[140px]"
+          >
             <div className="flex items-start justify-between w-full">
               <div className="w-10 h-10 bg-slate-200 rounded-xl animate-pulse" />
               <div className="w-20 h-5 bg-slate-200 rounded-full animate-pulse" />
@@ -57,22 +66,61 @@ const DashboardSkeleton = () => {
 
 const UserDashboardPage = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [purchases, setPurchases] = useState([]);
+  const [debug, setDebug] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
 
-    return () => clearTimeout(timer);
+        const session = await authClient.getSession();
+        const users = await userDetails();
+
+        const email = session?.user?.email || session?.data?.user?.email;
+
+        const currentUser = users.find((u) => u.email === email);
+
+        setUser(currentUser);
+
+        if (!currentUser) {
+          setIsLoading(false);
+          return;
+        }
+
+        const history = await purchaseHistory(currentUser._id);
+
+        const myPurchases = history;
+
+        setUser(currentUser);
+        setPurchases(myPurchases);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   if (isLoading) {
     return <DashboardSkeleton />;
   }
 
+  const plan = user?.subscription?.plan;
+
+  const limit = user?.subscription?.purchaseLimit;
+
+  const purchased = user?.subscription?.purchasedThisMonth;
+
+  const remaining = limit === -1 ? "Unlimited" : limit - purchased;
+
+  const progress = limit === -1 ? 0 : (purchased / limit) * 100;
+
   return (
     <div className="space-y-8 w-full max-w-7xl mx-auto p-4 md:p-6 bg-slate-50/50 min-h-screen">
-      
       {/* WELCOME BANNER BOX */}
       <motion.div
         initial={{ opacity: 0, scale: 0.96 }}
@@ -83,12 +131,13 @@ const UserDashboardPage = () => {
         {/* Left Side Content */}
         <div className="space-y-4 md:max-w-xl text-center md:text-left z-10">
           <h1 className="text-xl md:text-2xl font-medium text-slate-800 tracking-tight">
-            Welcome back, Alex!
+            Welcome back, {user?.name}!
           </h1>
           <p className="text-slate-500 text-sm md:text-base leading-relaxed max-w-md">
-            Your art portfolio has grown by 15% this month. Discover new pieces from your favorite creators in the gallery.
+            Your collection is expanding! Explore the newest additions from your
+            favorite artists in the gallery
           </p>
-          
+
           {/* Buttons */}
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
             <motion.button
@@ -127,7 +176,6 @@ const UserDashboardPage = () => {
         animate="show"
         className="grid grid-cols-1 md:grid-cols-3 gap-5"
       >
-        
         {/* Card 1: Purchased Artworks */}
         <motion.div
           variants={itemVariants}
@@ -138,13 +186,14 @@ const UserDashboardPage = () => {
             <div className="p-2.5 bg-[#f5efff] rounded-xl text-[#6211cf]">
               <Palette className="w-5 h-5" />
             </div>
-            <span className="text-[11px] font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
-              +2 this week
-            </span>
           </div>
           <div className="mt-4">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Purchased Artworks</p>
-            <h3 className="text-2xl font-bold text-slate-800 mt-1">12</h3>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              Purchased Artworks
+            </p>
+            <h3 className="text-2xl font-bold text-slate-800 mt-1">
+              {purchases.length}
+            </h3>
           </div>
         </motion.div>
 
@@ -160,12 +209,19 @@ const UserDashboardPage = () => {
             </div>
             {/* Progress Bar */}
             <div className="w-20 bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
-              <div className="bg-[#6211cf] h-full w-[20%]" />
+              <div
+                className="bg-[#6211cf] h-full"
+                style={{ width: `${progress}%` }}
+              />
             </div>
           </div>
           <div className="mt-4">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Remaining Limit</p>
-            <h3 className="text-2xl font-bold text-slate-800 mt-1">3 / 15</h3>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              Remaining Limit
+            </p>
+            <h3 className="text-2xl font-bold text-slate-800 mt-1">
+              {purchased} / {limit === -1 ? "∞" : limit}
+            </h3>
           </div>
         </motion.div>
 
@@ -180,15 +236,22 @@ const UserDashboardPage = () => {
               <ShieldCheck className="w-5 h-5" />
             </div>
             <span className="text-[10px] font-bold text-[#6211cf] bg-[#f5efff] px-2 py-0.5 rounded-md uppercase tracking-wide">
-              Pro
+              {plan}
             </span>
           </div>
           <div className="mt-4">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Current Plan</p>
-            <h3 className="text-2xl font-bold text-slate-800 mt-1">Premium Pro</h3>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              Current Plan
+            </p>
+            <h3 className="text-2xl font-bold text-slate-800 mt-1">
+              {plan === "free"
+                ? "Free Plan"
+                : plan === "pro"
+                  ? "Pro Plan"
+                  : "Premium Plan"}
+            </h3>
           </div>
         </motion.div>
-
       </motion.div>
     </div>
   );

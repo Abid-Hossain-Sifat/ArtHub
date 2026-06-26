@@ -6,6 +6,7 @@ import { getInitials, isRemote } from '@/lib/avatar';
 import { LayoutGrid, ShoppingBag, DollarSign } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { DashboardSkeleton } from '@/Components/Skeleton';
+import { purchaseHistory } from '@/lib/data';
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -31,6 +32,7 @@ const ArtistDashboardpage = () => {
   const user = session?.user;
   const profileImg = user?.image?.trim() ? user.image : null;
   const [stats, setStats] = useState({ total: 0, sold: 0, available: 0, ready: false });
+  const [revenue, setRevenue] = useState(0);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -40,15 +42,26 @@ const ArtistDashboardpage = () => {
     const loadStats = async () => {
       try {
         const res = await fetch(`${backendUrl}/artworks?artistId=${encodeURIComponent(user.id)}`);
-        const artworks = await res.json();
-        const total = Array.isArray(artworks) ? artworks.length : 0;
-        const sold = Array.isArray(artworks)
-          ? artworks.filter((art) => art.isSold || art.status?.toLowerCase() === 'sold').length
-          : 0;
-        const available = Math.max(0, total - sold);
+        const data = await res.json();
+const artworks = Array.isArray(data) ? data : data.artworks || [];
+
+const total = artworks.length;
+const sold = artworks.filter((art) => art.isSold || art.status?.toLowerCase() === 'sold').length;
+const available = Math.max(0, total - sold);
+
+// revenue calculate
+const sales = await purchaseHistory(undefined, user.id);
+
+const salesData = Array.isArray(sales) ? sales : [];
+
+const totalRevenue = salesData.reduce(
+  (sum, item) => sum + (item.price || 0),
+  0
+);
 
         if (!isCancelled) {
           setStats({ total, sold, available, ready: true });
+          setRevenue(totalRevenue);
         }
       } catch (error) {
         console.error('Failed to load artist stats:', error);
@@ -88,13 +101,13 @@ const ArtistDashboardpage = () => {
         progress: stats.ready && stats.total > 0 ? Math.round((stats.available / stats.total) * 100) : 0,
       },
       {
-        id: 3,
-        label: 'SUCCESS',
-        title: 'Sold Artworks',
-        value: stats.sold,
-        icon: <DollarSign className="w-5 h-5 text-teal-600" />,
-        progress: stats.ready && stats.total > 0 ? Math.round((stats.sold / stats.total) * 100) : 0,
-      },
+  id: 3,
+  label: 'SUCCESS',
+  title: 'Total Revenue',
+  value: `$${revenue}`,
+  icon: <DollarSign className="w-5 h-5 text-teal-600" />,
+  progress: 100,
+},
     ]
   };
 

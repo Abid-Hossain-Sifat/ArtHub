@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { purchaseHistory } from '@/lib/data';
+import { useSession } from '@/lib/auth-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -53,28 +55,34 @@ const UserDashboardBoughtArtworkPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
+  const { data: session } = useSession();
+
+const [purchasedArtworks, setPurchasedArtworks] = useState([]);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+
+      if (!session?.user?.id) return;
+
+      const data = await purchaseHistory(session.user.id);
+
+      const list = Array.isArray(data) ? data : data?.data || [];
+
+      setPurchasedArtworks(list);
+    } catch (err) {
+      setPurchasedArtworks([]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
+  };
 
-    return () => clearTimeout(timer);
-  }, []);
+  loadData();
+}, [session?.user?.id]);
 
-  const purchasedArtworks = [
-    { id: 1, title: "Mystic Horizons", price: "$250", image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=500&auto=format&fit=cover" },
-    { id: 2, title: "Abstract Serenity", price: "$420", image: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=500&auto=format&fit=cover" },
-    { id: 3, title: "Neon Cyberpunk City", price: "$180", image: "https://images.unsplash.com/photo-1515462277126-270d878326e5?q=80&w=500&auto=format&fit=cover" },
-    { id: 4, title: "Ethereal Echoes", price: "$310", image: "https://images.unsplash.com/photo-1549887534-1541e9326642?q=80&w=500&auto=format&fit=cover" },
-    { id: 5, title: "Golden Hour Bloom", price: "$500", image: "https://images.unsplash.com/photo-1494905998402-395d579af36f?q=80&w=500&auto=format&fit=cover" },
-    { id: 6, title: "Oceanic Whispers", price: "$290", image: "https://images.unsplash.com/photo-1518998053901-5348d3961a04?q=80&w=500&auto=format&fit=cover" },
-    { id: 7, title: "Cosmic Dance", price: "$350", image: "https://images.unsplash.com/photo-1547891654-e66ed7edd96c?q=80&w=500&auto=format&fit=cover" },
-    { id: 8, title: "Urban Solitude", price: "$210", image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=500&auto=format&fit=cover" },
-    { id: 9, title: "Midnight Reflections", price: "$400", image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=500&auto=format&fit=cover" },
-    { id: 10, title: "Vibrant Chaos", price: "$150", image: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?q=80&w=500&auto=format&fit=cover" },
-  ];
 
-  // পেজিনেশন লজিক
+  // pagination
   const totalPages = Math.ceil(purchasedArtworks.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -111,9 +119,9 @@ const UserDashboardBoughtArtworkPage = () => {
           animate="show"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {currentItems.map((artwork) => (
+          {currentItems.map((artwork, index) => (
             <motion.div
-              key={artwork.id}
+              key={`${artwork.artworkId}-${index}`}
               variants={itemVariants}
               whileHover={{ y: -6 }}
               className="group bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-lg transition-all duration-300 flex flex-col h-[380px]"
@@ -121,8 +129,8 @@ const UserDashboardBoughtArtworkPage = () => {
               {/* Artwork Image Container */}
               <div className="relative w-full h-[240px] bg-slate-100 overflow-hidden">
                 <Image
-                  src={artwork.image}
-                  alt={artwork.title}
+                  src={artwork.artworkImage}
+                  alt={artwork.artworkTitle}
                   fill
                   sizes="(max-w-640px) 100vw, (max-w-1024px) 50vw, 33vw"
                   className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
@@ -134,7 +142,7 @@ const UserDashboardBoughtArtworkPage = () => {
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
                   <h3 className="text-base font-semibold text-slate-800 line-clamp-1 group-hover:text-[#6211cf] transition-colors duration-200">
-                    {artwork.title}
+                    {artwork.artworkTitle}
                   </h3>
                   <p className="text-xs font-medium text-slate-400 mt-0.5">
                     Purchased Value: <span className="text-slate-600 font-semibold">{artwork.price}</span>
@@ -143,7 +151,7 @@ const UserDashboardBoughtArtworkPage = () => {
 
                 {/* View Details Link Action */}
                 <Link 
-                  href={`/dashboard/bought-artworks/${artwork.id}`}
+                  href={`/artworks/${artwork.artworkId}`}
                   className="w-full flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-[#6211cf] text-slate-600 hover:text-white font-medium py-2.5 px-4 rounded-xl text-sm transition-all duration-200 border border-slate-200/60 hover:border-[#6211cf] shadow-sm"
                 >
                   <span>View Details</span>

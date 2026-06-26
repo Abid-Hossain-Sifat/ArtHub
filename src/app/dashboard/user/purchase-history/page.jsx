@@ -1,51 +1,36 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { purchaseHistory } from '@/lib/data';
+import { useSession } from '@/lib/auth-client';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 const UserDashboardPurchaseHistoryPage = () => {
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+  const load = async () => {
+    try {
+      setLoading(true);
 
-  const purchaseData = [
-    {
-      id: 1,
-      artworkName: "Mystic Sunset",
-      image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=100&auto=format&fit=crop&q=60", 
-      artist: "Alex Morgan",
-      price: 120.00,
-      purchaseDate: "June 15, 2026",
-    },
-    {
-      id: 2,
-      artworkName: "Abstract Echoes",
-      image: "", 
-      artist: "Sophia الراعي",
-      price: 250.00,
-      purchaseDate: "May 28, 2026",
-    },
-    {
-      id: 3,
-      artworkName: "Ocean Breeze",
-      image: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=100&auto=format&fit=crop&q=60",
-      artist: "Liam Chen",
-      price: 85.50,
-      purchaseDate: "April 12, 2026",
-    },
-    {
-      id: 4,
-      artworkName: "Golden Hour",
-      image: "https://images.unsplash.com/photo-1579783928621-7a13d66a6211?w=100&auto=format&fit=crop&q=60",
-      artist: "Emma Watson",
-      price: 450.00,
-      purchaseDate: "March 05, 2026",
-    },
-  ];
+      if (!session?.user?.id) return;
+
+      const data = await purchaseHistory(session.user.id);
+
+      setPurchaseData(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setPurchaseData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  load();
+}, [session?.user?.id]);
+
+  const [purchaseData, setPurchaseData] = useState([]);
 
   const TableSkeleton = () => {
     return Array(4).fill(0).map((_, index) => (
@@ -115,26 +100,26 @@ const UserDashboardPurchaseHistoryPage = () => {
                 </tr>
               ) : (
                 purchaseData.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/50 transition-colors duration-150">
+                  <tr key={item._id || item.artworkId} className="hover:bg-slate-50/50 transition-colors duration-150">
                     
                     {/* Artwork Column with Image */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-100 shadow-sm flex-shrink-0 relative">
-                          {item.image ? (
-                            <Image src={item.image} alt={item.artworkName} fill className="object-cover" />
+                          {item.artworkImage ? (
+                            <Image src={item.artworkImage} alt={item.artworkTitle} fill className="object-cover" />
                           ) : (
                             <span className="text-lg">🎨</span>
                           )}
                         </div>
-                        <span className="font-semibold text-slate-900">{item.artworkName || 'Untitled'}</span>
+                        <span className="font-semibold text-slate-900">{item.artworkTitle || 'Untitled'}</span>
                       </div>
                     </td>
 
                     {/* Artist Column */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-600 capitalize">
-                        {item.artist}
+                        {item.artistName}
                       </span>
                     </td>
 
@@ -145,7 +130,7 @@ const UserDashboardPurchaseHistoryPage = () => {
 
                     {/* Purchase Date Column */}
                     <td className="px-6 py-4 whitespace-nowrap text-slate-500">
-                      {item.purchaseDate}
+                      {new Date(item.purchasedAt).toLocaleDateString()}
                     </td>
 
                   </tr>

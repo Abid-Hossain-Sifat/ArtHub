@@ -61,12 +61,37 @@ export const updateUserRole = async (id, role) => {
 }
 
 
-export const purchaseHistory = async (artistId) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SALES_HISTORY_API_URL}?artistId=${artistId}`
-  );
+export const purchaseHistory = async (buyerId, artistId) => {
+  const params = new URLSearchParams();
+
+  if (buyerId) params.append("buyerId", buyerId);
+  if (artistId) params.append("artistId", artistId);
+
+  const url = `${process.env.NEXT_PUBLIC_SALES_HISTORY_API_URL}?${params.toString()}`;
+
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch purchase history");
+  }
 
   return await res.json();
 };
 
 
+export const updateSubscription = async (id, plan) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_USER_API_URL}/${id}/subscription`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        plan,
+      }),
+    }
+  );
+
+  return await res.json();
+};

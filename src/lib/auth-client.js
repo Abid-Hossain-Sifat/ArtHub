@@ -5,10 +5,16 @@ export const authClient = createAuthClient({
   baseURL: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth`,
   plugins: [
     inferAdditionalFields({
-      user: {
-        role: { type: "string" },
-      },
-    }),
+  user: {
+    role: {
+      type: "string",
+    },
+
+    subscription: {
+      type: "string",
+    },
+  },
+}),
   ],
 });
 
