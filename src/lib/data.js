@@ -32,6 +32,20 @@ export const deleteArtwork = async (id) => {
 
   return await res.json();
 };
+export const updateArtwork = async (id, artworkData) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/${id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(artworkData),
+    }
+  );
+
+  return await res.json();
+};
 
 export const userDetails = async () =>{
     const res = await fetch (process.env.NEXT_PUBLIC_USER_API_URL);
@@ -92,6 +106,53 @@ export const updateSubscription = async (id, plan) => {
       }),
     }
   );
+
+  return await res.json();
+};
+
+
+// Comment 
+export const getArtworkComments = async (artworkId) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/comments/${artworkId}`,
+    {
+      cache: "no-store",
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch comments");
+  }
+
+  return await res.json();
+};
+
+export const addComment = async (commentData) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/comments`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(commentData),
+    }
+  );
+
+  return await res.json();
+};
+
+export const getUserComments = async (userId) => {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/comments/user/${userId}`,
+    {
+      cache: "no-store",
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch user comments");
+  }
 
   return await res.json();
 };

@@ -12,7 +12,13 @@ import {
   Calendar,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
-import { artworkCollection } from "../../../lib/data";
+import {
+  artworkCollection,
+  getArtworkComments,
+  addComment,
+  updateArtwork,
+  deleteArtwork,
+} from "../../../lib/data";
 import { DetailsSkeleton } from "@/Components/Skeleton";
 import Image from "next/image";
 import toast from "react-hot-toast";
@@ -26,6 +32,19 @@ const ArtWorkDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [comment, setComment] = useState("");
+  const [postingComment, setPostingComment] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    price: "",
+  });
 
   useEffect(() => {
     if (!id) return;
@@ -63,6 +82,21 @@ const ArtWorkDetailsPage = () => {
     };
   }, [id]);
 
+  useEffect(() => {
+    if (!id) return;
+
+    const loadComments = async () => {
+      try {
+        const data = await getArtworkComments(id);
+        setComments(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadComments();
+  }, [id]);
+
   if (loading || sessionLoading) {
     return <DetailsSkeleton />;
   }
@@ -82,6 +116,119 @@ const ArtWorkDetailsPage = () => {
   const isSold = artwork?.isSold;
   const isAvailable = artwork?.status === "available";
   const isPurchaseDisabled = isArtistOwner || isArtist || isSold;
+
+  const handleComment = async () => {
+    if (!session?.user) {
+      toast.error("Please login first");
+      return;
+    }
+
+    if (session.user.role !== "user") {
+      toast.error("Only users can comment");
+      return;
+    }
+
+    if (!comment.trim()) {
+      toast.error("Please write a comment");
+      return;
+    }
+
+    try {
+      setPostingComment(true);
+
+      const res = await addComment({
+        artworkId: artwork._id,
+        userId: session.user.id,
+        userName: session.user.name,
+        userImage: session.user.image,
+        comment,
+      });
+
+      if (!res.success) {
+        throw new Error(res.error || "Failed to add comment");
+      }
+
+      setComments((prev) => [res.comment, ...prev]);
+
+      setComment("");
+
+      toast.success("Comment added successfully");
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setPostingComment(false);
+    }
+  };
+
+  const openEditModal = () => {
+    setEditForm({
+      title: artwork.title,
+      description: artwork.description,
+      price: artwork.price,
+    });
+
+    setShowEditModal(true);
+  };
+
+  const handleUpdateArtwork = async () => {
+    if (
+      !editForm.title.trim() ||
+      !editForm.description.trim() ||
+      !editForm.price
+    ) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const res = await updateArtwork(artwork._id, {
+        title: editForm.title,
+        description: editForm.description,
+        price: Number(editForm.price),
+      });
+
+      if (!res.success) {
+        throw new Error("Failed to update artwork");
+      }
+
+      setArtwork((prev) => ({
+        ...prev,
+        title: editForm.title,
+        description: editForm.description,
+        price: Number(editForm.price),
+      }));
+
+      toast.success("Artwork updated successfully");
+
+      setShowEditModal(false);
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteArtwork = async () => {
+    try {
+      setDeleting(true);
+
+      const res = await deleteArtwork(artwork._id);
+
+      if (!res.success) {
+        throw new Error("Failed to delete artwork");
+      }
+
+      toast.success("Artwork deleted successfully");
+
+      router.push("/artworks");
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handlePurchase = async () => {
     try {
@@ -308,14 +455,17 @@ const ArtWorkDetailsPage = () => {
                     <span>You own this artwork</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Link
-                      href={`/artworks/${id}/edit`}
+                    <button
+                      onClick={openEditModal}
                       className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-violet-600 transition shadow-sm cursor-pointer"
                     >
                       <Edit3 size={13} />
                       <span>Edit</span>
-                    </Link>
-                    <button className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-red-600 bg-white border border-red-100 rounded-xl hover:bg-red-50 transition shadow-sm cursor-pointer">
+                    </button>
+                    <button
+                      onClick={() => setShowDeleteModal(true)}
+                      className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-red-600 bg-white border border-red-100 rounded-xl hover:bg-red-50 transition shadow-sm cursor-pointer"
+                    >
                       <Trash2 size={13} />
                       <span>Delete</span>
                     </button>
@@ -334,33 +484,219 @@ const ArtWorkDetailsPage = () => {
 
           {!user.isLoggedIn ? (
             <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 text-center text-sm font-semibold text-slate-500 mb-6">
-              🔒 Please{" "}
-              <span className="text-violet-600 hover:underline cursor-pointer">
-                Login
-              </span>{" "}
-              to unlock purchasing options and leave comments.
+              🔒 Please login to leave a comment.
+            </div>
+          ) : user.role === "artist" ? (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center text-sm font-semibold text-amber-700 mb-6">
+              Artists cannot comment on artworks.
             </div>
           ) : (
             <div className="space-y-4">
               <div className="flex gap-3">
-                <div className="w-9 h-9 rounded-xl bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0 shadow-sm">
-                  U
+                <div className="w-10 h-10 rounded-xl overflow-hidden bg-violet-100 flex items-center justify-center text-sm font-bold">
+                  {session?.user?.image ? (
+                    <Image
+                      src={session.user.image}
+                      alt={session.user.name}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    session?.user?.name?.charAt(0).toUpperCase()
+                  )}
                 </div>
+
                 <div className="w-full">
                   <textarea
                     rows={3}
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
                     placeholder="Share your thoughts about this masterpiece..."
-                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-medium outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 transition"
-                  ></textarea>
-                  <button className="mt-2 px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition shadow-sm cursor-pointer">
-                    Post Comment
+                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-medium outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 transition resize-none"
+                  />
+
+                  <button
+                    onClick={handleComment}
+                    disabled={postingComment}
+                    className="mt-2 px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition shadow-sm cursor-pointer disabled:opacity-60"
+                  >
+                    {postingComment ? "Posting..." : "Post Comment"}
                   </button>
                 </div>
               </div>
             </div>
           )}
+
+          <div className="mt-8 space-y-4">
+            {comments.length === 0 ? (
+              <div className="text-center text-slate-500 text-sm py-8 border rounded-2xl bg-white">
+                No comments yet. Be the first to comment!
+              </div>
+            ) : (
+              comments.map((item) => (
+                <div
+                  key={item._id}
+                  className="bg-white border border-slate-200 rounded-2xl p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-violet-100 flex items-center justify-center font-bold">
+                      {item.userImage ? (
+                        <Image
+                          src={item.userImage}
+                          alt={item.userName}
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        item.userName?.charAt(0).toUpperCase()
+                      )}
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-bold text-slate-800">
+                          {item.userName}
+                        </h4>
+
+                        <span className="text-xs text-slate-400">
+                          {new Date(item.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+
+                      <p className="mt-2 text-sm text-slate-600 whitespace-pre-wrap">
+                        {item.comment}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-lg rounded-3xl bg-white shadow-2xl border border-slate-200 p-7 animate-in fade-in zoom-in-95 duration-200">
+            <h2 className="text-2xl font-black text-slate-900 mb-6">
+              Edit Artwork
+            </h2>
+
+            <div className="space-y-5">
+              <div>
+                <label className="text-sm font-bold text-slate-700 mb-2 block">
+                  Title
+                </label>
+
+                <input
+                  value={editForm.title}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      title: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-bold text-slate-700 mb-2 block">
+                  Description
+                </label>
+
+                <textarea
+                  rows={5}
+                  value={editForm.description}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      description: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none resize-none focus:border-violet-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-bold text-slate-700 mb-2 block">
+                  Price
+                </label>
+
+                <input
+                  type="number"
+                  value={editForm.price}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      price: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-8">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-5 py-2.5 rounded-xl border border-slate-200 font-semibold hover:bg-slate-50 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleUpdateArtwork}
+                disabled={saving}
+                className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold transition cursor-pointer disabled:opacity-60"
+              >
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Modal */}
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl border border-slate-200 p-7">
+            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-5">
+              <Trash2 className="text-red-600" size={30} />
+            </div>
+
+            <h2 className="text-2xl font-black text-center text-slate-900">
+              Delete Artwork?
+            </h2>
+
+            <p className="text-center text-slate-500 mt-3 leading-relaxed">
+              This action cannot be undone.
+            </p>
+
+            <div className="flex gap-3 mt-8">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-3 rounded-xl border border-slate-200 font-semibold hover:bg-slate-50 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleDeleteArtwork}
+                disabled={deleting}
+                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition cursor-pointer disabled:opacity-60"
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
