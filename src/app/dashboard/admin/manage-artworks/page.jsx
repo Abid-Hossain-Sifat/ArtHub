@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Filter,
 } from "lucide-react";
 import { artworkCollection, deleteArtwork } from "../../../../lib/data";
 import Image from "next/image";
@@ -30,6 +31,7 @@ const AdminDashboardArtworks = () => {
 
   // pagination stat
   const [currentPage, setCurrentPage] = useState(1);
+  const [filterStatus, setFilterStatus] = useState("all");
   const itemsPerPage = 6;
 
   // Data fetch
@@ -39,7 +41,6 @@ const AdminDashboardArtworks = () => {
         const allArtworks = await artworkCollection();
         setArtworks(allArtworks);
 
-        // average calculate
         const totalArtworks = allArtworks.length;
         const availableArtworks = allArtworks.filter(
           (art) => art.status?.toLowerCase() === "available",
@@ -70,13 +71,23 @@ const AdminDashboardArtworks = () => {
     fetchData();
   }, []);
 
-  // pegination calculate
-  const totalPages = Math.max(1, Math.ceil(artworks.length / itemsPerPage));
+  // pagination calculate
+  const filteredArtworks = artworks.filter((art) => {
+    if (filterStatus === "all") return true;
+    return art.status?.toLowerCase() === filterStatus;
+  });
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredArtworks.length / itemsPerPage),
+  );
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentArtworks = artworks.slice(indexOfFirstItem, indexOfLastItem);
+  const currentArtworks = filteredArtworks.slice(
+    indexOfFirstItem,
+    indexOfLastItem,
+  );
 
-  // Modal open
   const handleDeleteClick = (artwork) => {
     setSelectedArtwork(artwork);
     setIsModalOpen(true);
@@ -87,7 +98,6 @@ const AdminDashboardArtworks = () => {
 
     try {
       const result = await deleteArtwork(selectedArtwork._id);
-
       if (!result.success) return;
 
       const updatedArtworks = artworks.filter(
@@ -95,17 +105,18 @@ const AdminDashboardArtworks = () => {
       );
 
       setArtworks(updatedArtworks);
+      const newTotalPages = Math.ceil(
+        updatedArtworks.filter((art) => {
+          if (filterStatus === "all") return true;
+          return art.status?.toLowerCase() === filterStatus;
+        }).length / itemsPerPage,
+      );
 
-      const newTotalPages = Math.ceil(updatedArtworks.length / itemsPerPage);
-
-      // safe page correction
       const safePage =
         newTotalPages === 0 ? 1 : Math.min(currentPage, newTotalPages);
-
       setCurrentPage(safePage);
 
       const totalArtworks = updatedArtworks.length;
-
       const availableArtworks = updatedArtworks.filter(
         (art) => art.status?.toLowerCase() === "available",
       ).length;
@@ -129,8 +140,6 @@ const AdminDashboardArtworks = () => {
         available: availableArtworks,
         averagePrice,
       });
-
-      // Show Success Toast
       setToast({
         show: true,
         message: `"${selectedArtwork.title}" successfully deleted!`,
@@ -154,14 +163,14 @@ const AdminDashboardArtworks = () => {
 
   return (
     <div className="bg-[#f8fafc] p-4 sm:p-6 font-sans min-h-screen text-[#1e293b] relative">
-      {/* Toast Message Notification */}
+      {/* Toast Notification */}
       {toast.show && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-3 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl max-w-sm border border-slate-800 animate-in fade-in slide-in-from-top-4 duration-300">
-          <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-3 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl max-w-sm border border-slate-800">
+          <CheckCircle2 className="h-5 w-5 text-emerald-400" />
           <p className="text-sm font-medium">{toast.message}</p>
           <button
             onClick={() => setToast({ show: false, message: "" })}
-            className="text-slate-400 hover:text-white transition-colors ml-auto p-1"
+            className="ml-auto p-1"
           >
             <X className="h-4 w-4" />
           </button>
@@ -172,14 +181,12 @@ const AdminDashboardArtworks = () => {
         <h1 className="text-lg sm:text-xl font-bold text-[#0f172a]">
           Manage All Artworks
         </h1>
-        <p className="text-xs sm:text-sm text-[#64748b] mt-1 max-w-2xl">
-          Manage, monitor and delete all artworks from one place. Ensure the
-          gallery maintains its premium standard by curating the active
-          collection.
+        <p className="text-xs sm:text-sm text-[#64748b] mt-1">
+          Manage, monitor and delete all artworks from one place.
         </p>
       </div>
 
-      {/* Stats Cards Section - Responsive Grid */}
+      {/* Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
         {/* Card 1: Total Artworks */}
         <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
@@ -242,7 +249,35 @@ const AdminDashboardArtworks = () => {
         </div>
       </div>
 
-      {/* Table Section - Responsive Overflow wrapper */}
+      {/* UPDATED: Filter Section */}
+      <div className="flex flex-wrap items-center gap-3 mb-6 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm w-fit">
+        <div className="flex items-center gap-2 px-3 text-[#64748b]">
+          <Filter className="h-4 w-4" />
+          <span className="text-xs font-semibold uppercase tracking-wider">
+            Filter
+          </span>
+        </div>
+        <div className="flex gap-1">
+          {["all", "available", "sold"].map((status) => (
+            <button
+              key={status}
+              onClick={() => {
+                setFilterStatus(status);
+                setCurrentPage(1);
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold capitalize transition-all duration-200 ${
+                filterStatus === status
+                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                  : "text-[#64748b] hover:bg-slate-50 hover:text-indigo-600"
+              }`}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Table Section */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto w-full block">
           <table className="w-full text-left border-collapse min-w-[600px]">
@@ -271,7 +306,9 @@ const AdminDashboardArtworks = () => {
                     <td className="py-4 px-4 sm:px-6 whitespace-nowrap">
                       <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl overflow-hidden shadow-sm border border-slate-100">
                         <Image
-                          src={artwork.image || "https://via.placeholder.com/48"}
+                          src={
+                            artwork.image || "https://via.placeholder.com/48"
+                          }
                           alt={artwork.title}
                           fill
                           className="object-cover"
@@ -332,7 +369,9 @@ const AdminDashboardArtworks = () => {
         {totalPages > 1 && (
           <div className="px-4 sm:px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-3 items-center justify-between">
             <p className="text-xs text-[#64748b] order-2 sm:order-1">
-              Showing Page <span className="font-medium text-[#1e293b]">{currentPage}</span> of{" "}
+              Showing Page{" "}
+              <span className="font-medium text-[#1e293b]">{currentPage}</span>{" "}
+              of{" "}
               <span className="font-medium text-[#1e293b]">{totalPages}</span>
             </p>
             <div className="flex items-center gap-2 order-1 sm:order-2">

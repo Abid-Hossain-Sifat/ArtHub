@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { userDetails, updateUserRole } from "../../../../lib/data";
-import { TableSkeleton } from "../../../../Components/Skeleton"; 
+import { TableSkeleton } from "../../../../Components/Skeleton";
 import Image from "next/image";
 
 export function getInitials(name) {
@@ -26,6 +26,9 @@ const AdminDashboardUsers = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedRole, setSelectedRole] = useState("user");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const usersPerPage = 7;
+
   // ---------- FETCH USERS ----------
   useEffect(() => {
     const fetchData = async () => {
@@ -40,6 +43,12 @@ const AdminDashboardUsers = () => {
   const totalUsersCount = users.filter((u) => u.role === "user").length;
   const totalArtistsCount = users.filter((u) => u.role === "artist").length;
   const totalAdminsCount = users.filter((u) => u.role === "admin").length;
+
+  // Pagination
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(users.length / usersPerPage);
 
   // ---------- MODAL ----------
   const openModal = (user) => {
@@ -101,7 +110,11 @@ const AdminDashboardUsers = () => {
             Total User
           </span>
           <span className="text-2xl sm:text-3xl font-bold text-[#155DFC]">
-            {loading ? <div className="h-8 bg-slate-200 rounded w-12 animate-pulse" /> : totalUsersCount}
+            {loading ? (
+              <div className="h-8 bg-slate-200 rounded w-12 animate-pulse" />
+            ) : (
+              totalUsersCount
+            )}
           </span>
         </div>
 
@@ -110,7 +123,11 @@ const AdminDashboardUsers = () => {
             Total Artist
           </span>
           <span className="text-2xl sm:text-3xl font-bold text-purple-600">
-            {loading ? <div className="h-8 bg-slate-200 rounded w-12 animate-pulse" /> : totalArtistsCount}
+            {loading ? (
+              <div className="h-8 bg-slate-200 rounded w-12 animate-pulse" />
+            ) : (
+              totalArtistsCount
+            )}
           </span>
         </div>
 
@@ -119,7 +136,11 @@ const AdminDashboardUsers = () => {
             Total Admin
           </span>
           <span className="text-2xl sm:text-3xl font-bold text-emerald-600">
-            {loading ? <div className="h-8 bg-slate-200 rounded w-12 animate-pulse" /> : totalAdminsCount}
+            {loading ? (
+              <div className="h-8 bg-slate-200 rounded w-12 animate-pulse" />
+            ) : (
+              totalAdminsCount
+            )}
           </span>
         </div>
       </div>
@@ -143,7 +164,7 @@ const AdminDashboardUsers = () => {
                 /* CONDITIONAL TABLE SKELETON LOADED HERE */
                 <TableSkeleton rows={5} />
               ) : (
-                users.map((user) => (
+                currentUsers.map((user) => (
                   <tr
                     key={user._id}
                     className="hover:bg-gray-50 transition-colors"
@@ -206,6 +227,65 @@ const AdminDashboardUsers = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {!loading && totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-5 border-t border-gray-100 bg-white">
+            <p className="text-sm text-gray-500">
+              Showing Page {currentPage} of {totalPages}
+            </p>
+
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 19.5L8.25 12l7.5-7.5"
+                  />
+                </svg>
+              </button>
+
+              <span className="text-sm font-medium text-gray-900">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+                className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="w-4 h-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ADAPTIVE MODAL */}

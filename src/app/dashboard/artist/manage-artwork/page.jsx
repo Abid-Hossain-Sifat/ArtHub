@@ -19,6 +19,8 @@ const ArtistArtworkManage = () => {
   const [formState, setFormState] = useState({ title: '', category: '', description: '', price: '' });
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const ITEMS_PER_PAGE = 7;
+const [currentPage, setCurrentPage] = useState(1);
 
   const fetchArtworks = async () => {
     if (!session?.user?.id) return;
@@ -34,6 +36,8 @@ const ArtistArtworkManage = () => {
       }
 
       setArtworks(Array.isArray(data) ? data : []);
+
+      setCurrentPage(1);
     } catch (error) {
       console.error(error);
       toast.error('Unable to load your artworks. Please try again.');
@@ -54,6 +58,13 @@ const ArtistArtworkManage = () => {
     const available = total - sold;
     return { total, sold, available };
   }, [artworks]);
+
+  const totalPages = Math.ceil(artworks.length / ITEMS_PER_PAGE);
+
+const paginatedArtworks = useMemo(() => {
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  return artworks.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+}, [artworks, currentPage]);
 
   const openEditModal = (artwork) => {
     setSelectedArtwork(artwork);
@@ -146,7 +157,20 @@ const ArtistArtworkManage = () => {
         return;
       }
 
-      setArtworks((prev) => prev.filter((item) => item._id !== deleteArtwork._id && item.id !== deleteArtwork.id));
+      const deleteId = deleteArtwork._id || deleteArtwork.id;
+
+const updatedArtworks = artworks.filter(
+  (item) => (item._id || item.id) !== deleteId
+);
+
+setArtworks(updatedArtworks);
+
+
+const newTotalPages = Math.ceil(updatedArtworks.length / ITEMS_PER_PAGE);
+
+if (currentPage > newTotalPages && newTotalPages > 0) {
+  setCurrentPage(newTotalPages);
+}
       toast.success('Artwork removed successfully');
       closeDeleteModal();
     } catch (error) {
@@ -251,7 +275,7 @@ const ArtistArtworkManage = () => {
                   </td>
                 </tr>
               ) : (
-                artworks.map((artwork) => {
+                paginatedArtworks.map((artwork) => {
                   const isItemSold = artwork.isSold || artwork.status?.toLowerCase() === 'sold';
                   const statusText = isItemSold ? 'Sold' : artwork.status || 'Available';
 
@@ -308,17 +332,51 @@ const ArtistArtworkManage = () => {
           </table>
         </div>
 
-        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-400 bg-slate-50/30">
-          <div>Showing {artworks.length} of {artworks.length} artworks</div>
-          <div className="flex gap-2">
-            <button className="flex items-center justify-center p-1.5 border border-slate-200 rounded-lg hover:bg-white text-slate-500 transition-colors disabled:opacity-50" disabled>
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button className="flex items-center justify-center p-1.5 border border-slate-200 rounded-lg hover:bg-white text-slate-500 transition-colors disabled:opacity-50" disabled>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
+  <p className="text-sm text-slate-500">
+    Showing{" "}
+    <span className="font-semibold">
+      {artworks.length === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1}
+    </span>{" "}
+    -{" "}
+    <span className="font-semibold">
+      {Math.min(currentPage * ITEMS_PER_PAGE, artworks.length)}
+    </span>{" "}
+    of <span className="font-semibold">{artworks.length}</span> artworks
+  </p>
+
+  <div className="flex items-center gap-2">
+    <button
+      onClick={() => setCurrentPage((prev) => prev - 1)}
+      disabled={currentPage === 1}
+      className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+    >
+      <ChevronLeft className="w-4 h-4" />
+    </button>
+
+    {Array.from({ length: totalPages }, (_, index) => (
+      <button
+        key={index}
+        onClick={() => setCurrentPage(index + 1)}
+        className={`w-9 h-9 rounded-lg text-sm font-medium transition ${
+          currentPage === index + 1
+            ? "bg-violet-600 text-white"
+            : "border border-slate-200 bg-white hover:bg-slate-50"
+        }`}
+      >
+        {index + 1}
+      </button>
+    ))}
+
+    <button
+      onClick={() => setCurrentPage((prev) => prev + 1)}
+      disabled={currentPage === totalPages || totalPages === 0}
+      className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+    >
+      <ChevronRight className="w-4 h-4" />
+    </button>
+  </div>
+</div>
       </div>
 
       <AnimatePresence>

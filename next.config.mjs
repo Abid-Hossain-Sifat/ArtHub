@@ -4,9 +4,14 @@ const nextConfig = {
   reactCompiler: true,
   allowedDevOrigins: ['192.168.0.102'],
   
-  // Image config add kora holo external img BB domain bypass korar jonno
   images: {
     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.ibb.co.com',
+        port: '',
+        pathname: '/**',
+      },
       {
         protocol: 'https',
         hostname: 'i.ibb.co',
