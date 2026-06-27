@@ -1,58 +1,127 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { artworkCollection, userDetails } from "@/lib/data";
+import { motion } from "framer-motion";
+import { TopArtistSkeleton } from "./Skeleton";
 
-const TopArtist = async () => {
-  const artworks = await artworkCollection();
-  const users = await userDetails();
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+};
 
-  const artistMap = {};
+const artistVariants = {
+  hidden: { opacity: 0, scale: 0.9, y: 25 },
+  show: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 80,
+      damping: 12,
+    },
+  },
+};
 
-  users
-    .filter((user) => user.role === "artist")
-    .forEach((artist) => {
-      artistMap[artist._id] = {
-        id: artist._id,
-        name: artist.name,
-        email: artist.email,
-        image: artist.image || "/default-avatar.png",
-        artworks: 0,
-        sales: 0,
-      };
-    });
+const TopArtist = () => {
+  const [artists, setArtists] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  artworks.forEach((art) => {
-    if (!artistMap[art.artistId]) return;
-    artistMap[art.artistId].artworks++;
-    if (art.isSold) {
-      artistMap[art.artistId].sales++;
-    }
-  });
+  useEffect(() => {
+    const fetchArtists = async () => {
+      try {
+        const artworks = await artworkCollection();
+        const users = await userDetails();
 
-  const artists = Object.values(artistMap)
-    .sort((a, b) => {
-      const scoreA = a.sales * 10 + a.artworks;
-      const scoreB = b.sales * 10 + b.artworks;
-      return scoreB - scoreA;
-    })
-    .slice(0, 3);
+        const artistMap = {};
+
+        users
+          .filter((user) => user.role === "artist")
+          .forEach((artist) => {
+            artistMap[artist._id] = {
+              id: artist._id,
+              name: artist.name,
+              email: artist.email,
+              image: artist.image || "/default-avatar.png",
+              artworks: 0,
+              sales: 0,
+            };
+          });
+
+        artworks.forEach((art) => {
+          if (!artistMap[art.artistId]) return;
+          artistMap[art.artistId].artworks++;
+          if (art.isSold) {
+            artistMap[art.artistId].sales++;
+          }
+        });
+
+        const topArtists = Object.values(artistMap)
+          .sort((a, b) => {
+            const scoreA = a.sales * 10 + a.artworks;
+            const scoreB = b.sales * 10 + b.artworks;
+            return scoreB - scoreA;
+          })
+          .slice(0, 3);
+
+        setArtists(topArtists);
+      } catch (err) {
+        console.error("Error fetching artists:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArtists();
+  }, []);
+
+  if (loading) {
+    return <TopArtistSkeleton />;
+  }
 
   return (
-    <section className="w-full max-w-[90%] md:max-w-[80%] mx-auto bg-[#f5f7ff] py-10 md:py-16 px-4 md:px-8 rounded-3xl border border-purple-200 my-12">
+    <section className="w-full max-w-[90%] md:max-w-[80%] mx-auto bg-[#f5f7ff] py-10 md:py-16 px-4 md:px-8 rounded-3xl border border-purple-200 my-12 overflow-hidden">
       {/* Header */}
-      <div className="text-center mb-10 md:mb-12">
-        <h2 className="text-2xl md:text-3xl font-bold mb-2">Top Artist</h2>
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.6 }}
+        className="text-center mb-10 md:mb-12"
+      >
+        <h2 className="text-2xl md:text-3xl font-bold mb-2 text-slate-900">Top Artist</h2>
         <p className="text-sm md:text-base text-gray-500">
           The visionary minds shaping the future of digital and physical art.
         </p>
-      </div>
+      </motion.div>
 
       {/* Artist Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-10">
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: "-40px" }}
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-10"
+      >
         {artists.map((artist, index) => (
-          <div key={artist.id || index} className="flex flex-col items-center p-4">
+          <motion.div 
+            key={artist.id || index} 
+            variants={artistVariants}
+            whileHover={{ y: -5 }}
+            className="flex flex-col items-center p-6 bg-white/40 hover:bg-white backdrop-blur-xs border border-transparent hover:border-purple-100 rounded-3xl hover:shadow-[0_12px_24px_-10px_rgba(124,58,237,0.1)] transition-all duration-300 cursor-pointer"
+          >
             {/* Circular Image */}
-            <div className="relative w-28 h-28 md:w-32 md:h-32 mb-4 rounded-full overflow-hidden shadow-lg border-4 border-white">
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              className="relative w-28 h-28 md:w-32 md:h-32 mb-4 rounded-full overflow-hidden shadow-lg border-4 border-white"
+            >
               <Image
                 src={artist.image}
                 alt={artist.name}
@@ -60,16 +129,16 @@ const TopArtist = async () => {
                 className="object-cover"
                 unoptimized
               />
-            </div>
+            </motion.div>
 
             {/* Info */}
-            <h3 className="font-bold text-lg text-center truncate w-full">{artist.name}</h3>
-            <p className="text-sm text-gray-600 mb-4 text-center">
+            <h3 className="font-bold text-lg text-slate-800 text-center truncate w-full">{artist.name}</h3>
+            <p className="text-sm text-gray-600 mb-4 text-center mt-1">
               {artist.artworks} Artworks • {artist.sales} Sold
             </p>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 };

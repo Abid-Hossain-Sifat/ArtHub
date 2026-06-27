@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from "next/navigation";
 import Link from 'next/link';
 import { Search, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion'; 
@@ -29,7 +30,8 @@ const dropdownVariants = {
   exit: { opacity: 0, y: -10, scale: 0.95, transition: { duration: 0.12, ease: "easeIn" } }
 };
 
-const ArtworksPage = () => {
+const ArtworksPageContent = () => {
+  const searchParams = useSearchParams();
   const [artworks, setArtworks] = useState([]);
   const [categories, setCategories] = useState([]);
   const [statuses, setStatuses] = useState([]);
@@ -42,8 +44,12 @@ const ArtworksPage = () => {
   // Filter States
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(
+  searchParams.get("category") || ""
+);
+  const [selectedStatus, setSelectedStatus] = useState(
+  searchParams.get("status") || ""
+);
   const [selectedSort, setSelectedSort] = useState('');
 
   // Dropdown States
@@ -72,6 +78,10 @@ const ArtworksPage = () => {
     loadFilters();
   }, []);
 
+  useEffect(() => {
+  const status = searchParams.get("status") || "";
+  setSelectedStatus(status);
+}, [searchParams]);
   // Reset page to 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
@@ -477,6 +487,14 @@ const ArtworksPage = () => {
         )}
       </div>
     </div>
+  );
+};
+
+const ArtworksPage = () => {
+  return (
+    <Suspense fallback={<div className="w-full min-h-screen flex items-center justify-center bg-[#f8fafc]"><div className="w-10 h-10 border-4 border-violet-600 border-t-transparent rounded-full animate-spin" /></div>}>
+      <ArtworksPageContent />
+    </Suspense>
   );
 };
 

@@ -5,7 +5,13 @@ import Link from 'next/link';
 import { purchaseHistory } from '@/lib/data';
 import { useSession } from '@/lib/auth-client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUpRight, ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  ArrowUpRight,
+  ImageIcon,
+  ChevronLeft,
+  ChevronRight,
+  PackageSearch,
+} from "lucide-react";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -112,55 +118,71 @@ const [purchasedArtworks, setPurchasedArtworks] = useState([]);
         </div>
 
         {/* RESPONSIVE GALLERY GRID */}
-        <motion.div
-          key={currentPage}
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {currentItems.map((artwork, index) => (
-            <motion.div
-              key={`${artwork.artworkId}-${index}`}
-              variants={itemVariants}
-              whileHover={{ y: -6 }}
-              className="group bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-lg transition-all duration-300 flex flex-col h-[380px]"
-            >
-              {/* Artwork Image Container */}
-              <div className="relative w-full h-[240px] bg-slate-100 overflow-hidden">
-                <Image
-                  src={artwork.artworkImage}
-                  alt={artwork.artworkTitle}
-                  fill
-                  sizes="(max-w-640px) 100vw, (max-w-1024px) 50vw, 33vw"
-                  className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                  unoptimized
-                />
-              </div>
-
-              {/* Artwork Details Content */}
-              <div className="p-5 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-base font-semibold text-slate-800 line-clamp-1 group-hover:text-[#6211cf] transition-colors duration-200">
-                    {artwork.artworkTitle}
-                  </h3>
-                  <p className="text-xs font-medium text-slate-400 mt-0.5">
-                    Purchased Value: <span className="text-slate-600 font-semibold">{artwork.price}</span>
-                  </p>
-                </div>
-
-                {/* View Details Link Action */}
-                <Link 
-                  href={`/artworks/${artwork.artworkId}`}
-                  className="w-full flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-[#6211cf] text-slate-600 hover:text-white font-medium py-2.5 px-4 rounded-xl text-sm transition-all duration-200 border border-slate-200/60 hover:border-[#6211cf] shadow-sm"
-                >
-                  <span>View Details</span>
-                  <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </Link>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+        {/* RESPONSIVE GALLERY GRID */}
+{purchasedArtworks.length === 0 ? (
+  <div className="flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed border-slate-200 rounded-3xl bg-white p-8 text-center">
+    <div className="bg-slate-50 p-4 rounded-full mb-4">
+      <PackageSearch className="w-10 h-10 text-slate-400" />
+    </div>
+    <h3 className="text-lg font-semibold text-slate-800">No Artworks Found</h3>
+    <p className="text-slate-500 text-sm mt-1 max-w-xs">
+      You haven't purchased any masterpieces yet. Explore our gallery to find your first one!
+    </p>
+    <Link 
+      href="/artworks" 
+      className="mt-6 px-6 py-2.5 bg-[#6211cf] text-white rounded-xl font-medium hover:bg-[#500ea8] transition-colors"
+    >
+      Explore Gallery
+    </Link>
+  </div>
+) : (
+  <motion.div
+    key={currentPage}
+    variants={containerVariants}
+    initial="hidden"
+    animate="show"
+    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+  >
+    {currentItems.map((artwork, index) => (
+      <motion.div
+        key={`${artwork.artworkId}-${index}`}
+        variants={itemVariants}
+        whileHover={{ y: -6 }}
+        className="group bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.01)] hover:shadow-lg transition-all duration-300 flex flex-col h-[380px]"
+      >
+        {/* ইমেজের অংশ */}
+        <div className="relative w-full h-[240px] bg-slate-100 overflow-hidden">
+          <Image
+            src={artwork.artworkImage}
+            alt={artwork.artworkTitle}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+            unoptimized
+          />
+        </div>
+        {/* ডিটেইলসের অংশ */}
+        <div className="p-5 flex-1 flex flex-col justify-between">
+          <div>
+            <h3 className="text-base font-semibold text-slate-800 line-clamp-1 group-hover:text-[#6211cf] transition-colors duration-200">
+              {artwork.artworkTitle}
+            </h3>
+            <p className="text-xs font-medium text-slate-400 mt-0.5">
+              Purchased Value: <span className="text-slate-600 font-semibold">{artwork.price}</span>
+            </p>
+          </div>
+          <Link 
+            href={`/artworks/${artwork.artworkId}`}
+            className="w-full flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-[#6211cf] text-slate-600 hover:text-white font-medium py-2.5 px-4 rounded-xl text-sm transition-all duration-200 border border-slate-200/60 hover:border-[#6211cf] shadow-sm"
+          >
+            <span>View Details</span>
+            <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </Link>
+        </div>
+      </motion.div>
+    ))}
+  </motion.div>
+)}
       </div>
 
       {/* PAGINATION CONTROLS */}

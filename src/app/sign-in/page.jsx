@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import SignInImg from "../../../public/Assets/Login.png";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,7 +9,7 @@ import { signIn, useSession } from "@/lib/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 
-const SignInPage = () => {
+const SignInPageContent = () => {
   // States
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -321,6 +321,14 @@ const SignInPage = () => {
         </motion.div>
       </motion.div>
     </div>
+  );
+};
+
+const SignInPage = () => {
+  return (
+    <Suspense fallback={<div className="w-full min-h-screen flex items-center justify-center bg-[#F1F5F9]"><div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>}>
+      <SignInPageContent />
+    </Suspense>
   );
 };
 

@@ -114,7 +114,7 @@ export const DashboardSkeleton = () => (
   <div className="space-y-8 animate-pulse select-none">
     {/* Welcome Header */}
     <div className="h-44 bg-slate-200 rounded-3xl w-full" />
-    
+
     {/* Stats Cards */}
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {[...Array(3)].map((_, idx) => (
@@ -160,7 +160,7 @@ export const DashboardSkeleton = () => (
         </div>
       </div>
     </div>
-    
+
     {/* Activities & Explore banner */}
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 bg-white border border-slate-100 rounded-2xl p-6 shadow-sm space-y-4">
@@ -203,18 +203,18 @@ export const DetailsSkeleton = () => (
     <div className="w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto py-12 md:py-20">
       {/* Breadcrumb */}
       <div className="h-4 bg-slate-200 rounded w-64 mb-8" />
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-stretch">
         {/* Image Panel */}
         <div className="lg:col-span-6 w-full">
           <div className="aspect-square w-full rounded-[32px] bg-slate-200" />
         </div>
-        
+
         {/* Info Panel */}
         <div className="lg:col-span-6 w-full flex flex-col justify-between">
           <div className="space-y-6">
             <div className="h-10 bg-slate-200 rounded-xl w-3/4" />
-            
+
             {/* Artist Card */}
             <div className="flex items-center bg-white px-4 py-3 rounded-2xl border border-slate-100 max-w-fit gap-3">
               <div className="w-10 h-10 rounded-xl bg-slate-200" />
@@ -223,9 +223,9 @@ export const DetailsSkeleton = () => (
                 <div className="h-4 bg-slate-200 rounded w-32" />
               </div>
             </div>
-            
+
             <div className="h-4 bg-slate-200 rounded w-48 mb-4" />
-            
+
             {/* Story */}
             <div className="bg-slate-100 rounded-2xl p-5 space-y-3">
               <div className="h-4 bg-slate-200 rounded w-24" />
@@ -233,7 +233,7 @@ export const DetailsSkeleton = () => (
               <div className="h-3 bg-slate-200 rounded w-5/6" />
             </div>
           </div>
-          
+
           {/* Price Box */}
           <div className="bg-white border border-slate-200 rounded-[28px] p-6 shadow-sm mt-8 space-y-4">
             <div className="space-y-2">
@@ -288,9 +288,76 @@ export const UserDashboardSkeleton = () => {
             </div>
           </div>
         ))}
-
       </div>
 
     </div>
   );
 };
+
+export const TopArtSkeleton = () => {
+  const getGridClass = (index) => {
+    switch (index) {
+      case 0:
+        return "col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 lg:row-span-2";
+      default:
+        return "col-span-1";
+    }
+  };
+  return (
+    <section className="w-full bg-slate-50 py-20 animate-pulse">
+      <div className="max-w-[80%] mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
+          <div className="space-y-3 w-full sm:w-auto">
+            <div className="h-8 bg-slate-200 rounded-xl w-64" />
+            <div className="h-4 bg-slate-200 rounded-lg w-96 max-w-full" />
+          </div>
+          <div className="h-6 bg-slate-200 rounded-lg w-28 shrink-0" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[250px]">
+          {[...Array(7)].map((_, index) => (
+            <div
+              key={index}
+              className={`bg-white p-2 border border-slate-200 rounded-3xl ${getGridClass(index)}`}
+            >
+              <div className="w-full h-full bg-slate-200 rounded-2xl" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export const TopArtistSkeleton = () => (
+  <section className="w-full max-w-[90%] md:max-w-[80%] mx-auto bg-[#f5f7ff] py-10 md:py-16 px-4 md:px-8 rounded-3xl border border-purple-200 my-12 animate-pulse">
+    <div className="text-center mb-10 md:mb-12 flex flex-col items-center">
+      <div className="h-8 bg-slate-200 rounded-xl w-48 mb-3" />
+      <div className="h-4 bg-slate-200 rounded-lg w-80 max-w-full" />
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-10">
+      {[...Array(3)].map((_, index) => (
+        <div key={index} className="flex flex-col items-center p-4">
+          <div className="w-28 h-28 md:w-32 md:h-32 mb-4 rounded-full bg-slate-200 border-4 border-white" />
+          <div className="h-6 bg-slate-200 rounded-lg w-36 mb-3" />
+          <div className="h-4 bg-slate-200 rounded-lg w-28" />
+        </div>
+      ))}
+    </div>
+  </section>
+);
+
+export const CategorySkeleton = () => (
+  <section className="py-12 px-4 max-w-[80%] mx-auto animate-pulse">
+    <div className="flex justify-center mb-10">
+      <div className="h-8 bg-slate-200 rounded-xl w-60" />
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+      {[...Array(6)].map((_, index) => (
+        <div
+          key={index}
+          className="h-56 rounded-3xl bg-slate-200"
+        />
+      ))}
+    </div>
+  </section>
+);
