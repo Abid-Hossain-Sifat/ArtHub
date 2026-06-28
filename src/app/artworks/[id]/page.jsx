@@ -54,35 +54,13 @@ const ArtWorkDetailsPage = () => {
     price: "",
   });
 
-  const handleOpenArtistModal = async (e) => {
+  const handleOpenArtistModal = (e) => {
     e.preventDefault();
-    if (!artwork.artistId) {
+    if (!artwork?.artistId) {
       toast.error("Artist profile details not available");
       return;
     }
-
     setShowArtistModal(true);
-    setLoadingArtistStats(true);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/artist/${artwork.artistId}/stats`
-      );
-      if (!res.ok) {
-        throw new Error("Failed to load artist details");
-      }
-      const data = await res.json();
-      if (data.success) {
-        setArtistStats(data.artist);
-      } else {
-        throw new Error(data.error || "Failed to fetch stats");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(err.message || "Failed to load artist stats");
-      setShowArtistModal(false);
-    } finally {
-      setLoadingArtistStats(false);
-    }
   };
 
   useEffect(() => {
@@ -120,6 +98,31 @@ const ArtWorkDetailsPage = () => {
       isCancelled = true;
     };
   }, [id]);
+
+  useEffect(() => {
+    if (!artwork?.artistId) return;
+
+    const fetchArtistStats = async () => {
+      try {
+        setLoadingArtistStats(true);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/artist/${artwork.artistId}/stats`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            setArtistStats(data.artist);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load artist details:", err);
+      } finally {
+        setLoadingArtistStats(false);
+      }
+    };
+
+    fetchArtistStats();
+  }, [artwork]);
 
   useEffect(() => {
     if (!id) return;
@@ -378,8 +381,20 @@ const ArtWorkDetailsPage = () => {
 
               <div className="flex items-center bg-white px-4 py-3 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] max-w-fit mb-4 border border-slate-50">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold shadow-md shadow-violet-200">
-                    {(artwork.artistName || "U").charAt(0)}
+                  <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center shadow-md relative">
+                    {artistStats?.image || artwork.artistImage ? (
+                      <Image
+                        src={artistStats?.image || artwork.artistImage}
+                        alt={artwork.artistName || "Artist"}
+                        fill
+                        sizes="40px"
+                        className="object-cover rounded-xl"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-tr from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold text-lg">
+                        {(artwork.artistName || "U").charAt(0)}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">
@@ -831,13 +846,17 @@ const ArtWorkDetailsPage = () => {
 
                   {/* Action Button */}
                   <div className="pt-2">
-                    <Link
-                      href={`/artworks?search=${encodeURIComponent(artistStats.name)}`}
-                      className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs transition-all duration-150 shadow-md shadow-violet-500/10 active:scale-[0.99] cursor-pointer text-center font-bold"
+                    <button
+                      onClick={() => {
+                        sessionStorage.setItem("artistSearch", artistStats.name);
+                        setShowArtistModal(false);
+                        router.push("/artworks");
+                      }}
+                      className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs transition-all duration-150 shadow-md shadow-violet-500/10 active:scale-[0.99] cursor-pointer text-center"
                     >
                       <span>Explore Artist Gallery</span>
                       <span className="text-[10px]">➔</span>
-                    </Link>
+                    </button>
                   </div>
                 </div>
               ) : (
