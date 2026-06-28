@@ -38,6 +38,12 @@ const UserProfilePage = () => {
     role: "",
   });
   const [previewImage, setPreviewImage] = useState("");
+  const [tempProfile, setTempProfile] = useState({
+    name: "",
+    email: "",
+    image: "",
+  });
+  const [tempPreviewImage, setTempPreviewImage] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
@@ -91,8 +97,22 @@ const UserProfilePage = () => {
 
   const isLoading = isPending || !user;
 
+  const handleOpenEdit = () => {
+    setTempProfile({
+      name: profile.name,
+      email: profile.email,
+      image: profile.image,
+    });
+    setTempPreviewImage(previewImage);
+    setEditOpen(true);
+  };
+
   const handleProfileField = (field, value) => {
     setProfile((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleTempProfileField = (field, value) => {
+    setTempProfile((prev) => ({ ...prev, [field]: value }));
   };
 
   const handlePasswordField = (field, value) => {
@@ -138,33 +158,56 @@ const UserProfilePage = () => {
     if (!file) return;
 
     const tmpUrl = URL.createObjectURL(file);
-    setPreviewImage(tmpUrl);
+    setTempPreviewImage(tmpUrl);
 
     const imageUrl = await uploadImageToImgbb(file);
     if (imageUrl) {
-      handleProfileField("image", imageUrl);
+      setTempProfile((prev) => ({ ...prev, image: imageUrl }));
       toast.success("Avatar uploaded successfully.");
     }
   };
 
   const saveProfile = async () => {
-    if (!profile.name.trim()) {
+    if (!tempProfile.name.trim()) {
       toast.error("Name is required.");
       return;
     }
 
     setSavingProfile(true);
     try {
+      // 1. Update Better Auth locally for name & image
       await updateUser({
-        name: profile.name,
-        image: profile.image || undefined,
+        name: tempProfile.name,
+        image: tempProfile.image || undefined,
       });
 
-      if (profile.email !== user.email) {
-        await changeEmail({ newEmail: profile.email });
+      // 2. Call backend profile endpoint to update database and sync all collections
+      const response = await fetch(`${backendUrl}/user/${user.id}/profile`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: tempProfile.name,
+          email: tempProfile.email,
+          image: tempProfile.image,
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Failed to update backend profile");
       }
 
-      toast.success("Profile updated.");
+      setProfile((prev) => ({
+        ...prev,
+        name: tempProfile.name,
+        email: tempProfile.email,
+        image: tempProfile.image,
+      }));
+      setPreviewImage(tempPreviewImage);
+
+      toast.success("Profile updated successfully.");
       setEditOpen(false);
       window.location.reload();
     } catch (error) {
@@ -268,7 +311,7 @@ const UserProfilePage = () => {
                   )}
                 </div>
                 <button
-                  onClick={() => setEditOpen(true)}
+                  onClick={handleOpenEdit}
                   className="absolute -bottom-1 -right-1 bg-white text-slate-700 hover:text-slate-900 p-2 rounded-full border border-slate-200 shadow-md transition-all duration-200 hover:scale-105"
                   title="Update Profile Picture"
                 >
@@ -278,7 +321,7 @@ const UserProfilePage = () => {
 
               <div className="flex flex-col gap-2.5 w-full sm:w-40">
                 <button
-                  onClick={() => setEditOpen(true)}
+                  onClick={handleOpenEdit}
                   className="inline-flex items-center justify-center gap-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 w-full"
                 >
                   <Pencil className="w-3.5 h-3.5" />
@@ -423,9 +466,9 @@ const UserProfilePage = () => {
                     </label>
                     <input
                       type="text"
-                      value={profile.name}
+                      value={tempProfile.name}
                       onChange={(e) =>
-                        handleProfileField("name", e.target.value)
+                        handleTempProfileField("name", e.target.value)
                       }
                       className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white transition-all text-slate-800"
                     />
@@ -436,9 +479,9 @@ const UserProfilePage = () => {
                     </label>
                     <input
                       type="email"
-                      value={profile.email}
+                      value={tempProfile.email}
                       onChange={(e) =>
-                        handleProfileField("email", e.target.value)
+                        handleTempProfileField("email", e.target.value)
                       }
                       className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white transition-all text-slate-800"
                     />
@@ -451,9 +494,9 @@ const UserProfilePage = () => {
                   </p>
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                     <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-white border border-slate-200 p-1 mx-auto sm:mx-0">
-                      {previewImage ? (
+                      {tempPreviewImage ? (
                         <Image
-                          src={previewImage}
+                          src={tempPreviewImage}
                           alt="preview"
                           fill
                           className="object-contain rounded-xl p-1"
