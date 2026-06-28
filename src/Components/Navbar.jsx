@@ -1,10 +1,17 @@
-'use client';
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, LogOut, LayoutDashboard, User as UserIcon, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  X,
+  LogOut,
+  LayoutDashboard,
+  User as UserIcon,
+  ChevronDown,
+} from "lucide-react";
 import Logo from "../../public/Assets/Logo.png";
 import { useSession, signOut } from "@/lib/auth-client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,14 +27,19 @@ const Navbar = () => {
   const { data: session, isPending } = useSession();
   const user = session?.user;
   const [imageError, setImageError] = useState(false);
-  
+
   useEffect(() => {
     setImageError(false);
   }, [user?.id]);
 
   const profileImg = user?.image?.trim() && !imageError ? user.image : null;
+  const dashboardLink = user?.role ? `/dashboard/${user.role}` : "/dashboard";
 
-  if (pathname && pathname.includes('dashboard')) {
+  const profileLink = user?.role
+    ? `/dashboard/${user.role}/profile`
+    : "/dashboard";
+
+  if (pathname && pathname.includes("dashboard")) {
     return null;
   }
 
@@ -35,7 +47,7 @@ const Navbar = () => {
     try {
       await signOut();
       setDropdownOpen(false);
-      router.push('/');
+      router.push("/");
       router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
@@ -43,7 +55,7 @@ const Navbar = () => {
   };
 
   const getInitials = (name) => {
-    if (!name) return "U"; 
+    if (!name) return "U";
     const parts = name.trim().split(" ");
     if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
@@ -66,7 +78,6 @@ const Navbar = () => {
   return (
     <div className="border-b bg-white/80 backdrop-blur-md w-full sticky top-0 z-50">
       <div className="w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto h-[72px] grid grid-cols-2 lg:grid-cols-3 items-center">
-        
         {/* Logo */}
         <div className="flex items-center justify-start">
           <Link href="/">
@@ -93,7 +104,7 @@ const Navbar = () => {
               <Link href="/artworks" className={getLinkClass("/artworks")}>
                 Browse Artworks
               </Link>
-              <Link href="/dashboard" className={getLinkClass("/dashboard")}>
+              <Link href={dashboardLink} className={getLinkClass("/dashboard")}>
                 Dashboard
               </Link>
             </ul>
@@ -121,7 +132,7 @@ const Navbar = () => {
                         width={36}
                         height={36}
                         className="w-full h-full object-cover"
-                        unoptimized={profileImg.startsWith('http')}
+                        unoptimized={profileImg.startsWith("http")}
                         onError={() => setImageError(true)}
                       />
                     ) : (
@@ -133,13 +144,19 @@ const Navbar = () => {
                   <span className="text-sm font-semibold text-slate-800 truncate max-w-[120px]">
                     {user.name}
                   </span>
-                  <ChevronDown size={16} className={`text-slate-500 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    size={16}
+                    className={`text-slate-500 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                  />
                 </button>
 
                 <AnimatePresence>
                   {dropdownOpen && (
                     <>
-                      <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)}></div>
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setDropdownOpen(false)}
+                      ></div>
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: -10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -148,7 +165,7 @@ const Navbar = () => {
                         className="absolute right-0 mt-2.5 w-56 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 z-20 origin-top-right"
                       >
                         <Link
-                          href="/profile"
+                          href={profileLink}
                           onClick={() => setDropdownOpen(false)}
                           className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 font-medium transition first:rounded-t-2xl"
                         >
@@ -157,11 +174,14 @@ const Navbar = () => {
                         </Link>
 
                         <Link
-                          href="/dashboard"
+                          href={dashboardLink}
                           onClick={() => setDropdownOpen(false)}
                           className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 font-medium transition"
                         >
-                          <LayoutDashboard size={16} className="text-slate-400" />
+                          <LayoutDashboard
+                            size={16}
+                            className="text-slate-400"
+                          />
                           Dashboard
                         </Link>
 
@@ -211,13 +231,25 @@ const Navbar = () => {
             <div className="max-w-[90%] md:max-w-[85%] mx-auto py-6 flex flex-col gap-6">
               <nav>
                 <ul className="flex flex-col gap-2 text-[16px] font-medium">
-                  <Link href="/" onClick={() => setIsOpen(false)} className={getLinkClass("/", true)}>
+                  <Link
+                    href="/"
+                    onClick={() => setIsOpen(false)}
+                    className={getLinkClass("/", true)}
+                  >
                     Home
                   </Link>
-                  <Link href="/artworks" onClick={() => setIsOpen(false)} className={getLinkClass("/artworks", true)}>
+                  <Link
+                    href="/artworks"
+                    onClick={() => setIsOpen(false)}
+                    className={getLinkClass("/artworks", true)}
+                  >
                     Browse Artworks
                   </Link>
-                  <Link href="/dashboard" onClick={() => setIsOpen(false)} className={getLinkClass("/dashboard", true)}>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className={getLinkClass("/dashboard", true)}
+                  >
                     Dashboard
                   </Link>
                 </ul>
@@ -236,7 +268,7 @@ const Navbar = () => {
                           width={36}
                           height={36}
                           className="w-full h-full object-cover"
-                          unoptimized={profileImg.startsWith('http')}
+                          unoptimized={profileImg.startsWith("http")}
                           onError={() => setImageError(true)}
                         />
                       ) : (
@@ -245,17 +277,19 @@ const Navbar = () => {
                         </div>
                       )}
                     </div>
-                    <span className="text-sm font-bold text-slate-800">{user.name}</span>
+                    <span className="text-sm font-bold text-slate-800">
+                      {user.name}
+                    </span>
                   </div>
 
                   <Link
-                    href="/profile"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-xl font-medium transition"
-                  >
-                    <UserIcon size={16} className="text-slate-400" />
-                    Profile
-                  </Link>
+  href={profileLink}
+  onClick={() => setIsOpen(false)}
+  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-xl font-medium transition"
+>
+  <UserIcon size={16} className="text-slate-400" />
+  Profile
+</Link>
 
                   <Link
                     href="/dashboard"

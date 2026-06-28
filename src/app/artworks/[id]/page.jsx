@@ -285,7 +285,7 @@ const ArtWorkDetailsPage = () => {
       setPurchasing(true);
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/purchase/${artwork._id}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/create-checkout/artwork/${artwork._id}`,
         {
           method: "POST",
           headers: {
@@ -306,14 +306,11 @@ const ArtWorkDetailsPage = () => {
         throw new Error(data.error || "Purchase failed");
       }
 
-      toast.success("Artwork purchased successfully!");
-
-      setArtwork((prev) => ({
-        ...prev,
-        status: "sold",
-        isSold: true,
-        purchasedBy: session.user.name,
-      }));
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("Stripe checkout URL is missing");
+      }
     } catch (error) {
       toast.error(error.message);
     } finally {

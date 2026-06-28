@@ -84,19 +84,34 @@ const UserSubscriptionPage = () => {
     }
 
     try {
-      const res = await updateSubscription(session.user.id, plan);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/create-checkout/subscription`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: session.user.id,
+            plan: plan,
+          }),
+        },
+      );
 
-      if (res?.success) {
-        await authClient.getSession();
+      const data = await response.json();
 
-        setCurrentPlan(plan);
-        toast.success("Subscription updated successfully");
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to initiate payment");
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
       } else {
-        toast.error(res?.error || "Failed to update subscription");
+        throw new Error("Stripe checkout URL is missing");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong");
+      toast.error(error.message || "Something went wrong");
     }
   };
 
