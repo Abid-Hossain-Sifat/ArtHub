@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingCart,
   Edit3,
@@ -10,6 +11,10 @@ import {
   MessageSquare,
   AlertCircle,
   Calendar,
+  X,
+  Mail,
+  Palette,
+  Award,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import {
@@ -39,12 +44,46 @@ const ArtWorkDetailsPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showArtistModal, setShowArtistModal] = useState(false);
+  const [artistStats, setArtistStats] = useState(null);
+  const [loadingArtistStats, setLoadingArtistStats] = useState(false);
 
   const [editForm, setEditForm] = useState({
     title: "",
     description: "",
     price: "",
   });
+
+  const handleOpenArtistModal = async (e) => {
+    e.preventDefault();
+    if (!artwork.artistId) {
+      toast.error("Artist profile details not available");
+      return;
+    }
+
+    setShowArtistModal(true);
+    setLoadingArtistStats(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/artist/${artwork.artistId}/stats`
+      );
+      if (!res.ok) {
+        throw new Error("Failed to load artist details");
+      }
+      const data = await res.json();
+      if (data.success) {
+        setArtistStats(data.artist);
+      } else {
+        throw new Error(data.error || "Failed to fetch stats");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Failed to load artist stats");
+      setShowArtistModal(false);
+    } finally {
+      setLoadingArtistStats(false);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -346,15 +385,15 @@ const ArtWorkDetailsPage = () => {
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">
                       Artist
                     </p>
-                    <Link
-                      href={`/artist/${artwork.artistId || "unknown"}`}
-                      className="text-sm font-extrabold text-slate-800 hover:text-violet-600 transition-colors flex items-center gap-1.5 group"
+                    <button
+                      onClick={handleOpenArtistModal}
+                      className="text-sm font-extrabold text-slate-800 hover:text-violet-600 transition-colors flex items-center gap-1.5 group border-0 bg-transparent p-0 cursor-pointer text-left outline-none"
                     >
                       <span>{artwork.artistName || "Unknown Artist"}</span>
                       <span className="text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-all duration-200">
                         🔗
                       </span>
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -697,6 +736,119 @@ const ArtWorkDetailsPage = () => {
           </div>
         </div>
       )}
+
+      {/* Artist Profile Stats Modal */}
+      <AnimatePresence>
+        {showArtistModal && (
+          <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="w-full max-w-md rounded-3xl bg-white shadow-2xl border border-slate-200/60 p-6 relative overflow-hidden"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowArtistModal(false)}
+                className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200 cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+
+              {loadingArtistStats ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="w-9 h-9 border-3 border-violet-600 border-t-transparent rounded-full animate-spin mb-4" />
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    Fetching Artist Info...
+                  </p>
+                </div>
+              ) : artistStats ? (
+                <div className="space-y-6">
+                  {/* Artist Header Info */}
+                  <div className="flex flex-col items-center text-center mt-3">
+                    <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200/80 p-1 shadow-sm mb-4">
+                      {artistStats.image ? (
+                        <Image
+                          src={artistStats.image}
+                          alt={artistStats.name}
+                          fill
+                          className="object-contain rounded-xl p-0.5"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-tr from-violet-500 to-indigo-500 text-white text-3xl font-black rounded-xl">
+                          {artistStats.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+
+                    <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                      {artistStats.name}
+                    </h3>
+                    
+                    <span className="inline-flex items-center gap-1 mt-1.5 px-3 py-0.5 text-[10px] font-bold rounded-full bg-violet-100 text-violet-700 border border-violet-200/20 uppercase tracking-wider">
+                      Verified Artist
+                    </span>
+                  </div>
+
+                  {/* Details List */}
+                  <div className="space-y-3.5 bg-slate-50/70 border border-slate-100 rounded-2xl p-4.5">
+                    <div className="flex items-center gap-3 text-slate-600">
+                      <Mail size={16} className="text-slate-400 shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Email Address</p>
+                        <p className="text-xs font-semibold text-slate-700 truncate">{artistStats.email}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-slate-600">
+                      <Calendar size={16} className="text-slate-400 shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Joined Workspace</p>
+                        <p className="text-xs font-semibold text-slate-700">
+                          {artistStats.createdAt 
+                            ? new Date(artistStats.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+                            : "Creative Partner"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Statistics Grid */}
+                  <div className="grid grid-cols-2 gap-3.5">
+                    <div className="bg-white border border-slate-200/80 rounded-2xl p-4 text-center shadow-xs">
+                      <Palette className="w-5 h-5 text-violet-500 mx-auto mb-1.5" />
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Total Artworks</p>
+                      <p className="text-xl font-extrabold text-slate-900">{artistStats.totalArtworks}</p>
+                    </div>
+
+                    <div className="bg-white border border-slate-200/80 rounded-2xl p-4 text-center shadow-xs">
+                      <Award className="w-5 h-5 text-emerald-500 mx-auto mb-1.5" />
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Works Sold</p>
+                      <p className="text-xl font-extrabold text-slate-900">{artistStats.soldArtworks}</p>
+                    </div>
+                  </div>
+
+                  {/* Action Button */}
+                  <div className="pt-2">
+                    <Link
+                      href={`/artworks?search=${encodeURIComponent(artistStats.name)}`}
+                      className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs transition-all duration-150 shadow-md shadow-violet-500/10 active:scale-[0.99] cursor-pointer text-center font-bold"
+                    >
+                      <span>Explore Artist Gallery</span>
+                      <span className="text-[10px]">➔</span>
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-6 text-slate-500 font-semibold text-sm">
+                  Failed to load artist stats.
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

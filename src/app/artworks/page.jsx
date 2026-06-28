@@ -42,14 +42,18 @@ const ArtworksPageContent = () => {
   const [totalPages, setTotalPages] = useState(1);
 
   // Filter States
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState(
+    searchParams.get("search") || ""
+  );
+  const [debouncedSearch, setDebouncedSearch] = useState(
+    searchParams.get("search") || ""
+  );
   const [selectedCategory, setSelectedCategory] = useState(
-  searchParams.get("category") || ""
-);
+    searchParams.get("category") || ""
+  );
   const [selectedStatus, setSelectedStatus] = useState(
-  searchParams.get("status") || ""
-);
+    searchParams.get("status") || ""
+  );
   const [selectedSort, setSelectedSort] = useState('');
 
   // Dropdown States
@@ -79,9 +83,28 @@ const ArtworksPageContent = () => {
   }, []);
 
   useEffect(() => {
-  const status = searchParams.get("status") || "";
-  setSelectedStatus(status);
-}, [searchParams]);
+    const sessionSearch = sessionStorage.getItem("artistSearch");
+    if (sessionSearch) {
+      setSearchQuery(sessionSearch);
+      setDebouncedSearch(sessionSearch);
+      sessionStorage.removeItem("artistSearch");
+    } else {
+      const urlSearch = searchParams.get("search");
+      if (urlSearch) {
+        setSearchQuery(urlSearch);
+        setDebouncedSearch(urlSearch);
+      }
+    }
+
+    const category = searchParams.get("category") || "";
+    const status = searchParams.get("status") || "";
+    if (category) setSelectedCategory(category);
+    if (status) setSelectedStatus(status);
+
+    if (searchParams.toString() || sessionSearch) {
+      window.history.replaceState(null, "", "/artworks");
+    }
+  }, [searchParams]);
   // Reset page to 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
