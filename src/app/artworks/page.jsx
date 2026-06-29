@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from 'next/link';
 import { Search, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion'; 
@@ -32,43 +32,67 @@ const dropdownVariants = {
 
 const ArtworksPageContent = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [artworks, setArtworks] = useState([]);
   const [categories, setCategories] = useState([]);
   const [statuses, setStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Pagination States
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Filter States
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get("search") || ""
-  );
-  const [debouncedSearch, setDebouncedSearch] = useState(
-    searchParams.get("search") || ""
-  );
-  const [selectedCategory, setSelectedCategory] = useState(
-    searchParams.get("category") || ""
-  );
-  const [selectedStatus, setSelectedStatus] = useState(
-    searchParams.get("status") || ""
-  );
-  const [selectedSort, setSelectedSort] = useState('');
+  // Read current filters from URL searchParams
+  const selectedCategory = searchParams.get("category") || "";
+  const selectedStatus = searchParams.get("status") || "";
+  const selectedSort = searchParams.get("sort") || "";
+  const currentPage = parseInt(searchParams.get("page"), 10) || 1;
+  const currentSearch = searchParams.get("search") || "";
+
+  // local state for the search input element
+  const [searchQuery, setSearchQuery] = useState(currentSearch);
 
   // Dropdown States
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
 
-  // Debounce search query
+  // Helper to update the URL parameters
+  const updateQueryParams = (newParams) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value === null || value === undefined || value === "") {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    });
+    router.push(`/artworks?${params.toString()}`, { scroll: false });
+  };
+
+  // 1. Debounce and sync search input to URL parameters
   useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
+      if (searchQuery !== currentSearch) {
+        updateQueryParams({ search: searchQuery, page: 1 });
+      }
     }, 450);
     return () => clearTimeout(handler);
-  }, [searchQuery]);
+  }, [searchQuery, currentSearch]);
 
+  // 2. Sync search input with URL search param changes (like back navigation or clicking link)
+  useEffect(() => {
+    setSearchQuery(currentSearch);
+  }, [currentSearch]);
+
+  // 3. Handle sessionSearch (artist statistics page click redirects) on mount
+  useEffect(() => {
+    const sessionSearch = sessionStorage.getItem("artistSearch");
+    if (sessionSearch) {
+      sessionStorage.removeItem("artistSearch");
+      updateQueryParams({ search: sessionSearch, page: 1 });
+    }
+  }, []);
+
+  // 4. Fetch filters on mount
   useEffect(() => {
     const loadFilters = async () => {
       try {
@@ -82,40 +106,13 @@ const ArtworksPageContent = () => {
     loadFilters();
   }, []);
 
-  useEffect(() => {
-    const sessionSearch = sessionStorage.getItem("artistSearch");
-    if (sessionSearch) {
-      setSearchQuery(sessionSearch);
-      setDebouncedSearch(sessionSearch);
-      sessionStorage.removeItem("artistSearch");
-    } else {
-      const urlSearch = searchParams.get("search");
-      if (urlSearch) {
-        setSearchQuery(urlSearch);
-        setDebouncedSearch(urlSearch);
-      }
-    }
-
-    const category = searchParams.get("category") || "";
-    const status = searchParams.get("status") || "";
-    if (category) setSelectedCategory(category);
-    if (status) setSelectedStatus(status);
-
-    if (searchParams.toString() || sessionSearch) {
-      window.history.replaceState(null, "", "/artworks");
-    }
-  }, [searchParams]);
-  // Reset page to 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearch, selectedCategory, selectedStatus, selectedSort]);
-
+  // 5. Fetch artworks when URL search parameters change
   useEffect(() => {
     const loadArtworks = async () => {
       setLoading(true);
       try {
         const data = await artworkCollection({
-          search: debouncedSearch,
+          search: currentSearch,
           category: selectedCategory,
           status: selectedStatus,
           sort: selectedSort,
@@ -136,7 +133,7 @@ const ArtworksPageContent = () => {
       }
     };
     loadArtworks();
-  }, [debouncedSearch, selectedCategory, selectedStatus, selectedSort, currentPage]);
+  }, [currentSearch, selectedCategory, selectedStatus, selectedSort, currentPage]);
 
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] text-slate-900 antialiased selection:bg-violet-100 selection:text-violet-900">
@@ -202,7 +199,7 @@ const ArtworksPageContent = () => {
                       className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-full sm:w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1.5 origin-top-right"
                     >
                       <button
-                        onClick={() => { setSelectedCategory(''); setIsCategoryOpen(false); }}
+                        onClick={() => { updateQueryParams({ category: '', page: 1 }); setIsCategoryOpen(false); }}
                         className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
                           !selectedCategory ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
                         }`}
@@ -212,7 +209,7 @@ const ArtworksPageContent = () => {
                       {categories.map((cat) => (
                         <button
                           key={cat}
-                          onClick={() => { setSelectedCategory(cat); setIsCategoryOpen(false); }}
+                          onClick={() => { updateQueryParams({ category: cat, page: 1 }); setIsCategoryOpen(false); }}
                           className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer truncate ${
                             selectedCategory === cat ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
                           }`}
@@ -249,7 +246,7 @@ const ArtworksPageContent = () => {
                       className="absolute right-0 mt-2 w-full sm:w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1.5 origin-top-right"
                     >
                       <button
-                        onClick={() => { setSelectedStatus(''); setIsStatusOpen(false); }}
+                        onClick={() => { updateQueryParams({ status: '', page: 1 }); setIsStatusOpen(false); }}
                         className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
                           !selectedStatus ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
                         }`}
@@ -259,7 +256,7 @@ const ArtworksPageContent = () => {
                       {statuses.map((stat) => (
                         <button
                           key={stat}
-                          onClick={() => { setSelectedStatus(stat); setIsStatusOpen(false); }}
+                          onClick={() => { updateQueryParams({ status: stat, page: 1 }); setIsStatusOpen(false); }}
                           className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer capitalize truncate ${
                             selectedStatus === stat ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
                           }`}
@@ -304,7 +301,7 @@ const ArtworksPageContent = () => {
                       className="absolute right-0 mt-2 w-full sm:w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-1.5 origin-top-right"
                     >
                       <button
-                        onClick={() => { setSelectedSort(''); setIsSortOpen(false); }}
+                        onClick={() => { updateQueryParams({ sort: '', page: 1 }); setIsSortOpen(false); }}
                         className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
                           !selectedSort ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
                         }`}
@@ -312,7 +309,7 @@ const ArtworksPageContent = () => {
                         Newest
                       </button>
                       <button
-                        onClick={() => { setSelectedSort('a-z'); setIsSortOpen(false); }}
+                        onClick={() => { updateQueryParams({ sort: 'a-z', page: 1 }); setIsSortOpen(false); }}
                         className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
                           selectedSort === 'a-z' ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
                         }`}
@@ -320,7 +317,7 @@ const ArtworksPageContent = () => {
                         A to Z
                       </button>
                       <button
-                        onClick={() => { setSelectedSort('z-a'); setIsSortOpen(false); }}
+                        onClick={() => { updateQueryParams({ sort: 'z-a', page: 1 }); setIsSortOpen(false); }}
                         className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
                           selectedSort === 'z-a' ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
                         }`}
@@ -328,7 +325,7 @@ const ArtworksPageContent = () => {
                         Z to A
                       </button>
                       <button
-                        onClick={() => { setSelectedSort('low-to-high'); setIsSortOpen(false); }}
+                        onClick={() => { updateQueryParams({ sort: 'low-to-high', page: 1 }); setIsSortOpen(false); }}
                         className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
                           selectedSort === 'low-to-high' ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
                         }`}
@@ -336,7 +333,7 @@ const ArtworksPageContent = () => {
                         Price: Low to High
                       </button>
                       <button
-                        onClick={() => { setSelectedSort('high-to-low'); setIsSortOpen(false); }}
+                        onClick={() => { updateQueryParams({ sort: 'high-to-low', page: 1 }); setIsSortOpen(false); }}
                         className={`w-full text-left px-4 py-2 text-xs font-semibold hover:bg-slate-50 hover:text-slate-900 cursor-pointer ${
                           selectedSort === 'high-to-low' ? 'text-violet-600 bg-violet-50/50' : 'text-slate-600'
                         }`}
@@ -460,7 +457,7 @@ const ArtworksPageContent = () => {
               whileHover={currentPage > 1 ? { scale: 1.05 } : {}}
               whileTap={currentPage > 1 ? { scale: 0.95 } : {}}
               onClick={() => {
-                setCurrentPage(prev => Math.max(prev - 1, 1));
+                updateQueryParams({ page: Math.max(currentPage - 1, 1) });
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               disabled={currentPage === 1}
@@ -479,7 +476,7 @@ const ArtworksPageContent = () => {
                     whileHover={{ scale: 1.08 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => {
-                      setCurrentPage(pageNumber);
+                      updateQueryParams({ page: pageNumber });
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer ${
@@ -498,7 +495,7 @@ const ArtworksPageContent = () => {
               whileHover={currentPage < totalPages ? { scale: 1.05 } : {}}
               whileTap={currentPage < totalPages ? { scale: 0.95 } : {}}
               onClick={() => {
-                setCurrentPage(prev => Math.min(prev + 1, totalPages));
+                updateQueryParams({ page: Math.min(currentPage + 1, totalPages) });
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               disabled={currentPage === totalPages}

@@ -105,6 +105,18 @@ const SignInPageContent = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
   };
 
+  if (isPending) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center bg-[#f8fafc]">
+        <div className="w-10 h-10 border-4 border-violet-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (session) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A] flex items-center justify-center font-sans antialiased py-6 sm:py-12 md:py-16 px-4">
       {/* main */}

@@ -39,11 +39,10 @@ const TopArt = () => {
   useEffect(() => {
     const fetchArt = async () => {
       try {
-        const allArtworks = await artworkCollection();
-        const topArtworks = allArtworks
-          .filter((art) => art.isSold === false)
-          .sort(() => 0.5 - Math.random())
-          .slice(0, 7);
+        const topArtworks = await artworkCollection({
+          status: "available",
+          limit: 7
+        });
         setArtworks(topArtworks);
       } catch (err) {
         console.error("Error fetching top artworks:", err);

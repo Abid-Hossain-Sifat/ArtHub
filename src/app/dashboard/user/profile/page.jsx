@@ -347,13 +347,22 @@ const UserProfilePage = () => {
 
             {/* Profile Details */}
             <div className="flex-1 space-y-4 text-center sm:text-left w-full h-full flex flex-col justify-start pt-2 items-center sm:items-start">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 justify-center sm:justify-start">
+              <div className="flex flex-wrap items-center gap-2.5 justify-center sm:justify-start">
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
                   {profile.name}
                 </h2>
                 <span className="inline-flex items-center justify-center gap-1 px-3 py-0.5 text-[11px] font-semibold rounded-full bg-slate-100 text-slate-700 border border-slate-200 capitalize w-fit">
                   <ShieldCheck className="w-3 h-3 text-[#7C3AED]" />
                   {profile.role}
+                </span>
+                <span className={`inline-flex items-center justify-center gap-1 px-3 py-0.5 text-[11px] font-bold rounded-full capitalize w-fit border ${
+                  user?.subscription?.plan === 'premium' 
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                    : user?.subscription?.plan === 'pro' 
+                      ? 'bg-[#f5efff] text-[#6211cf] border-[#6211cf]/20' 
+                      : 'bg-slate-100 text-slate-600 border-slate-200'
+                }`}>
+                  Plan: {user?.subscription?.plan || 'Free'}
                 </span>
               </div>
 

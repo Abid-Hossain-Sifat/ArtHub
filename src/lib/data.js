@@ -22,6 +22,14 @@ export const artworkFilters = async () => {
     return data;
 }
 
+export const topArtists = async () => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/artists/top`);
+    if (!res.ok) {
+        throw new Error("Failed to fetch top artists");
+    }
+    return await res.json();
+}
+
 export const deleteArtwork = async (id) => {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/${id}`,

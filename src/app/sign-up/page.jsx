@@ -1,10 +1,10 @@
 "use client";
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import signupimg from '../../../public/Assets/Signup.png';
 import Image from 'next/image';
 import { Eye, EyeOff, Mail, Lock, User, Image as ImageIcon, ShoppingBag, Palette } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { signUp, signOut } from '@/lib/auth-client';
+import { signUp, signOut, useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import Link from 'next/link';
@@ -25,6 +25,21 @@ const SignUpPage = () => {
 
   const router = useRouter();
   const fileInputRef = useRef(null);
+  const { data: session, isPending } = useSession();
+
+  // Redirect if already signed in
+  useEffect(() => {
+    if (!isPending && session) {
+      const role = session.user?.role;
+      if (role === "admin") {
+        router.replace("/dashboard/admin");
+      } else if (role === "artist") {
+        router.replace("/dashboard/artist");
+      } else {
+        router.replace("/");
+      }
+    }
+  }, [session, isPending, router]);
 
   // Password Strength
   const getPasswordStrength = (pass) => {
@@ -108,11 +123,6 @@ const SignUpPage = () => {
       if (error) {
         toast.error(error.message || "Failed to create account!");
       } else {
-        try {
-          await signOut();
-        } catch (signOutErr) {
-          console.error("Sign out after signup failed:", signOutErr);
-        }
         toast.success("Account created successfully!", {
           position: "top-right"
         });
@@ -140,6 +150,18 @@ const SignUpPage = () => {
     hidden: { opacity: 0, y: 15 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
   };
+
+  if (isPending) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center bg-[#f8fafc]">
+        <div className="w-10 h-10 border-4 border-violet-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (session) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A] flex items-center justify-center font-sans antialiased py-6 sm:py-12 md:py-16 px-4">

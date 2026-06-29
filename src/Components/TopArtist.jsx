@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { artworkCollection, userDetails } from "@/lib/data";
+import { topArtists } from "@/lib/data";
 import { motion } from "framer-motion";
 import { TopArtistSkeleton } from "./Skeleton";
 
@@ -37,41 +37,8 @@ const TopArtist = () => {
   useEffect(() => {
     const fetchArtists = async () => {
       try {
-        const artworks = await artworkCollection();
-        const users = await userDetails();
-
-        const artistMap = {};
-
-        users
-          .filter((user) => user.role === "artist")
-          .forEach((artist) => {
-            artistMap[artist._id] = {
-              id: artist._id,
-              name: artist.name,
-              email: artist.email,
-              image: artist.image || "/default-avatar.png",
-              artworks: 0,
-              sales: 0,
-            };
-          });
-
-        artworks.forEach((art) => {
-          if (!artistMap[art.artistId]) return;
-          artistMap[art.artistId].artworks++;
-          if (art.isSold) {
-            artistMap[art.artistId].sales++;
-          }
-        });
-
-        const topArtists = Object.values(artistMap)
-          .sort((a, b) => {
-            const scoreA = a.sales * 10 + a.artworks;
-            const scoreB = b.sales * 10 + b.artworks;
-            return scoreB - scoreA;
-          })
-          .slice(0, 3);
-
-        setArtists(topArtists);
+        const topArtistsData = await topArtists();
+        setArtists(topArtistsData);
       } catch (err) {
         console.error("Error fetching artists:", err);
       } finally {

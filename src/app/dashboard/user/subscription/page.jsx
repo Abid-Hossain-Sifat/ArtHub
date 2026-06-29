@@ -207,15 +207,17 @@ const UserSubscriptionPage = () => {
           const isCurrent = currentPlan === tier.id;
 
           const isDisabled =
-            (currentPlan === "pro" && tier.id === "pro") ||
-            (currentPlan === "premium" &&
-              (tier.id === "premium" || tier.id === "pro"));
+            tier.id === "free" ||
+            isCurrent ||
+            (currentPlan === "premium" && tier.id === "pro");
 
           const buttonText = isCurrent
             ? "Current Plan"
-            : tier.id === "pro"
-              ? "Upgrade to Pro"
-              : "Go Premium";
+            : tier.id === "free"
+              ? "Free Plan"
+              : tier.id === "pro"
+                ? "Upgrade to Pro"
+                : "Go Premium";
 
           return (
             <motion.div
