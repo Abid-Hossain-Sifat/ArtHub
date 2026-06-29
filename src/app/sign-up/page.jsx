@@ -108,7 +108,11 @@ const SignUpPage = () => {
       if (error) {
         toast.error(error.message || "Failed to create account!");
       } else {
-        await signOut();
+        try {
+          await signOut();
+        } catch (signOutErr) {
+          console.error("Sign out after signup failed:", signOutErr);
+        }
         toast.success("Account created successfully!", {
           position: "top-right"
         });
