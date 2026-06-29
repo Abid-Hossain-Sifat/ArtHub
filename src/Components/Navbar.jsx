@@ -49,7 +49,7 @@ const Navbar = () => {
     try {
       await signOut();
       setDropdownOpen(false);
-      router.push("/");
+      router.push("/sign-in");
       router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);

@@ -23,6 +23,7 @@ import {
   changeEmail,
 } from "@/lib/auth-client";
 import { toast } from "react-hot-toast";
+import { ProfileSkeleton } from "@/Components/Skeleton";
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
@@ -261,8 +262,13 @@ const UserProfilePage = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full min-h-screen bg-[#F8F9FC] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#7C3AED] border-t-transparent rounded-full animate-spin" />
+      <div className="w-full min-h-screen bg-[#F8F9FC] p-6 lg:p-10 font-sans text-slate-800">
+        <div className="mb-8 max-w-[1440px] mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-[#0F172A] animate-pulse">Account Settings</h1>
+          </div>
+        </div>
+        <ProfileSkeleton />
       </div>
     );
   }

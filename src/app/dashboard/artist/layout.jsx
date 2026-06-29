@@ -42,7 +42,7 @@ const ArtistDashboardLayout = ({ children }) => {
     try {
       await signOut();
       toast.success("Successfully logged out!");
-      router.push('/');
+      router.push('/sign-in');
       router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
