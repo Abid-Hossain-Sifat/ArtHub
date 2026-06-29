@@ -150,10 +150,12 @@ const ProfilePage = () => {
 
     setSavingProfile(true);
     try {
-      // 1. Update Better Auth locally for name & image
       await updateUser({ name: tempProfile.name, image: tempProfile.image || undefined });
 
-      // 2. Call backend profile endpoint to update database and sync all collections
+      if (tempProfile.email && tempProfile.email !== profile.email) {
+        await changeEmail({ newEmail: tempProfile.email });
+      }
+
       const response = await fetch(`${backendUrl}/user/${user.id}/profile`, {
         method: "PATCH",
         headers: {
@@ -306,7 +308,6 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            {/* Comprehensive Metadata Profile Details */}
             <div className="flex-1 space-y-4 text-center sm:text-left w-full h-full flex flex-col justify-start pt-2">
               
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-center sm:justify-start">
@@ -342,7 +343,6 @@ const ProfilePage = () => {
 
           </div>
 
-          {/* Studio Analytics Section Side Pane */}
           <div className="w-full bg-[#F8F9FC]/80 border border-slate-100 rounded-2xl p-6 space-y-6 flex flex-col justify-between">
             
             <div className="space-y-4">
@@ -350,7 +350,6 @@ const ProfilePage = () => {
               
               {/* Analytics Metrics List */}
               <div className="flex flex-col gap-3.5">
-                {/* Metric Item 1 */}
                 <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 bg-purple-50 rounded-xl text-[#7C3AED]">
@@ -361,7 +360,6 @@ const ProfilePage = () => {
                   <p className="text-lg font-bold text-slate-900">{stats.total}</p>
                 </div>
 
-                {/* Metric Item 2 */}
                 <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">

@@ -5,16 +5,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { getInitials, isRemote } from "@/lib/avatar";
 import { motion, AnimatePresence } from "framer-motion";
+import { ProfileSkeleton } from "@/Components/Skeleton";
 import {
   Camera,
   Pencil,
   Lock,
-  ShoppingBag,
+  Users,
+  Palette,
   Calendar,
   ShieldCheck,
   X,
-  CreditCard,
-  Heart,
+  DollarSign,
+  Activity,
 } from "lucide-react";
 import {
   useSession,
@@ -27,7 +29,7 @@ import { toast } from "react-hot-toast";
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
-const UserProfilePage = () => {
+const AdminProfilePage = () => {
   const { data: session, isPending } = useSession();
   const user = session?.user;
 
@@ -55,7 +57,12 @@ const UserProfilePage = () => {
     confirmPassword: "",
   });
 
-  const [stats, setStats] = useState({ totalOrders: 0, totalSpent: 0 });
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalArtists: 0,
+    totalArtworks: 0,
+    totalRevenue: 0,
+  });
 
   useEffect(() => {
     if (!user) return;
@@ -64,7 +71,7 @@ const UserProfilePage = () => {
       name: user.name || "",
       email: user.email || "",
       image: user.image || "",
-      role: user.role || "user",
+      role: user.role || "admin",
     });
     setPreviewImage(user.image || "");
   }, [user]);
@@ -72,27 +79,55 @@ const UserProfilePage = () => {
   useEffect(() => {
     if (!user?.id) return;
 
-    const loadUserStats = async () => {
+    const loadPlatformStats = async () => {
       try {
-        const response = await fetch(
-          `${backendUrl}/purchasehistory?buyerId=${encodeURIComponent(user.id)}`,
-        );
-        if (!response.ok) return;
+        const [usersRes, artworksRes, purchasesRes, subscriptionsRes] =
+          await Promise.all([
+            fetch(`${backendUrl}/user`),
+            fetch(`${backendUrl}/artworks`),
+            fetch(`${backendUrl}/purchasehistory`),
+            fetch(`${backendUrl}/transactions`),
+          ]);
 
-        const orders = await response.json();
-        const totalOrders = Array.isArray(orders) ? orders.length : 0;
+        const users = usersRes.ok ? await usersRes.json() : [];
+        const artworks = artworksRes.ok ? await artworksRes.json() : [];
+        const purchases = purchasesRes.ok ? await purchasesRes.json() : [];
+        const transactions = subscriptionsRes.ok
+          ? await subscriptionsRes.json()
+          : [];
 
-        const totalSpent = Array.isArray(orders)
-          ? orders.reduce((sum, order) => sum + (Number(order.price) || 0), 0)
+        const totalUsers = Array.isArray(users)
+          ? users.filter((u) => u.role === "user").length
+          : 0;
+        const totalArtists = Array.isArray(users)
+          ? users.filter((u) => u.role === "artist").length
+          : 0;
+        const totalArtworks = Array.isArray(artworks) ? artworks.length : 0;
+
+        const purchaseRevenue = Array.isArray(purchases)
+          ? purchases.reduce((sum, o) => sum + (Number(o.price) || 0), 0)
           : 0;
 
-        setStats({ totalOrders, totalSpent });
+        const subscriptionRevenue = Array.isArray(transactions)
+          ? transactions
+              .filter((t) => t.type === "Subscription")
+              .reduce((sum, t) => {
+                const amount = parseFloat(
+                  String(t.amount || "0").replace("$", "")
+                );
+                return sum + (isNaN(amount) ? 0 : amount);
+              }, 0)
+          : 0;
+
+        const totalRevenue = (purchaseRevenue + subscriptionRevenue).toFixed(2);
+
+        setStats({ totalUsers, totalArtists, totalArtworks, totalRevenue });
       } catch (error) {
-        console.error("Error loading user stats:", error);
+        console.error("Error loading platform stats:", error);
       }
     };
 
-    loadUserStats();
+    loadPlatformStats();
   }, [user?.id]);
 
   const isLoading = isPending || !user;
@@ -135,7 +170,7 @@ const UserProfilePage = () => {
         {
           method: "POST",
           body: formData,
-        },
+        }
       );
 
       const result = await response.json();
@@ -261,8 +296,15 @@ const UserProfilePage = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full min-h-screen bg-[#F8F9FC] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#7C3AED] border-t-transparent rounded-full animate-spin" />
+      <div className="w-full min-h-screen bg-[#F8F9FC] p-6 lg:p-10 font-sans text-slate-800">
+        <div className="mb-8 max-w-[1440px] mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-[#0F172A] animate-pulse">
+              Admin Control Panel
+            </h1>
+          </div>
+        </div>
+        <ProfileSkeleton />
       </div>
     );
   }
@@ -273,11 +315,11 @@ const UserProfilePage = () => {
       <div className="mb-6 sm:mb-8 max-w-[1440px] mx-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A]">
-            Account Settings
+            Admin Control Panel
           </h1>
           <p className="text-slate-500 text-xs sm:text-sm mt-1">
-            Manage your personal profile, security options, and purchase
-            history.
+            Manage your administrator identity, platform analytics, and account
+            security.
           </p>
         </div>
         <Link
@@ -345,9 +387,9 @@ const UserProfilePage = () => {
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
                   {profile.name}
                 </h2>
-                <span className="inline-flex items-center justify-center gap-1 px-3 py-0.5 text-[11px] font-semibold rounded-full bg-slate-100 text-slate-700 border border-slate-200 capitalize w-fit">
-                  <ShieldCheck className="w-3 h-3 text-[#7C3AED]" />
-                  {profile.role}
+                <span className="inline-flex items-center justify-center gap-1 px-3 py-0.5 text-[11px] font-semibold rounded-full bg-[#F3E8FF] text-[#7C3AED] border border-[#E9D5FF]/40 capitalize w-fit">
+                  <ShieldCheck className="w-3 h-3" />
+                  Administrator
                 </span>
               </div>
 
@@ -367,53 +409,83 @@ const UserProfilePage = () => {
                   Bio / Note
                 </h4>
                 <p className="text-slate-600 text-xs md:text-sm font-normal leading-relaxed max-w-lg mx-auto sm:mx-0">
-                  Premium member of ArtHub community. Collecting and exploring
-                  beautiful masterworks.
+                  Platform administrator overseeing ArtHub operations,
+                  marketplace integrity, and user management.
                 </p>
               </div>
 
               <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-slate-400 font-medium pt-4 mt-auto">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>Account Status: Active</span>
+                <span>Access Level: Full Platform Control</span>
               </div>
             </div>
           </div>
 
-          {/* User Purchase Summary */}
+          {/* Platform Analytics Side Pane */}
           <div className="w-full bg-[#F8F9FC]/80 border border-slate-100 rounded-2xl p-5 sm:p-6 space-y-6 flex flex-col justify-between">
             <div className="space-y-4">
               <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider text-center sm:text-left">
-                Purchase Summary
+                Platform Analytics
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3.5">
-                {/* Total Purchased Artworks */}
+                {/* Total Users */}
                 <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 bg-purple-50 rounded-xl text-[#7C3AED]">
-                      <ShoppingBag className="w-4 h-4" />
+                      <Users className="w-4 h-4" />
                     </div>
                     <p className="text-xs text-slate-500 font-semibold">
-                      Bought Artworks
+                      Total Users
                     </p>
                   </div>
                   <p className="text-lg font-bold text-slate-900">
-                    {stats.totalOrders}
+                    {stats.totalUsers}
                   </p>
                 </div>
 
-                {/* Spent */}
+                {/* Total Artists */}
                 <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
-                      <CreditCard className="w-4 h-4" />
+                    <div className="p-2.5 bg-pink-50 rounded-xl text-pink-600">
+                      <Palette className="w-4 h-4" />
                     </div>
                     <p className="text-xs text-slate-500 font-semibold">
-                      Total Investment
+                      Total Artists
                     </p>
                   </div>
                   <p className="text-lg font-bold text-slate-900">
-                    ${stats.totalSpent}
+                    {stats.totalArtists}
+                  </p>
+                </div>
+
+                {/* Total Artworks */}
+                <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-blue-50 rounded-xl text-blue-600">
+                      <Activity className="w-4 h-4" />
+                    </div>
+                    <p className="text-xs text-slate-500 font-semibold">
+                      Total Artworks
+                    </p>
+                  </div>
+                  <p className="text-lg font-bold text-slate-900">
+                    {stats.totalArtworks}
+                  </p>
+                </div>
+
+                {/* Platform Revenue */}
+                <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
+                      <DollarSign className="w-4 h-4" />
+                    </div>
+                    <p className="text-xs text-slate-500 font-semibold">
+                      Platform Revenue
+                    </p>
+                  </div>
+                  <p className="text-lg font-bold text-slate-900">
+                    ${stats.totalRevenue}
                   </p>
                 </div>
               </div>
@@ -421,11 +493,10 @@ const UserProfilePage = () => {
 
             {/* General Tip Badge */}
             <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-start gap-3 shadow-sm">
-              <Heart className="w-4 h-4 text-rose-500 mt-0.5 flex-shrink-0" />
+              <ShieldCheck className="w-4 h-4 text-[#7C3AED] mt-0.5 flex-shrink-0" />
               <p className="text-[11px] text-slate-500 leading-normal">
-                Thank you for supporting global independent artists! All your
-                premium digital certificates are saved securely in your profile
-                dashboard.
+                You have full administrative access. Please use account controls
+                responsibly to maintain platform security.
               </p>
             </div>
           </div>
@@ -639,4 +710,4 @@ const UserProfilePage = () => {
   );
 };
 
-export default UserProfilePage;
+export default AdminProfilePage;

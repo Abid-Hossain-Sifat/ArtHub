@@ -34,7 +34,6 @@ const PaymentSuccessContent = () => {
 
         setMetadata(data.metadata);
         
-        // Update user session client-side to reflect new subscription / purchase
         await authClient.getSession();
       } catch (err) {
         console.error("Verification error:", err);

@@ -10,8 +10,7 @@ import { toast } from "react-hot-toast";
 
 import { DashboardSkeleton } from '../../../Components/Skeleton'; 
 
-// Lucide Icons Import
-import { LayoutDashboard, Users, Palette, Receipt, LogOut, Home, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, Palette, Receipt, LogOut, Home, Menu, X, UserCircle } from 'lucide-react';
 
 const AdminDashboardLayout = ({ children }) => {
   const pathname = usePathname();
@@ -47,6 +46,7 @@ const AdminDashboardLayout = ({ children }) => {
     { name: 'Manage Users', href: '/dashboard/admin/manage-user', icon: <Users className="w-5 h-5" /> },
     { name: 'Manage ArtWorks', href: '/dashboard/admin/manage-artworks', icon: <Palette className="w-5 h-5" /> },
     { name: 'All Transactions', href: '/dashboard/admin/all-transactions', icon: <Receipt className="w-5 h-5" /> },
+    { name: 'Profile', href: '/dashboard/admin/profile', icon: <UserCircle className="w-5 h-5" /> },
   ];
 
   // Sidebar Content 
