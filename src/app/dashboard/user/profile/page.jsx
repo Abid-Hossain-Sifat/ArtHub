@@ -382,7 +382,7 @@ const UserProfilePage = () => {
                   Bio / Note
                 </h4>
                 <p className="text-slate-600 text-xs md:text-sm font-normal leading-relaxed max-w-lg mx-auto sm:mx-0">
-                  Premium member of ArtHub community. Collecting and exploring
+                  {user?.subscription?.plan || 'Free'} member of ArtHub community. Collecting and exploring
                   beautiful masterworks.
                 </p>
               </div>
