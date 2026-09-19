@@ -15,6 +15,11 @@ import {
   Mail,
   Palette,
   Award,
+  ArrowLeft,
+  ExternalLink,
+  Loader2,
+  ShieldCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import {
@@ -321,17 +326,22 @@ const ArtWorkDetailsPage = () => {
   return (
     <div className="w-full min-h-screen bg-[#f8fafc] text-slate-900 antialiased selection:bg-violet-100 selection:text-violet-900">
       <div className="w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto py-12 md:py-20">
-        <div className="flex items-center gap-2 text-xs font-medium text-slate-400 mb-8">
+        <div className="flex items-center justify-between gap-4 mb-8">
           <Link
             href="/artworks"
-            className="hover:text-slate-600 cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200/80 text-xs font-semibold text-slate-700 hover:text-violet-600 hover:border-violet-200 shadow-2xs hover:shadow-sm transition-all cursor-pointer group"
           >
-            Artworks
+            <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+            <span>Back to Artworks</span>
           </Link>
-          <span>/</span>
-          <span className="text-violet-600 font-semibold line-clamp-1">
-            {artwork.title}
-          </span>
+
+          <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400">
+            <Link href="/" className="hover:text-slate-600 transition-colors">Home</Link>
+            <span>/</span>
+            <Link href="/artworks" className="hover:text-slate-600 transition-colors">Artworks</Link>
+            <span>/</span>
+            <span className="text-slate-700 font-semibold max-w-[200px] truncate">{artwork.title}</span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-stretch">
@@ -340,7 +350,7 @@ const ArtWorkDetailsPage = () => {
               <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-slate-50 shadow-inner">
                 <Image
                   src={artwork.image}
-                  alt={artwork.title}
+                  alt={artwork.title ? `${artwork.title} - Artwork by ${artwork.artistName || "Artist"}` : "Artwork image"}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover transition-transform duration-750 ease-out group-hover:scale-[1.02]"
@@ -399,12 +409,11 @@ const ArtWorkDetailsPage = () => {
                     </p>
                     <button
                       onClick={handleOpenArtistModal}
+                      aria-label="View artist profile and statistics"
                       className="text-sm font-extrabold text-slate-800 hover:text-violet-600 transition-colors flex items-center gap-1.5 group border-0 bg-transparent p-0 cursor-pointer text-left outline-none"
                     >
                       <span>{artwork.artistName || "Unknown Artist"}</span>
-                      <span className="text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                        🔗
-                      </span>
+                      <ExternalLink size={13} className="text-slate-400 group-hover:text-violet-600 transition-colors shrink-0" />
                     </button>
                   </div>
                 </div>
@@ -438,9 +447,24 @@ const ArtWorkDetailsPage = () => {
                   <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">
                     Current Price
                   </p>
-                  <span className="text-3xl font-black text-violet-600 tracking-tight">
-                    ${artwork.price?.toLocaleString() || "0"}
-                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl sm:text-4xl font-black text-violet-600 tracking-tight">
+                      ${artwork.price?.toLocaleString() || "0"}
+                    </span>
+                    <span className="text-xs font-bold text-slate-400 uppercase">USD</span>
+                  </div>
+
+                  {/* Trust & Guarantee Badges */}
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-lg">
+                      <ShieldCheck size={13} className="shrink-0 text-emerald-600" />
+                      Verified Original
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">
+                      <CheckCircle2 size={13} className="shrink-0 text-slate-500" />
+                      Instant Ownership Transfer
+                    </span>
+                  </div>
                 </div>
 
                 {isSold ? (
@@ -477,25 +501,40 @@ const ArtWorkDetailsPage = () => {
                     </div>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => {
-                      if (!session?.user) {
-                        router.push(
-                          `/sign-in?redirect=${encodeURIComponent(window.location.pathname)}`,
-                        );
-                        return;
-                      }
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => {
+                        if (!session?.user) {
+                          router.push(
+                            `/sign-in?redirect=${encodeURIComponent(window.location.pathname)}`,
+                          );
+                          return;
+                        }
 
-                      handlePurchase();
-                    }}
-                    disabled={purchasing}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm transition-all duration-150 shadow-md shadow-purple-500/10 active:scale-[0.99] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    <ShoppingCart size={18} />
-                    <span>
-                      {purchasing ? "Processing..." : "Purchase Artwork"}
-                    </span>
-                  </button>
+                        handlePurchase();
+                      }}
+                      disabled={purchasing}
+                      className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm transition-all duration-150 shadow-md shadow-violet-500/20 active:scale-[0.99] cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+                    >
+                      {purchasing ? (
+                        <>
+                          <Loader2 size={18} className="animate-spin" />
+                          <span>Redirecting to Stripe...</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart size={18} />
+                          <span>Purchase Artwork</span>
+                        </>
+                      )}
+                    </button>
+
+                    {!session?.user && (
+                      <p className="text-center text-[11px] font-medium text-slate-400">
+                        🔒 Sign-in required to securely checkout via Stripe.
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
 

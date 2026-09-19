@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
@@ -132,11 +132,11 @@ const Banner = () => {
                     {slides[currentSlide].description}
                   </p>
 
-                  {/* Dynamic Colored CTA Button */}
-                  <div className="mt-8 sm:mt-10">
-                    <Link href="/">
+                  {/* Dynamic Colored CTA Button & Secondary CTA */}
+                  <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center lg:justify-start gap-4">
+                    <Link href="/artworks">
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
+                        whileHover={{ scale: 1.04 }}
                         whileTap={{ scale: 0.98 }}
                         className={`inline-flex items-center gap-3 rounded-full px-6 sm:px-8 py-3.5 sm:py-4 text-sm font-semibold transition-all duration-300 group cursor-pointer ${
                           slides[currentSlide].btnBg
@@ -147,6 +147,16 @@ const Banner = () => {
                           size={18}
                           className="transform group-hover:translate-x-1 transition-transform"
                         />
+                      </motion.button>
+                    </Link>
+
+                    <Link href="/sign-up">
+                      <motion.button
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="inline-flex items-center gap-2 rounded-full px-6 sm:px-7 py-3.5 sm:py-4 text-sm font-semibold text-white/90 bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-sm transition-all duration-300 cursor-pointer"
+                      >
+                        Join as Artist
                       </motion.button>
                     </Link>
                   </div>
@@ -177,7 +187,7 @@ const Banner = () => {
             >
               <Image
                 src={HeroTooltip2}
-                alt="Art Card Back"
+                alt="Featured art collection showcase"
                 fill
                 sizes="(max-width: 640px) 160px, (max-width: 1024px) 220px, 240px"
                 priority
@@ -202,7 +212,7 @@ const Banner = () => {
             >
               <Image
                 src={HeroTooltip1}
-                alt="Art Card Front"
+                alt="Trending digital art masterpiece preview"
                 fill
                 sizes="(max-width: 640px) 150px, (max-width: 1024px) 200px, 220px"
                 priority
@@ -211,6 +221,22 @@ const Banner = () => {
             </motion.div>
           </div>
         </div>
+      </div>
+
+      {/* Interactive Slide Indicator Dots */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 bg-slate-900/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg">
+        {slides.map((slide, idx) => (
+          <button
+            key={slide.id}
+            onClick={() => setCurrentSlide(idx)}
+            aria-label={`Go to slide ${idx + 1}: ${slide.title}`}
+            className={`transition-all duration-300 rounded-full cursor-pointer ${
+              currentSlide === idx
+                ? "w-7 h-2 bg-gradient-to-r from-violet-400 to-fuchsia-400 shadow-sm"
+                : "w-2 h-2 bg-white/30 hover:bg-white/60"
+            }`}
+          />
+        ))}
       </div>
     </section>
   );

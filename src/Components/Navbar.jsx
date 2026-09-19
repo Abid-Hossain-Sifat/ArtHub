@@ -129,6 +129,8 @@ const Navbar = () => {
               <div className="relative shrink-0">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
+                  aria-label="User account menu"
+                  aria-expanded={dropdownOpen}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-gray-50 transition focus:outline-none cursor-pointer"
                 >
                   {/* Avatar Section */}
@@ -217,12 +219,15 @@ const Navbar = () => {
           </div>
 
           {/* Hamburger Button for Mobile */}
-          <div
-            className="lg:hidden block cursor-pointer p-1 text-black hover:bg-gray-50 rounded-lg transition"
+          <button
+            type="button"
+            aria-label="Toggle navigation menu"
+            aria-expanded={isOpen}
+            className="lg:hidden block cursor-pointer p-2 text-slate-800 hover:bg-gray-100/70 rounded-xl transition"
             onClick={() => setIsOpen(!isOpen)}
           >
-            {isOpen ? <X size={26} /> : <Menu size={26} />}
-          </div>
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </div>
 

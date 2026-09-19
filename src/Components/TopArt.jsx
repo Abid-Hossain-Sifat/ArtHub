@@ -113,19 +113,19 @@ const TopArt = () => {
               <Link href={`/artworks/${art._id}`} className="block w-full h-full relative overflow-hidden rounded-2xl">
                 <Image
                   src={art.image}
-                  alt={art.title}
+                  alt={art.title ? `${art.title} - Artwork by ${art.artistName || "Artist"}` : "Featured masterpiece"}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 
-                {/* Visual hover caption overlay */}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-4 pt-10 translate-y-[101%] group-hover:translate-y-0 transition-transform duration-300 ease-out flex flex-col justify-end text-white">
+                {/* Visual hover caption overlay (visible by default on touch screens, slide up on hover for desktop) */}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent p-3.5 sm:p-4 pt-8 sm:pt-10 translate-y-0 sm:translate-y-[101%] sm:group-hover:translate-y-0 transition-transform duration-300 ease-out flex flex-col justify-end text-white">
                   <h3 className="font-bold text-sm sm:text-base truncate">{art.title}</h3>
                   <div className="flex justify-between items-center mt-1">
-                    <span className="text-xs text-slate-300">by {art.artistName}</span>
-                    <span className="text-sm font-extrabold text-purple-400">${art.price?.toLocaleString()}</span>
+                    <span className="text-xs text-slate-300 truncate max-w-[120px]">by {art.artistName}</span>
+                    <span className="text-sm font-extrabold text-violet-300">${art.price?.toLocaleString()}</span>
                   </div>
                 </div>
               </Link>

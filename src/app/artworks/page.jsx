@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from 'next/link';
-import { Search, ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { Search, ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion'; 
 import { artworkCollection, artworkFilters } from '../../lib/data';
 import { CardSkeleton } from '@/Components/Skeleton';
@@ -162,15 +162,29 @@ const ArtworksPageContent = () => {
           className="bg-white border border-slate-200/60 rounded-2xl p-4 mb-8 sm:mb-12 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] flex flex-col lg:flex-row items-center justify-between gap-4"
         >
           {/* Search Box */}
-          <div className="relative w-full lg:max-w-md flex items-center bg-slate-50 border border-slate-100 rounded-xl px-3.5 py-2.5 focus-within:border-violet-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-violet-50 transition-all duration-200">
+          <div className="relative w-full lg:max-w-md flex items-center bg-slate-50 border border-slate-200/80 rounded-xl px-3.5 py-2.5 focus-within:border-violet-300 focus-within:bg-white focus-within:ring-2 focus-within:ring-violet-100 transition-all duration-200">
             <Search size={18} className="text-slate-400 mr-2.5 shrink-0" />
             <input
               type="text"
+              aria-label="Search artworks by title or artist"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by title or artist..."
               className="bg-transparent outline-none w-full text-sm font-medium text-slate-800 placeholder-slate-400"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  updateQueryParams({ search: "", page: 1 });
+                }}
+                aria-label="Clear search input"
+                className="text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-200/60 transition cursor-pointer shrink-0"
+              >
+                <X size={15} />
+              </button>
+            )}
           </div>
 
           {/* Filters Container */}
@@ -180,6 +194,9 @@ const ArtworksPageContent = () => {
             <div className="relative w-full sm:w-auto">
               <button
                 onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                aria-haspopup="listbox"
+                aria-expanded={isCategoryOpen}
+                aria-label="Filter by Category"
                 className={`flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto px-4 py-2.5 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 hover:text-slate-900 transition-all duration-150 cursor-pointer shrink-0 shadow-sm ${
                   selectedCategory ? 'bg-violet-50 text-violet-700 border-violet-200' : 'bg-white text-slate-600'
                 }`}
@@ -227,6 +244,9 @@ const ArtworksPageContent = () => {
             <div className="relative w-full sm:w-auto">
               <button
                 onClick={() => setIsStatusOpen(!isStatusOpen)}
+                aria-haspopup="listbox"
+                aria-expanded={isStatusOpen}
+                aria-label="Filter by Status"
                 className={`flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto px-4 py-2.5 text-xs font-semibold rounded-xl border border-slate-200 hover:bg-slate-50 hover:text-slate-900 transition-all duration-150 cursor-pointer shrink-0 shadow-sm ${
                   selectedStatus ? 'bg-violet-50 text-violet-700 border-violet-200' : 'bg-white text-slate-600'
                 }`}
@@ -274,6 +294,9 @@ const ArtworksPageContent = () => {
             <div className="relative col-span-2 sm:col-span-1 w-full sm:w-auto">
               <button
                 onClick={() => setIsSortOpen(!isSortOpen)}
+                aria-haspopup="listbox"
+                aria-expanded={isSortOpen}
+                aria-label="Sort artworks"
                 className={`flex items-center justify-between sm:justify-start gap-2.5 w-full sm:w-auto px-4 py-2.5 text-xs font-bold rounded-xl border border-slate-200 hover:bg-slate-50 hover:border-violet-600 transition-all duration-150 cursor-pointer shrink-0 shadow-sm ${
                   selectedSort ? 'bg-violet-50 text-violet-700 border-violet-300' : 'bg-white text-slate-700'
                 }`}
@@ -348,6 +371,96 @@ const ArtworksPageContent = () => {
           </div>
         </motion.div>
 
+        {/* Active Filters & Results Count */}
+        {(selectedCategory || selectedStatus || selectedSort || currentSearch) && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-wrap items-center justify-between gap-3 mb-6 px-1"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active:</span>
+
+              {currentSearch && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-violet-50 text-violet-700 text-xs font-medium rounded-full border border-violet-200/70 shadow-2xs">
+                  Search: "{currentSearch}"
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      updateQueryParams({ search: "", page: 1 });
+                    }}
+                    aria-label="Remove search filter"
+                    className="hover:text-violet-900 transition cursor-pointer"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+
+              {selectedCategory && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-violet-50 text-violet-700 text-xs font-medium rounded-full border border-violet-200/70 shadow-2xs">
+                  Category: {selectedCategory}
+                  <button
+                    onClick={() => updateQueryParams({ category: "", page: 1 })}
+                    aria-label="Remove category filter"
+                    className="hover:text-violet-900 transition cursor-pointer"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+
+              {selectedStatus && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-full border border-emerald-200/70 capitalize shadow-2xs">
+                  Status: {selectedStatus}
+                  <button
+                    onClick={() => updateQueryParams({ status: "", page: 1 })}
+                    aria-label="Remove status filter"
+                    className="hover:text-emerald-900 transition cursor-pointer"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+
+              {selectedSort && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full border border-slate-200 shadow-2xs">
+                  Sort: {
+                    selectedSort === 'a-z' ? 'A to Z' :
+                    selectedSort === 'z-a' ? 'Z to A' :
+                    selectedSort === 'low-to-high' ? 'Low to High' :
+                    selectedSort === 'high-to-low' ? 'High to Low' :
+                    selectedSort
+                  }
+                  <button
+                    onClick={() => updateQueryParams({ sort: "", page: 1 })}
+                    aria-label="Reset sort"
+                    className="hover:text-slate-900 transition cursor-pointer"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              )}
+
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  router.push("/artworks", { scroll: false });
+                }}
+                className="text-xs font-semibold text-violet-600 hover:text-violet-800 hover:underline ml-1 cursor-pointer transition"
+              >
+                Clear all
+              </button>
+            </div>
+
+            {!loading && artworks.length > 0 && (
+              <span className="text-xs font-medium text-slate-400">
+                Showing {artworks.length} artwork{artworks.length > 1 ? "s" : ""}
+              </span>
+            )}
+          </motion.div>
+        )}
+
         {/* Responsive Grid Layout */}
         <AnimatePresence mode="wait">
           {loading ? (
@@ -358,19 +471,36 @@ const ArtworksPageContent = () => {
               exit={{ opacity: 0 }}
               className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 md:gap-8"
             >
-              {[...Array(4)].map((_, idx) => (
+              {[...Array(8)].map((_, idx) => (
                 <CardSkeleton key={idx} />
               ))}
             </motion.div>
           ) : artworks.length === 0 ? (
             <motion.div 
               key="empty-state"
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              className="text-center py-16 sm:py-24 px-4 text-slate-400 font-medium bg-white rounded-3xl border border-dashed border-slate-200 shadow-sm text-sm sm:text-base"
+              className="text-center py-16 sm:py-20 px-6 bg-white rounded-3xl border border-dashed border-slate-200 shadow-xs flex flex-col items-center justify-center max-w-md mx-auto"
             >
-              No artworks found matching your search.
+              <div className="w-14 h-14 rounded-2xl bg-violet-50 flex items-center justify-center text-violet-600 mb-4 shadow-inner">
+                <Search size={26} />
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-slate-800 mb-1">
+                No artworks found
+              </h3>
+              <p className="text-slate-400 text-xs sm:text-sm max-w-xs mb-5">
+                We couldn't find any artwork matching your current search or filters.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  router.push("/artworks", { scroll: false });
+                }}
+                className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer"
+              >
+                Reset All Filters
+              </button>
             </motion.div>
           ) : (
             <motion.div 
@@ -396,7 +526,7 @@ const ArtworksPageContent = () => {
                     <Link href={`/artworks/${artworkId}`} className="relative aspect-square w-full rounded-[18px] bg-slate-50 overflow-hidden shrink-0 shadow-inner cursor-pointer group">
                       <Image
                         src={artwork.image}
-                        alt={artwork.title}
+                        alt={artwork.title ? `${artwork.title} - Artwork by ${artwork.artistName || "Artist"}` : "Artwork image"}
                         fill
                         sizes="(max-width: 640px) 50vw, (max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                         className="object-cover group-hover:scale-[1.04] transition-transform duration-500 ease-out"
@@ -481,7 +611,7 @@ const ArtworksPageContent = () => {
                     }}
                     className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer ${
                       isActive 
-                        ? 'bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white' 
+                        ? 'bg-violet-600 text-white shadow-md shadow-violet-200' 
                         : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800'
                     }`}
                   >
