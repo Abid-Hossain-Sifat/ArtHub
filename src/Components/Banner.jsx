@@ -127,9 +127,9 @@ const Banner = () => {
           
           {/* Left Column: Authoritative Editorial Typography & Metrics (7 Cols) */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, x: -36 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
             className="lg:col-span-7 flex flex-col justify-center text-center lg:text-left items-center lg:items-start"
           >
             {/* Curated Pill */}
@@ -210,9 +210,9 @@ const Banner = () => {
 
           {/* Right Column: Authentic Layered Gallery Art Showcase (5 Cols) */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.85, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, x: 36, scale: 0.97 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ duration: 1.35, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="lg:col-span-5 flex justify-center lg:justify-end items-center"
           >
             {/* Gallery Composition Wrapper */}
