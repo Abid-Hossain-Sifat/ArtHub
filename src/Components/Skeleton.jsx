@@ -1,14 +1,31 @@
 import React from "react";
 
 export const CardSkeleton = () => (
-  <div className="bg-white rounded-[24px] overflow-hidden border border-slate-100 p-2 animate-pulse shadow-sm w-full">
-    <div className="aspect-square w-full rounded-[18px] bg-slate-200" />
-    <div className="p-3.5 pt-4 space-y-3">
-      <div className="h-5 bg-slate-200 rounded w-3/4" />
-      <div className="h-4 bg-slate-200 rounded w-1/2" />
-      <div className="flex justify-between items-center mt-4">
-        <div className="h-6 bg-slate-200 rounded w-1/3" />
-        <div className="h-4 bg-slate-200 rounded w-1/4" />
+  <div className="bg-white rounded-[2rem] overflow-hidden border border-stone-200/90 p-3 animate-pulse shadow-2xs w-full">
+    <div className="aspect-[4/5] w-full rounded-[1.4rem] bg-stone-200/80" />
+    <div className="p-3 pt-3.5 space-y-2.5">
+      <div className="h-5 bg-stone-200/90 rounded-lg w-3/4" />
+      <div className="h-3.5 bg-stone-200/70 rounded-md w-1/2" />
+      <div className="flex justify-between items-center pt-2 mt-2 border-t border-stone-100">
+        <div className="h-5 bg-stone-200/90 rounded w-1/3" />
+        <div className="h-4 bg-stone-200/70 rounded w-1/4" />
+      </div>
+    </div>
+  </div>
+);
+
+export const ListCardSkeleton = () => (
+  <div className="bg-white rounded-[2rem] p-4 sm:p-5 border border-stone-200/90 animate-pulse w-full grid grid-cols-1 md:grid-cols-12 gap-5 shadow-2xs">
+    <div className="md:col-span-4 lg:col-span-3 aspect-[4/3] rounded-[1.4rem] bg-stone-200/80" />
+    <div className="md:col-span-8 lg:col-span-9 flex flex-col justify-between py-1 space-y-3">
+      <div className="space-y-2.5">
+        <div className="h-6 bg-stone-200/90 rounded-xl w-1/2" />
+        <div className="h-4 bg-stone-200/80 rounded w-1/4" />
+        <div className="h-4 bg-stone-200/60 rounded w-3/4 mt-2" />
+      </div>
+      <div className="flex justify-between items-center pt-3 border-t border-stone-100">
+        <div className="h-6 bg-stone-200/90 rounded w-20" />
+        <div className="h-9 bg-stone-200/90 rounded-full w-28" />
       </div>
     </div>
   </div>
@@ -199,48 +216,48 @@ export const DashboardSkeleton = () => (
 );
 
 export const DetailsSkeleton = () => (
-  <div className="w-full min-h-screen bg-[#f8fafc] text-slate-900 antialiased animate-pulse">
+  <div className="w-full min-h-screen bg-[#FAF8F5] text-stone-900 antialiased animate-pulse">
     <div className="w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto py-12 md:py-20">
       {/* Breadcrumb */}
-      <div className="h-4 bg-slate-200 rounded w-64 mb-8" />
+      <div className="h-4 bg-stone-200/80 rounded w-64 mb-8" />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-stretch">
         {/* Image Panel */}
         <div className="lg:col-span-6 w-full">
-          <div className="aspect-square w-full rounded-[32px] bg-slate-200" />
+          <div className="aspect-[4/5] sm:aspect-square w-full rounded-[2.5rem] bg-stone-200/80" />
         </div>
 
         {/* Info Panel */}
         <div className="lg:col-span-6 w-full flex flex-col justify-between">
           <div className="space-y-6">
-            <div className="h-10 bg-slate-200 rounded-xl w-3/4" />
+            <div className="h-12 bg-stone-200/80 rounded-2xl w-3/4" />
 
             {/* Artist Card */}
-            <div className="flex items-center bg-white px-4 py-3 rounded-2xl border border-slate-100 max-w-fit gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-200" />
+            <div className="flex items-center bg-white px-4 py-3 rounded-2xl border border-stone-200/80 max-w-fit gap-3">
+              <div className="w-10 h-10 rounded-xl bg-stone-200/80" />
               <div className="space-y-2">
-                <div className="h-3 bg-slate-200 rounded w-16" />
-                <div className="h-4 bg-slate-200 rounded w-32" />
+                <div className="h-3 bg-stone-200/80 rounded w-16" />
+                <div className="h-4 bg-stone-200/80 rounded w-32" />
               </div>
             </div>
 
-            <div className="h-4 bg-slate-200 rounded w-48 mb-4" />
+            <div className="h-4 bg-stone-200/80 rounded w-48 mb-4" />
 
             {/* Story */}
-            <div className="bg-slate-100 rounded-2xl p-5 space-y-3">
-              <div className="h-4 bg-slate-200 rounded w-24" />
-              <div className="h-3 bg-slate-200 rounded w-full" />
-              <div className="h-3 bg-slate-200 rounded w-5/6" />
+            <div className="bg-white border border-stone-200/80 rounded-2xl p-5 space-y-3">
+              <div className="h-4 bg-stone-200/80 rounded w-32" />
+              <div className="h-3 bg-stone-200/80 rounded w-full" />
+              <div className="h-3 bg-stone-200/80 rounded w-5/6" />
             </div>
           </div>
 
           {/* Price Box */}
-          <div className="bg-white border border-slate-200 rounded-[28px] p-6 shadow-sm mt-8 space-y-4">
+          <div className="bg-white border border-stone-200/80 rounded-[2rem] p-6 shadow-xs mt-8 space-y-4">
             <div className="space-y-2">
-              <div className="h-3 bg-slate-200 rounded w-20" />
-              <div className="h-8 bg-slate-200 rounded w-32" />
+              <div className="h-3 bg-stone-200/80 rounded w-20" />
+              <div className="h-9 bg-stone-200/80 rounded w-36" />
             </div>
-            <div className="h-14 bg-slate-200 rounded-xl w-full" />
+            <div className="h-14 bg-stone-200/80 rounded-xl w-full" />
           </div>
         </div>
       </div>

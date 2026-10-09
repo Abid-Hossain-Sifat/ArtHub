@@ -20,6 +20,12 @@ import {
   Loader2,
   ShieldCheck,
   CheckCircle2,
+  Sparkles,
+  Lock,
+  Truck,
+  FileCheck,
+  ArrowRight,
+  Share2,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import {
@@ -38,7 +44,9 @@ const ArtWorkDetailsPage = () => {
   const id = params?.id;
   const router = useRouter();
   const { data: session, isPending: sessionLoading } = useSession();
+
   const [artwork, setArtwork] = useState(null);
+  const [relatedArtworks, setRelatedArtworks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
@@ -62,7 +70,7 @@ const ArtWorkDetailsPage = () => {
   const handleOpenArtistModal = (e) => {
     e.preventDefault();
     if (!artwork?.artistId) {
-      toast.error("Artist profile details not available");
+      toast.error("Artist profile details not currently cataloged");
       return;
     }
     setShowArtistModal(true);
@@ -82,6 +90,19 @@ const ArtWorkDetailsPage = () => {
         if (!isCancelled) {
           if (found) {
             setArtwork(found);
+            // Curate related artworks (same category or others, up to 4 items)
+            const related = artworks
+              .filter(
+                (art) =>
+                  art._id !== found._id &&
+                  (art.category === found.category || !found.category),
+              )
+              .slice(0, 4);
+            setRelatedArtworks(
+              related.length > 0
+                ? related
+                : artworks.filter((a) => a._id !== found._id).slice(0, 4),
+            );
           } else {
             setError(true);
           }
@@ -111,7 +132,7 @@ const ArtWorkDetailsPage = () => {
       try {
         setLoadingArtistStats(true);
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/artist/${artwork.artistId}/stats`
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/artist/${artwork.artistId}/stats`,
         );
         if (res.ok) {
           const data = await res.json();
@@ -135,7 +156,7 @@ const ArtWorkDetailsPage = () => {
     const loadComments = async () => {
       try {
         const data = await getArtworkComments(id);
-        setComments(data);
+        setComments(data || []);
       } catch (error) {
         console.error(error);
       }
@@ -161,12 +182,12 @@ const ArtWorkDetailsPage = () => {
   const isArtistOwner = user.isLoggedIn && user.id === artwork.artistId;
   const isArtist = user.role === "artist";
   const isSold = artwork?.isSold;
-  const isAvailable = artwork?.status === "available";
+  const isAvailable = artwork?.status?.toLowerCase() === "available";
   const isPurchaseDisabled = isArtistOwner || isArtist || isSold;
 
   const handleComment = async () => {
     if (!session?.user) {
-      toast.error("Please login first");
+      toast.error("Please sign in first to leave a comment");
       return;
     }
 
@@ -192,13 +213,11 @@ const ArtWorkDetailsPage = () => {
       });
 
       if (!res.success) {
-        throw new Error(res.error || "Failed to add comment");
+        throw new Error(res.error || "Failed to post comment");
       }
 
       setComments((prev) => [res.comment, ...prev]);
-
       setComment("");
-
       toast.success("Comment added successfully");
     } catch (error) {
       toast.error(error.message);
@@ -213,7 +232,6 @@ const ArtWorkDetailsPage = () => {
       description: artwork.description,
       price: artwork.price,
     });
-
     setShowEditModal(true);
   };
 
@@ -229,7 +247,6 @@ const ArtWorkDetailsPage = () => {
 
     try {
       setSaving(true);
-
       const res = await updateArtwork(artwork._id, {
         title: editForm.title,
         description: editForm.description,
@@ -248,7 +265,6 @@ const ArtWorkDetailsPage = () => {
       }));
 
       toast.success("Artwork updated successfully");
-
       setShowEditModal(false);
     } catch (err) {
       toast.error(err.message);
@@ -260,7 +276,6 @@ const ArtWorkDetailsPage = () => {
   const handleDeleteArtwork = async () => {
     try {
       setDeleting(true);
-
       const res = await deleteArtwork(artwork._id);
 
       if (!res.success) {
@@ -268,7 +283,6 @@ const ArtWorkDetailsPage = () => {
       }
 
       toast.success("Artwork deleted successfully");
-
       router.push("/artworks");
     } catch (err) {
       toast.error(err.message);
@@ -280,7 +294,7 @@ const ArtWorkDetailsPage = () => {
   const handlePurchase = async () => {
     try {
       if (!session?.user) {
-        toast.error("Please login first");
+        toast.error("Please sign in to proceed with purchase");
         router.push(
           `/sign-in?redirect=${encodeURIComponent(window.location.pathname)}`,
         );
@@ -314,7 +328,7 @@ const ArtWorkDetailsPage = () => {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        throw new Error("Stripe checkout URL is missing");
+        throw new Error("Stripe checkout gateway link unavailable");
       }
     } catch (error) {
       toast.error(error.message);
@@ -323,53 +337,114 @@ const ArtWorkDetailsPage = () => {
     }
   };
 
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: artwork.title,
+          text: `Explore "${artwork.title}" by ${artwork.artistName} on ArtHub`,
+          url: window.location.href,
+        });
+      } catch {
+        // User cancelled share
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Exhibition link copied to clipboard");
+    }
+  };
+
   return (
-    <div className="w-full min-h-screen bg-[#f8fafc] text-slate-900 antialiased selection:bg-violet-100 selection:text-violet-900">
-      <div className="w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto py-12 md:py-20">
-        <div className="flex items-center justify-between gap-4 mb-8">
+    <div className="w-full min-h-screen bg-[#FAF8F5] text-stone-900 antialiased selection:bg-[#B4136D]/15 selection:text-[#B4136D]">
+      <div className="w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto py-10 sm:py-16">
+        {/* Navigation Breadcrumb Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex items-center justify-between gap-4 mb-8"
+        >
           <Link
             href="/artworks"
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200/80 text-xs font-semibold text-slate-700 hover:text-violet-600 hover:border-violet-200 shadow-2xs hover:shadow-sm transition-all cursor-pointer group"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-stone-200 text-xs font-semibold text-stone-700 hover:text-[#B4136D] hover:border-[#B4136D]/30 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
           >
-            <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
-            <span>Back to Artworks</span>
+            <ArrowLeft
+              size={14}
+              className="group-hover:-translate-x-1 transition-transform"
+            />
+            <span>Back to Collection</span>
           </Link>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400">
-            <Link href="/" className="hover:text-slate-600 transition-colors">Home</Link>
-            <span>/</span>
-            <Link href="/artworks" className="hover:text-slate-600 transition-colors">Artworks</Link>
-            <span>/</span>
-            <span className="text-slate-700 font-semibold max-w-[200px] truncate">{artwork.title}</span>
-          </div>
-        </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleShare}
+              aria-label="Share this artwork"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-stone-200 text-xs font-semibold text-stone-600 hover:text-stone-900 hover:border-stone-300 shadow-2xs transition-all cursor-pointer"
+            >
+              <Share2 size={13} />
+              <span className="hidden sm:inline">Share</span>
+            </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-stretch">
-          <div className="lg:col-span-6 w-full">
-            <div className="relative aspect-square w-full rounded-[32px] bg-white border border-slate-100 p-3 shadow-[0_8px_30px_rgb(0,0,0,0.02)] group overflow-hidden">
-              <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-slate-50 shadow-inner">
+            <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-stone-400">
+              <Link href="/" className="hover:text-stone-700 transition-colors">
+                Home
+              </Link>
+              <span>/</span>
+              <Link
+                href="/artworks"
+                className="hover:text-stone-700 transition-colors"
+              >
+                Artworks
+              </Link>
+              <span>/</span>
+              <span className="text-stone-700 font-semibold max-w-[180px] truncate">
+                {artwork.title}
+              </span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Exhibition Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
+          {/* Left Column: Museum Display Frame */}
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            className="lg:col-span-7 w-full space-y-5"
+          >
+            <div className="relative aspect-[4/5] sm:aspect-square w-full rounded-[2.5rem] bg-white border border-stone-200/90 p-3.5 sm:p-4 shadow-sm group overflow-hidden">
+              <div className="relative w-full h-full rounded-[2rem] overflow-hidden bg-stone-100 shadow-inner">
                 <Image
                   src={artwork.image}
-                  alt={artwork.title ? `${artwork.title} - Artwork by ${artwork.artistName || "Artist"}` : "Artwork image"}
+                  alt={
+                    artwork.title
+                      ? `${artwork.title} - Artwork by ${
+                          artwork.artistName || "Artist"
+                        }`
+                      : "Artwork image"
+                  }
                   fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover transition-transform duration-750 ease-out group-hover:scale-[1.02]"
+                  sizes="(max-width: 1024px) 100vw, 55vw"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
                   priority
                 />
 
-                <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
+                {/* Floating Museum Badges */}
+                <div className="absolute top-4 inset-x-4 flex items-center justify-between gap-2 pointer-events-none">
                   {artwork.category && (
-                    <span className="bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-white/10 shadow-sm">
+                    <span className="bg-stone-900/85 backdrop-blur-md text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-lg border border-white/10 shadow-sm">
                       {artwork.category}
                     </span>
                   )}
 
                   {artwork.status && (
                     <span
-                      className={`text-[9px] font-extrabold tracking-widest uppercase px-2.5 py-1 rounded-md shadow-sm border ${
+                      className={`text-[9px] font-extrabold tracking-widest uppercase px-3 py-1.5 rounded-lg shadow-sm border ${
                         isAvailable
-                          ? "bg-[#e2f9f0]/90 backdrop-blur-sm text-[#10b981] border-[#bbf7d0]/60"
-                          : "bg-[#f1f5f9]/90 backdrop-blur-sm text-[#64748b] border-[#e2e8f0]/60"
+                          ? "bg-emerald-500/90 backdrop-blur-sm text-white border-emerald-400/60"
+                          : "bg-stone-900/85 backdrop-blur-sm text-stone-200 border-stone-700/60"
                       }`}
                     >
                       {artwork.status}
@@ -378,212 +453,383 @@ const ArtWorkDetailsPage = () => {
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="lg:col-span-6 w-full flex flex-col justify-between h-full">
+            {/* Museum Provenance Credentials */}
+            <div className="bg-white border border-stone-200/90 rounded-[2rem] p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 shadow-2xs">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-700 shrink-0">
+                  <FileCheck size={18} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-stone-800">
+                    Certificate Included
+                  </h4>
+                  <p className="text-[11px] text-stone-500 mt-0.5 leading-snug">
+                    Signed provenance document with encrypted identity seal.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
+                  <ShieldCheck size={18} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-stone-800">
+                    Authenticity Assured
+                  </h4>
+                  <p className="text-[11px] text-stone-500 mt-0.5 leading-snug">
+                    Verified original directly from creator workshop.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-700 shrink-0">
+                  <Truck size={18} />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-stone-800">
+                    White-Glove Logistics
+                  </h4>
+                  <p className="text-[11px] text-stone-500 mt-0.5 leading-snug">
+                    Fully insured global shipping & fine-art packaging.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Right Column: Curation Dossier & Acquisition Panel */}
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{
+              duration: 0.65,
+              delay: 0.1,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="lg:col-span-5 w-full flex flex-col justify-between space-y-6"
+          >
             <div>
-              <h1 className="text-3xl md:text-4xl font-black text-[#0f172a] tracking-tight leading-tight mb-4">
-                {artwork.title}
+              {/* Category & Date Eyebrow */}
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#B4136D] mb-2">
+                <Sparkles size={13} />
+                <span>{artwork.category || "Fine Art Collection"}</span>
+                <span className="text-stone-300">•</span>
+                <span className="text-stone-400 font-medium">
+                  {artwork.createdAt || "Archived"}
+                </span>
+              </div>
+
+              {/* Masterpiece Title */}
+              <h1 className="font-serif text-3xl sm:text-4xl md:text-[44px] font-bold text-stone-900 tracking-tight leading-[1.15] mb-5">
+                {artwork.title || "Untitled Masterpiece"}
               </h1>
 
-              <div className="flex items-center bg-white px-4 py-3 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] max-w-fit mb-4 border border-slate-50">
+              {/* Artist Plaque */}
+              <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-stone-200/90 shadow-2xs mb-6 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center shadow-md relative">
+                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-stone-100 border border-stone-200 flex items-center justify-center relative shrink-0">
                     {artistStats?.image || artwork.artistImage ? (
                       <Image
                         src={artistStats?.image || artwork.artistImage}
                         alt={artwork.artistName || "Artist"}
                         fill
-                        sizes="40px"
-                        className="object-cover rounded-xl"
+                        sizes="48px"
+                        className="object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-tr from-violet-500 to-indigo-500 flex items-center justify-center text-white font-bold text-lg">
-                        {(artwork.artistName || "U").charAt(0)}
+                      <div className="w-full h-full bg-[#B4136D] flex items-center justify-center text-white font-bold text-lg font-serif">
+                        {(artwork.artistName || "A").charAt(0)}
                       </div>
                     )}
                   </div>
                   <div>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">
-                      Artist
-                    </p>
-                    <button
-                      onClick={handleOpenArtistModal}
-                      aria-label="View artist profile and statistics"
-                      className="text-sm font-extrabold text-slate-800 hover:text-violet-600 transition-colors flex items-center gap-1.5 group border-0 bg-transparent p-0 cursor-pointer text-left outline-none"
-                    >
-                      <span>{artwork.artistName || "Unknown Artist"}</span>
-                      <ExternalLink size={13} className="text-slate-400 group-hover:text-violet-600 transition-colors shrink-0" />
-                    </button>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
+                      Curated Creator
+                    </span>
+                    <h3 className="font-serif font-bold text-stone-900 text-base">
+                      {artwork.artistName || "Independent Artist"}
+                    </h3>
                   </div>
                 </div>
+
+                <button
+                  onClick={handleOpenArtistModal}
+                  aria-label="View artist profile and statistics"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-xs font-semibold text-stone-700 transition cursor-pointer"
+                >
+                  <span>Dossier</span>
+                  <ExternalLink size={12} className="text-stone-400" />
+                </button>
               </div>
 
-              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 mb-5 pl-1">
-                <Calendar size={14} className="text-slate-400" />
-                <span>
-                  Uploaded:{" "}
-                  <span className="text-slate-600">
-                    {artwork.createdAt || "Recently"}
-                  </span>
-                </span>
-              </div>
-
-              <div className="bg-violet-50/30 border border-violet-100/80 rounded-2xl p-5 shadow-[0_4px_20px_-4px_rgba(139,92,246,0.03)] mb-6">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-violet-600 mb-2.5 flex items-center gap-1.5">
-                  <span className="w-1.5 h-3 bg-violet-500 rounded-full"></span>
-                  The Story Behind The Piece
+              {/* Curatorial Statement & Story */}
+              <div className="bg-white border border-stone-200/90 rounded-[2rem] p-6 shadow-2xs mb-6">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#B4136D] mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-3 bg-[#B4136D] rounded-full" />
+                  Curatorial Statement
                 </h3>
-                <p className="text-slate-600 text-[14px] md:text-[15px] leading-relaxed font-medium">
+                <p className="text-stone-700 text-sm sm:text-[15px] leading-relaxed font-normal">
                   {artwork.description ||
-                    "No description provided for this artwork."}
+                    "This work represents a key exploration of form, light, and aesthetic discipline within the artist's body of work, preserved for the ArtHub permanent archive."}
                 </p>
               </div>
             </div>
 
-            <div className="mt-auto">
-              <div className="bg-white border border-slate-200/60 rounded-[28px] p-6 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.04)] mb-4">
-                <div className="mb-4">
-                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">
-                    Current Price
-                  </p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl sm:text-4xl font-black text-violet-600 tracking-tight">
-                      ${artwork.price?.toLocaleString() || "0"}
+            {/* Acquisition Card */}
+            <div>
+              <div className="bg-white border border-stone-200/90 rounded-[2rem] p-6 sm:p-7 shadow-xs">
+                <div className="flex items-baseline justify-between mb-4">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-widest text-stone-400 block mb-1">
+                      Acquisition Value
                     </span>
-                    <span className="text-xs font-bold text-slate-400 uppercase">USD</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-serif text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight">
+                        ${artwork.price?.toLocaleString() || "0"}
+                      </span>
+                      <span className="text-xs font-bold text-stone-400 uppercase">
+                        USD
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Trust & Guarantee Badges */}
-                  <div className="flex flex-wrap items-center gap-2 mt-3">
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-lg">
-                      <ShieldCheck size={13} className="shrink-0 text-emerald-600" />
-                      Verified Original
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">
-                      <CheckCircle2 size={13} className="shrink-0 text-slate-500" />
-                      Instant Ownership Transfer
-                    </span>
-                  </div>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                    <CheckCircle2 size={12} className="text-emerald-600" />
+                    Available to Acquire
+                  </span>
                 </div>
 
                 {isSold ? (
                   <div className="space-y-3">
                     <button
                       disabled
-                      className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-slate-100 text-slate-400 font-bold text-sm cursor-not-allowed border border-slate-200/50"
+                      className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-stone-100 text-stone-400 font-bold text-sm cursor-not-allowed border border-stone-200"
                     >
-                      <ShoppingCart size={18} />
+                      <Lock size={16} />
                       <span>Already Sold</span>
                     </button>
-
-                    <p className="text-center text-xs text-slate-500">
-                      Purchased by {artwork.purchasedBy}
-                    </p>
+                    {artwork.purchasedBy && (
+                      <p className="text-center text-xs text-stone-500">
+                        Acquired by {artwork.purchasedBy}
+                      </p>
+                    )}
                   </div>
                 ) : isArtistOwner || isArtist ? (
                   <div className="space-y-3">
                     <button
                       disabled
-                      className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-slate-100 text-slate-400 font-bold text-sm cursor-not-allowed border border-slate-200/50"
+                      className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-stone-100 text-stone-400 font-bold text-sm cursor-not-allowed border border-stone-200"
                     >
-                      <ShoppingCart size={18} />
-                      <span>Purchase Artwork</span>
+                      <ShoppingCart size={16} />
+                      <span>Acquisition Ineligible</span>
                     </button>
-
-                    <div className="flex items-center gap-1.5 bg-amber-50/70 border border-amber-200/50 text-amber-700 px-3 py-2 rounded-lg text-xs font-semibold">
-                      <AlertCircle size={14} className="shrink-0" />
+                    <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-800 px-3.5 py-2.5 rounded-xl text-xs font-medium">
+                      <AlertCircle
+                        size={15}
+                        className="shrink-0 text-amber-700"
+                      />
                       <span>
                         {isArtistOwner
-                          ? "You are the owner of this artwork."
-                          : "Artists are not allowed to purchase artworks."}
+                          ? "You are cataloged as the primary creator of this work."
+                          : "Artists are restricted from acquiring works through their creator portal."}
                       </span>
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <button
                       onClick={() => {
                         if (!session?.user) {
                           router.push(
-                            `/sign-in?redirect=${encodeURIComponent(window.location.pathname)}`,
+                            `/sign-in?redirect=${encodeURIComponent(
+                              window.location.pathname,
+                            )}`,
                           );
                           return;
                         }
-
                         handlePurchase();
                       }}
                       disabled={purchasing}
-                      className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm transition-all duration-150 shadow-md shadow-violet-500/20 active:scale-[0.99] cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
+                      className="w-full flex items-center justify-center gap-2.5 px-6 py-4 rounded-xl bg-[#B4136D] hover:bg-[#930f58] text-white font-bold text-sm transition-all duration-200 shadow-md shadow-[#B4136D]/20 active:scale-[0.99] cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
                     >
                       {purchasing ? (
                         <>
                           <Loader2 size={18} className="animate-spin" />
-                          <span>Redirecting to Stripe...</span>
+                          <span>Connecting to Stripe...</span>
                         </>
                       ) : (
                         <>
                           <ShoppingCart size={18} />
-                          <span>Purchase Artwork</span>
+                          <span>Purchase Artworks</span>
                         </>
                       )}
                     </button>
 
-                    {!session?.user && (
-                      <p className="text-center text-[11px] font-medium text-slate-400">
-                        🔒 Sign-in required to securely checkout via Stripe.
-                      </p>
-                    )}
+                    <p className="text-center text-[11px] text-stone-400 flex items-center justify-center gap-1.5">
+                      <Lock size={12} />
+                      <span>
+                        Secure checkout via Stripe • Authenticity Guarantee • Fully insured
+                      </span>
+                    </p>
                   </div>
                 )}
               </div>
 
+              {/* Creator Management Strip */}
               {isArtistOwner && (
-                <div className="bg-violet-50/40 border border-violet-100 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-inner">
-                  <div className="flex items-center gap-2 text-xs font-bold text-violet-800">
-                    <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></span>
-                    <span>You own this artwork</span>
+                <div className="bg-[#B4136D]/5 border border-[#B4136D]/20 rounded-2xl p-4 mt-4 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#B4136D]">
+                    <span className="w-2 h-2 rounded-full bg-[#B4136D] animate-pulse" />
+                    <span>Creator Controls Active</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={openEditModal}
-                      className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-violet-600 transition shadow-sm cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-stone-700 bg-white border border-stone-200 rounded-xl hover:bg-stone-50 hover:border-stone-300 transition shadow-2xs cursor-pointer"
                     >
                       <Edit3 size={13} />
-                      <span>Edit</span>
+                      <span>Edit Dossier</span>
                     </button>
                     <button
                       onClick={() => setShowDeleteModal(true)}
-                      className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-red-600 bg-white border border-red-100 rounded-xl hover:bg-red-50 transition shadow-sm cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-rose-700 bg-white border border-rose-200 rounded-xl hover:bg-rose-50 transition shadow-2xs cursor-pointer"
                     >
                       <Trash2 size={13} />
-                      <span>Delete</span>
+                      <span>De-list</span>
                     </button>
                   </div>
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        <div className="mt-16 pt-10 border-t border-slate-200/60 max-w-3xl">
-          <h2 className="text-xl font-extrabold text-[#0f172a] tracking-tight mb-6 flex items-center gap-2">
-            <MessageSquare size={20} className="text-violet-600" />
-            <span>Discussion & Reviews</span>
-          </h2>
+        {/* Related Curations Gallery */}
+        {relatedArtworks.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-20 pt-12 border-t border-stone-200/90"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-[#B4136D] block mb-1">
+                  From The Same Collection
+                </span>
+                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
+                  Related Masterpieces
+                </h2>
+              </div>
+              <Link
+                href="/artworks"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#B4136D] hover:text-[#930f58] transition group"
+              >
+                <span>View Full Catalog</span>
+                <ArrowRight
+                  size={13}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {relatedArtworks.map((item, index) => (
+                <motion.div
+                  key={item._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-20px" }}
+                  transition={{
+                    duration: 0.5,
+                    delay: index * 0.08,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
+                  <Link
+                    href={`/artworks/${item._id}`}
+                    className="group bg-white rounded-[2rem] p-3 border border-stone-200/90 shadow-2xs hover:shadow-lg hover:border-stone-300 transition-all duration-300 flex flex-col"
+                  >
+                    <div className="relative aspect-[4/5] rounded-[1.4rem] overflow-hidden bg-stone-100 mb-3">
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, 25vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                      />
+                    </div>
+                    <div className="px-2 pb-2">
+                      <h3 className="font-serif font-bold text-stone-900 text-base line-clamp-1 group-hover:text-[#B4136D] transition-colors">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs italic text-stone-500 mt-0.5">
+                        by {item.artistName}
+                      </p>
+                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-stone-100">
+                        <span className="font-serif font-bold text-sm text-stone-900">
+                          ${item.price?.toLocaleString()}
+                        </span>
+                        <span className="text-[11px] font-semibold text-[#B4136D]">
+                          Details ➔
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Collector Commentary & Guestbook */}
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-20 pt-12 border-t border-stone-200/90 max-w-3xl"
+        >
+          <div className="mb-8">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#B4136D] block mb-1">
+              Provenance & Dialog
+            </span>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight flex items-center gap-2.5">
+              <MessageSquare size={24} className="text-[#B4136D]" />
+              <span>Collector Guestbook</span>
+            </h2>
+            <p className="text-stone-500 text-xs sm:text-sm mt-1">
+              Leave your appreciation, provenance queries, or critical impressions.
+            </p>
+          </div>
 
           {!user.isLoggedIn ? (
-            <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 text-center text-sm font-semibold text-slate-500 mb-6">
-              🔒 Please login to leave a comment.
+            <div className="bg-white border border-stone-200/90 rounded-[2rem] p-6 text-center shadow-2xs mb-8">
+              <p className="text-stone-600 text-sm font-medium mb-3">
+                🔒 Sign in as an ArtHub collector to sign this masterpiece's guestbook.
+              </p>
+              <Link
+                href={`/sign-in?redirect=${encodeURIComponent(
+                  typeof window !== "undefined" ? window.location.pathname : "",
+                )}`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#B4136D] hover:bg-[#930f58] text-white text-xs font-bold transition shadow-xs"
+              >
+                Sign In to Comment
+              </Link>
             </div>
           ) : user.role === "artist" ? (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-center text-sm font-semibold text-amber-700 mb-6">
-              Artists cannot comment on artworks.
+            <div className="bg-amber-50/70 border border-amber-200/70 rounded-2xl p-4 text-center text-xs font-semibold text-amber-800 mb-8">
+              Creator accounts are excluded from collector guestbook submissions.
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-xl overflow-hidden bg-violet-100 flex items-center justify-center text-sm font-bold">
+            <div className="bg-white border border-stone-200/90 rounded-[2rem] p-5 shadow-2xs mb-8">
+              <div className="flex gap-3.5">
+                <div className="w-10 h-10 rounded-xl overflow-hidden bg-stone-100 border border-stone-200 flex items-center justify-center text-xs font-bold text-stone-700 shrink-0">
                   {session?.user?.image ? (
                     <Image
                       src={session.user.image}
@@ -602,41 +848,55 @@ const ArtWorkDetailsPage = () => {
                     rows={3}
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder="Share your thoughts about this masterpiece..."
-                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-medium outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 transition resize-none"
+                    placeholder="Share your appreciation or thoughts about this masterpiece..."
+                    className="w-full bg-[#FAF8F5] border border-stone-200 rounded-xl p-3.5 text-sm font-medium outline-none focus:border-[#B4136D]/60 focus:bg-white focus:ring-3 focus:ring-[#B4136D]/10 transition resize-none placeholder:text-stone-400"
                   />
 
-                  <button
-                    onClick={handleComment}
-                    disabled={postingComment}
-                    className="mt-2 px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition shadow-sm cursor-pointer disabled:opacity-60"
-                  >
-                    {postingComment ? "Posting..." : "Post Comment"}
-                  </button>
+                  <div className="flex justify-end mt-2">
+                    <button
+                      onClick={handleComment}
+                      disabled={postingComment}
+                      className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold text-white bg-[#B4136D] hover:bg-[#930f58] rounded-xl transition shadow-xs cursor-pointer disabled:opacity-60"
+                    >
+                      {postingComment ? (
+                        <>
+                          <Loader2 size={13} className="animate-spin" />
+                          <span>Posting...</span>
+                        </>
+                      ) : (
+                        <span>Post Comment</span>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="mt-8 space-y-4">
+          {/* Comments List */}
+          <div className="space-y-4">
             {comments.length === 0 ? (
-              <div className="text-center text-slate-500 text-sm py-8 border rounded-2xl bg-white">
-                No comments yet. Be the first to comment!
+              <div className="text-center text-stone-400 text-sm py-10 border border-dashed border-stone-300 rounded-[2rem] bg-white">
+                No collector impressions recorded yet. Be the first to leave a note.
               </div>
             ) : (
               comments.map((item) => (
-                <div
+                <motion.div
                   key={item._id}
-                  className="bg-white border border-slate-200 rounded-2xl p-4"
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-20px" }}
+                  transition={{ duration: 0.4 }}
+                  className="bg-white border border-stone-200/90 rounded-2xl p-5 shadow-2xs"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-violet-100 flex items-center justify-center font-bold">
+                  <div className="flex items-start gap-3.5">
+                    <div className="w-9 h-9 rounded-xl overflow-hidden bg-stone-100 border border-stone-200 flex items-center justify-center font-bold text-xs text-stone-700 shrink-0">
                       {item.userImage ? (
                         <Image
                           src={item.userImage}
                           alt={item.userName}
-                          width={40}
-                          height={40}
+                          width={36}
+                          height={36}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -645,88 +905,79 @@ const ArtWorkDetailsPage = () => {
                     </div>
 
                     <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-bold text-slate-800">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="font-serif font-bold text-stone-900 text-sm">
                           {item.userName}
                         </h4>
 
-                        <span className="text-xs text-slate-400">
-                          {new Date(item.createdAt).toLocaleDateString()}
+                        <span className="text-[11px] font-medium text-stone-400">
+                          {new Date(item.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
                         </span>
                       </div>
 
-                      <p className="mt-2 text-sm text-slate-600 whitespace-pre-wrap">
+                      <p className="mt-2 text-xs sm:text-sm text-stone-600 leading-relaxed whitespace-pre-wrap">
                         {item.comment}
                       </p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Edit Modal */}
-
       {showEditModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-lg rounded-3xl bg-white shadow-2xl border border-slate-200 p-7 animate-in fade-in zoom-in-95 duration-200">
-            <h2 className="text-2xl font-black text-slate-900 mb-6">
-              Edit Artwork
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-lg rounded-[2.5rem] bg-white shadow-2xl border border-stone-200 p-8 animate-in fade-in zoom-in-95 duration-200">
+            <h2 className="font-serif text-2xl font-bold text-stone-900 mb-6">
+              Edit Artwork Dossier
             </h2>
 
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div>
-                <label className="text-sm font-bold text-slate-700 mb-2 block">
-                  Title
+                <label className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-1.5 block">
+                  Artwork Title
                 </label>
-
                 <input
                   value={editForm.title}
                   onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      title: e.target.value,
-                    })
+                    setEditForm({ ...editForm, title: e.target.value })
                   }
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500"
+                  className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm outline-none focus:border-[#B4136D]"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-bold text-slate-700 mb-2 block">
-                  Description
+                <label className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-1.5 block">
+                  Curatorial Statement
                 </label>
-
                 <textarea
-                  rows={5}
+                  rows={4}
                   value={editForm.description}
                   onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      description: e.target.value,
-                    })
+                    setEditForm({ ...editForm, description: e.target.value })
                   }
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none resize-none focus:border-violet-500"
+                  className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm outline-none resize-none focus:border-[#B4136D]"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-bold text-slate-700 mb-2 block">
-                  Price
+                <label className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-1.5 block">
+                  Price (USD)
                 </label>
-
                 <input
                   type="number"
                   value={editForm.price}
                   onChange={(e) =>
-                    setEditForm({
-                      ...editForm,
-                      price: e.target.value,
-                    })
+                    setEditForm({ ...editForm, price: e.target.value })
                   }
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-violet-500"
+                  className="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm outline-none focus:border-[#B4136D]"
                 />
               </div>
             </div>
@@ -734,170 +985,183 @@ const ArtWorkDetailsPage = () => {
             <div className="flex justify-end gap-3 mt-8">
               <button
                 onClick={() => setShowEditModal(false)}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 font-semibold hover:bg-slate-50 transition cursor-pointer"
+                className="px-5 py-2.5 rounded-full border border-stone-200 text-xs font-semibold hover:bg-stone-50 transition cursor-pointer"
               >
                 Cancel
               </button>
-
               <button
                 onClick={handleUpdateArtwork}
                 disabled={saving}
-                className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold transition cursor-pointer disabled:opacity-60"
+                className="px-6 py-2.5 rounded-full bg-[#B4136D] hover:bg-[#930f58] text-white text-xs font-bold transition cursor-pointer disabled:opacity-60"
               >
-                {saving ? "Saving..." : "Save Changes"}
+                {saving ? "Saving Changes..." : "Save Changes"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete Modal */}
-
+      {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl border border-slate-200 p-7">
-            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-5">
-              <Trash2 className="text-red-600" size={30} />
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-[2.5rem] bg-white shadow-2xl border border-stone-200 p-8 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-rose-100 flex items-center justify-center mx-auto mb-4 text-rose-700">
+              <Trash2 size={26} />
             </div>
-
-            <h2 className="text-2xl font-black text-center text-slate-900">
-              Delete Artwork?
+            <h2 className="font-serif text-2xl font-bold text-stone-900 mb-2">
+              De-list Artwork?
             </h2>
-
-            <p className="text-center text-slate-500 mt-3 leading-relaxed">
-              This action cannot be undone.
+            <p className="text-stone-500 text-xs sm:text-sm leading-relaxed mb-6">
+              This will permanently remove the piece from the ArtHub public registry. This action cannot be reversed.
             </p>
-
-            <div className="flex gap-3 mt-8">
+            <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="flex-1 py-3 rounded-xl border border-slate-200 font-semibold hover:bg-slate-50 transition cursor-pointer"
+                className="flex-1 py-3 rounded-full border border-stone-200 text-xs font-semibold hover:bg-stone-50 transition cursor-pointer"
               >
                 Cancel
               </button>
-
               <button
                 onClick={handleDeleteArtwork}
                 disabled={deleting}
-                className="flex-1 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition cursor-pointer disabled:opacity-60"
+                className="flex-1 py-3 rounded-full bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold transition cursor-pointer disabled:opacity-60"
               >
-                {deleting ? "Deleting..." : "Delete"}
+                {deleting ? "De-listing..." : "De-list Artwork"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Artist Profile Stats Modal */}
+      {/* Artist Profile Dossier Modal */}
       <AnimatePresence>
         {showArtistModal && (
-          <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              initial={{ opacity: 0, scale: 0.96, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              exit={{ opacity: 0, scale: 0.96, y: 12 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="w-full max-w-md rounded-3xl bg-white shadow-2xl border border-slate-200/60 p-6 relative overflow-hidden"
+              className="w-full max-w-md rounded-[2.5rem] bg-white shadow-2xl border border-stone-200/90 p-7 relative overflow-hidden"
             >
               {/* Close Button */}
               <button
                 onClick={() => setShowArtistModal(false)}
-                className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all duration-200 cursor-pointer"
+                className="absolute top-5 right-5 p-2 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition cursor-pointer"
               >
                 <X size={18} />
               </button>
 
               {loadingArtistStats ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <div className="w-9 h-9 border-3 border-violet-600 border-t-transparent rounded-full animate-spin mb-4" />
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                    Fetching Artist Info...
+                  <div className="w-9 h-9 border-3 border-[#B4136D] border-t-transparent rounded-full animate-spin mb-4" />
+                  <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">
+                    Consulting Artist Archive...
                   </p>
                 </div>
               ) : artistStats ? (
                 <div className="space-y-6">
-                  {/* Artist Header Info */}
-                  <div className="flex flex-col items-center text-center mt-3">
-                    <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200/80 p-1 shadow-sm mb-4">
+                  {/* Header */}
+                  <div className="flex flex-col items-center text-center mt-2">
+                    <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 p-1 shadow-sm mb-4">
                       {artistStats.image ? (
                         <Image
                           src={artistStats.image}
                           alt={artistStats.name}
                           fill
-                          className="object-contain rounded-xl p-0.5"
+                          className="object-cover rounded-xl"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-tr from-violet-500 to-indigo-500 text-white text-3xl font-black rounded-xl">
+                        <div className="w-full h-full flex items-center justify-center bg-[#B4136D] text-white text-3xl font-bold font-serif rounded-xl">
                           {artistStats.name.charAt(0).toUpperCase()}
                         </div>
                       )}
                     </div>
 
-                    <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                    <h3 className="font-serif text-2xl font-bold text-stone-900 tracking-tight">
                       {artistStats.name}
                     </h3>
-                    
-                    <span className="inline-flex items-center gap-1 mt-1.5 px-3 py-0.5 text-[10px] font-bold rounded-full bg-violet-100 text-violet-700 border border-violet-200/20 uppercase tracking-wider">
-                      Verified Artist
+
+                    <span className="inline-flex items-center gap-1 mt-1.5 px-3 py-0.5 text-[10px] font-bold rounded-full bg-[#B4136D]/10 text-[#B4136D] border border-[#B4136D]/20 uppercase tracking-wider">
+                      Verified ArtHub Creator
                     </span>
                   </div>
 
                   {/* Details List */}
-                  <div className="space-y-3.5 bg-slate-50/70 border border-slate-100 rounded-2xl p-4.5">
-                    <div className="flex items-center gap-3 text-slate-600">
-                      <Mail size={16} className="text-slate-400 shrink-0" />
+                  <div className="space-y-3 bg-[#FAF8F5] border border-stone-200/80 rounded-2xl p-4">
+                    <div className="flex items-center gap-3 text-stone-600">
+                      <Mail size={16} className="text-stone-400 shrink-0" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Email Address</p>
-                        <p className="text-xs font-semibold text-slate-700 truncate">{artistStats.email}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-0.5">
+                          Studio Dispatch
+                        </p>
+                        <p className="text-xs font-semibold text-stone-700 truncate">
+                          {artistStats.email}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 text-slate-600">
-                      <Calendar size={16} className="text-slate-400 shrink-0" />
+                    <div className="flex items-center gap-3 text-stone-600">
+                      <Calendar size={16} className="text-stone-400 shrink-0" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Joined Workspace</p>
-                        <p className="text-xs font-semibold text-slate-700">
-                          {artistStats.createdAt 
-                            ? new Date(artistStats.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-0.5">
+                          Active Since
+                        </p>
+                        <p className="text-xs font-semibold text-stone-700">
+                          {artistStats.createdAt
+                            ? new Date(artistStats.createdAt).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                },
+                              )
                             : "Creative Partner"}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Statistics Grid */}
-                  <div className="grid grid-cols-2 gap-3.5">
-                    <div className="bg-white border border-slate-200/80 rounded-2xl p-4 text-center shadow-xs">
-                      <Palette className="w-5 h-5 text-violet-500 mx-auto mb-1.5" />
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Total Artworks</p>
-                      <p className="text-xl font-extrabold text-slate-900">{artistStats.totalArtworks}</p>
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white border border-stone-200 rounded-2xl p-4 text-center shadow-2xs">
+                      <Palette className="w-5 h-5 text-[#B4136D] mx-auto mb-1.5" />
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-1">
+                        Total Artworks
+                      </p>
+                      <p className="font-serif text-2xl font-bold text-stone-900">
+                        {artistStats.totalArtworks}
+                      </p>
                     </div>
 
-                    <div className="bg-white border border-slate-200/80 rounded-2xl p-4 text-center shadow-xs">
-                      <Award className="w-5 h-5 text-emerald-500 mx-auto mb-1.5" />
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Works Sold</p>
-                      <p className="text-xl font-extrabold text-slate-900">{artistStats.soldArtworks}</p>
+                    <div className="bg-white border border-stone-200 rounded-2xl p-4 text-center shadow-2xs">
+                      <Award className="w-5 h-5 text-emerald-600 mx-auto mb-1.5" />
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-1">
+                        Acquired Works
+                      </p>
+                      <p className="font-serif text-2xl font-bold text-stone-900">
+                        {artistStats.soldArtworks}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Action Button */}
-                  <div className="pt-2">
-                    <button
-                      onClick={() => {
-                        sessionStorage.setItem("artistSearch", artistStats.name);
-                        setShowArtistModal(false);
-                        router.push("/artworks");
-                      }}
-                      className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs transition-all duration-150 shadow-md shadow-violet-500/10 active:scale-[0.99] cursor-pointer text-center"
-                    >
-                      <span>Explore Artist Gallery</span>
-                      <span className="text-[10px]">➔</span>
-                    </button>
-                  </div>
+                  {/* Action Link */}
+                  <button
+                    onClick={() => {
+                      sessionStorage.setItem("artistSearch", artistStats.name);
+                      setShowArtistModal(false);
+                      router.push("/artworks");
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-full bg-[#B4136D] hover:bg-[#930f58] text-white font-bold text-xs transition-all shadow-md shadow-[#B4136D]/15 cursor-pointer"
+                  >
+                    <span>Explore Artist's Catalog</span>
+                    <ArrowRight size={13} />
+                  </button>
                 </div>
               ) : (
-                <div className="text-center py-6 text-slate-500 font-semibold text-sm">
-                  Failed to load artist stats.
+                <div className="text-center py-6 text-stone-500 font-medium text-sm">
+                  Failed to load artist dossier.
                 </div>
               )}
             </motion.div>
