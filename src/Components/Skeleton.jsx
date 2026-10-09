@@ -363,17 +363,24 @@ export const TopArtistSkeleton = () => (
 );
 
 export const CategorySkeleton = () => (
-  <section className="py-12 px-4 max-w-[80%] mx-auto animate-pulse">
-    <div className="flex justify-center mb-10">
-      <div className="h-8 bg-slate-200 rounded-xl w-60" />
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-      {[...Array(6)].map((_, index) => (
-        <div
-          key={index}
-          className="h-56 rounded-3xl bg-slate-200"
-        />
-      ))}
+  <section className="w-full bg-[#FAF8F5] py-16 sm:py-24 border-t border-stone-200/60 overflow-hidden">
+    <div className="w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto animate-pulse">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 sm:mb-12 gap-5">
+        <div>
+          <div className="h-5 w-32 bg-stone-200/90 rounded-full mb-3" />
+          <div className="h-10 w-64 bg-stone-200/90 rounded-2xl mb-2" />
+          <div className="h-4 w-80 bg-stone-200/80 rounded-lg max-w-full" />
+        </div>
+        <div className="h-10 w-36 bg-stone-200/90 rounded-full shrink-0" />
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5">
+        {[...Array(6)].map((_, index) => (
+          <div
+            key={index}
+            className="h-72 sm:h-80 lg:h-[370px] rounded-[2rem] bg-stone-200/80 border border-stone-200/90"
+          />
+        ))}
+      </div>
     </div>
   </section>
 );

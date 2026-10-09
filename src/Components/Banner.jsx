@@ -241,7 +241,6 @@ const Banner = () => {
 
               {/* Primary Masterpiece Frame (Museum Matting & Elevation) */}
               <motion.div
-                whileHover={{ y: -6, transition: { duration: 0.3 } }}
                 className="relative z-10 w-full aspect-[4/5] rounded-[2.2rem] bg-white p-3 sm:p-3.5 border border-stone-200/90 shadow-[0_25px_60px_-12px_rgba(28,25,23,0.15)] group transition-shadow duration-300 hover:shadow-[0_32px_75px_-12px_rgba(28,25,23,0.22)]"
               >
                 <div className="relative w-full h-full rounded-[1.6rem] overflow-hidden bg-stone-100 shadow-inner">
@@ -262,8 +261,7 @@ const Banner = () => {
               <motion.div
                 animate={{ y: [0, -6, 0] }}
                 transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-                whileHover={{ scale: 1.05, y: -8, transition: { duration: 0.25 } }}
-                className="absolute -bottom-4 -left-3 sm:-bottom-6 sm:-left-6 z-20 w-[175px] sm:w-[210px] aspect-[4/5] rounded-[1.6rem] bg-white p-2.5 border border-stone-200/90 shadow-[0_20px_45px_-8px_rgba(28,25,23,0.2)] cursor-pointer group"
+                className="absolute -bottom-4 -left-3 sm:-bottom-6 sm:-left-6 z-20 w-[175px] sm:w-[210px] aspect-[4/5] rounded-[1.6rem] bg-white p-2.5 border border-stone-200/90 shadow-[0_20px_45px_-8px_rgba(28,25,23,0.2)] hover:shadow-[0_25px_50px_-8px_rgba(28,25,23,0.28)] transition-shadow duration-300 cursor-pointer group"
               >
                 <div className="relative w-full h-full rounded-2xl overflow-hidden bg-stone-100 shadow-inner">
                   <Image

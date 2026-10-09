@@ -1,21 +1,21 @@
 import Banner from "@/Components/Banner";
 import Category from "@/Components/Category";
-import JoinArtHub from "@/Components/JoinArtHub";
-import Navbar from "@/Components/Navbar";
 import TopArt from "@/Components/TopArt";
 import TopArtist from "@/Components/TopArtist";
 import WhyArtHub from "@/Components/WhyArtHub";
-import Image from "next/image";
+import MasterQuotes from "@/Components/MasterQuotes";
+import Faq from "@/Components/Faq";
 
 export default function Home() {
   return (
     <div>
-      <Banner></Banner>
-      <TopArt></TopArt>
-      <TopArtist></TopArtist>
-      <Category></Category>
-      <WhyArtHub></WhyArtHub>
-      <JoinArtHub></JoinArtHub>
+      <Banner />
+      <TopArt />
+      <TopArtist />
+      <Category />
+      <WhyArtHub />
+      <MasterQuotes />
+      <Faq />
     </div>
   );
 }
