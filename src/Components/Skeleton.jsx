@@ -298,28 +298,33 @@ export const TopArtSkeleton = () => {
   const getGridClass = (index) => {
     switch (index) {
       case 0:
-        return "col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-3 lg:row-span-2";
+        return "col-span-1 sm:col-span-2 lg:col-span-2 lg:row-span-2";
+      case 5:
+        return "col-span-1 sm:col-span-2 lg:col-span-2 lg:row-span-2 lg:col-start-3 lg:row-start-2";
       default:
         return "col-span-1";
     }
   };
   return (
-    <section className="w-full bg-slate-50 py-20 animate-pulse">
-      <div className="max-w-[80%] mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
+    <section className="w-full bg-[#FAF8F5] py-16 sm:py-24 border-t border-stone-200/60 animate-pulse overflow-hidden">
+      <div className="w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 sm:mb-12 gap-5">
           <div className="space-y-3 w-full sm:w-auto">
-            <div className="h-8 bg-slate-200 rounded-xl w-64" />
-            <div className="h-4 bg-slate-200 rounded-lg w-96 max-w-full" />
+            <div className="h-6 bg-stone-200/80 rounded-full w-36" />
+            <div className="h-9 bg-stone-200/80 rounded-xl w-72" />
+            <div className="h-4 bg-stone-200/80 rounded-lg w-96 max-w-full" />
           </div>
-          <div className="h-6 bg-slate-200 rounded-lg w-28 shrink-0" />
+          <div className="h-10 bg-stone-200/80 rounded-full w-36 shrink-0" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 auto-rows-[250px]">
-          {[...Array(7)].map((_, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 auto-rows-[270px] sm:auto-rows-[280px] grid-flow-dense">
+          {[...Array(6)].map((_, index) => (
             <div
               key={index}
-              className={`bg-white p-2 border border-slate-200 rounded-3xl ${getGridClass(index)}`}
+              className={`bg-white p-2.5 sm:p-3 border border-stone-200/80 rounded-[2rem] shadow-xs ${getGridClass(
+                index
+              )}`}
             >
-              <div className="w-full h-full bg-slate-200 rounded-2xl" />
+              <div className="w-full h-full bg-stone-200/70 rounded-[1.4rem]" />
             </div>
           ))}
         </div>
@@ -329,19 +334,30 @@ export const TopArtSkeleton = () => {
 };
 
 export const TopArtistSkeleton = () => (
-  <section className="w-full max-w-[90%] md:max-w-[80%] mx-auto bg-[#f5f7ff] py-10 md:py-16 px-4 md:px-8 rounded-3xl border border-purple-200 my-12 animate-pulse">
-    <div className="text-center mb-10 md:mb-12 flex flex-col items-center">
-      <div className="h-8 bg-slate-200 rounded-xl w-48 mb-3" />
-      <div className="h-4 bg-slate-200 rounded-lg w-80 max-w-full" />
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-10">
-      {[...Array(3)].map((_, index) => (
-        <div key={index} className="flex flex-col items-center p-4">
-          <div className="w-28 h-28 md:w-32 md:h-32 mb-4 rounded-full bg-slate-200 border-4 border-white" />
-          <div className="h-6 bg-slate-200 rounded-lg w-36 mb-3" />
-          <div className="h-4 bg-slate-200 rounded-lg w-28" />
+  <section className="w-full bg-[#FAF8F5] py-16 sm:py-24 border-t border-stone-200/60 animate-pulse overflow-hidden">
+    <div className="w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 sm:mb-12 gap-5">
+        <div className="space-y-3 w-full sm:w-auto">
+          <div className="h-6 bg-stone-200/80 rounded-full w-36" />
+          <div className="h-9 bg-stone-200/80 rounded-xl w-64" />
+          <div className="h-4 bg-stone-200/80 rounded-lg w-96 max-w-full" />
         </div>
-      ))}
+        <div className="h-10 bg-stone-200/80 rounded-full w-40 shrink-0" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
+        {[...Array(3)].map((_, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-[2rem] p-6 sm:p-7 border border-stone-200/80 shadow-xs flex flex-col items-center"
+          >
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-stone-200/80 mb-4" />
+            <div className="h-6 bg-stone-200/80 rounded-lg w-36 mb-2" />
+            <div className="h-3.5 bg-stone-200/70 rounded-md w-28 mb-5" />
+            <div className="h-14 bg-stone-100 rounded-xl w-full mb-6" />
+            <div className="h-11 bg-stone-200/80 rounded-full w-full" />
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 );
