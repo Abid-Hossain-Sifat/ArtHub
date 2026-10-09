@@ -1,91 +1,88 @@
 "use client";
-import React from 'react';
+import React from "react";
 import Errorimg from "../../public/Assets/Error.png";
-import Image from 'next/image';
-import Link from 'next/link';
-import { Home, Palette } from 'lucide-react';
-import { motion } from 'framer-motion';
+import Image from "next/image";
+import Link from "next/link";
+import { Home, Palette, Sparkles, Compass } from "lucide-react";
+import { motion } from "framer-motion";
 
 const NotFoundPage = () => {
   const containerVariants = {
-    hidden: { opacity: 0, scale: 0.95 },
+    hidden: { opacity: 0, scale: 0.96 },
     visible: {
       opacity: 1,
       scale: 1,
-      transition: { duration: 0.6, ease: "easeOut" }
-    }
+      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+    },
   };
 
   const boxFloatingAnimation = {
-    y: [0, -12, 0], 
+    y: [0, -8, 0],
     transition: {
-      duration: 5,        
-      ease: "easeInOut",  
-      repeat: Infinity,   
-    }
+      duration: 5,
+      ease: "easeInOut",
+      repeat: Infinity,
+    },
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center font-sans antialiased px-4 py-8 sm:py-12 overflow-hidden">
-      
+    <div className="relative min-h-screen w-full flex items-center justify-center font-sans antialiased px-4 py-8 sm:py-12 overflow-hidden selection:bg-[#B4136D]/15 selection:text-[#B4136D]">
+      {/* Background with Ambient Overlay */}
       <div className="absolute inset-0 w-full h-full z-0">
-        <Image 
-          src={Errorimg} 
-          alt="Art Gallery Background" 
+        <Image
+          src={Errorimg}
+          alt="Art Gallery Background"
           fill
           priority
           style={{ objectFit: "cover" }}
-          className="brightness-[0.85]"
+          className="brightness-[0.75]"
         />
-        <div className="absolute inset-0 bg-black/15 backdrop-blur-[3px]" />
+        <div className="absolute inset-0 bg-[#1C1917]/40 backdrop-blur-[4px]" />
       </div>
 
-      <motion.div 
+      <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
         whileInView={boxFloatingAnimation}
-        className="relative z-10 w-full max-w-[90%] sm:max-w-[540px] md:max-w-[640px] bg-white/80 backdrop-blur-xl rounded-[24px] sm:rounded-[32px] border border-white/40 shadow-[0_30px_70px_rgba(0,0,0,0.18)] text-center p-6 sm:p-10 md:p-16 flex flex-col items-center justify-center mx-auto"
+        className="relative z-10 w-full max-w-[90%] sm:max-w-[540px] md:max-w-[620px] bg-white/90 backdrop-blur-2xl rounded-[2.5rem] border border-white/60 shadow-[0_30px_70px_rgba(0,0,0,0.25)] text-center p-8 sm:p-12 md:p-14 flex flex-col items-center justify-center mx-auto"
       >
-        
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7042F4] via-[#FF47A6] to-[#7042F4] font-black tracking-tight text-[64px] sm:text-[96px] md:text-[110px] leading-none mb-1 sm:mb-2 select-none block drop-shadow-[0_0_25px_rgba(112,66,244,0.55)] filter">
+        {/* Eyebrow Pill */}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#B4136D]/10 border border-[#B4136D]/20 text-[#B4136D] text-[10px] font-bold uppercase tracking-widest mb-3">
+          <Compass size={12} className="text-[#B4136D]" />
+          <span>Catalog Not Located</span>
+        </div>
+
+        {/* 404 Serif Typography */}
+        <span className="font-serif font-black tracking-tight text-[72px] sm:text-[96px] md:text-[110px] leading-none text-[#B4136D] select-none block drop-shadow-sm">
           404
         </span>
 
-        <h1 className="text-[20px] sm:text-[30px] md:text-[36px] lg:text-[38px] font-black tracking-tight text-[#0F172A] leading-[1.25] sm:leading-[1.2] mb-3 sm:mb-4 px-2">
+        <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-stone-900 leading-tight mb-3">
           An Uncharted Masterpiece
         </h1>
 
-        <p className="text-slate-600 text-xs sm:text-sm md:text-base font-medium max-w-[280px] sm:max-w-[420px] md:max-w-[480px] mx-auto leading-relaxed mb-6 sm:mb-8">
-          The digital canvas or gallery exhibit you are searching for has never been created or exists outside of this collection.
+        <p className="text-stone-600 text-xs sm:text-sm md:text-base font-normal max-w-md mx-auto leading-relaxed mb-8">
+          The digital canvas or gallery exhibit you are searching for does not exist in the ArtHub permanent archive.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-[280px] sm:max-w-[400px] md:max-w-[440px]">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-sm">
           {/* Return Home */}
           <Link href="/" className="w-full sm:w-auto flex-1">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#7042F4] to-[#FF47A6] hover:opacity-[0.95] text-white font-bold py-3 sm:py-3.5 px-5 sm:px-6 rounded-full text-xs sm:text-sm shadow-md shadow-purple-500/10 transition-all"
-            >
-              <Home size={16} />
-              Return Home
-            </motion.button>
+            <button className="w-full flex items-center justify-center gap-2 bg-[#B4136D] hover:bg-[#930f58] text-white font-bold py-3.5 px-6 rounded-full text-xs shadow-md shadow-[#B4136D]/20 transition-all cursor-pointer">
+              <Home size={15} />
+              <span>Return Home</span>
+            </button>
           </Link>
 
-          {/* Return ArtWorks */}
+          {/* Return Artworks */}
           <Link href="/artworks" className="w-full sm:w-auto flex-1">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center justify-center gap-2 bg-transparent border-2 border-slate-300 text-slate-800 hover:bg-slate-900/5 font-bold py-3 px-5 sm:px-6 rounded-full text-xs sm:text-sm transition-all"
-            >
-              <Palette size={16} className="text-[#7042F4]" />
-              Return ArtWorks
-            </motion.button>
+            <button className="w-full flex items-center justify-center gap-2 bg-white border border-stone-300 text-stone-800 hover:bg-stone-50 font-bold py-3.5 px-6 rounded-full text-xs shadow-2xs transition-all cursor-pointer">
+              <Palette size={15} className="text-[#B4136D]" />
+              <span>Explore Gallery</span>
+            </button>
           </Link>
         </div>
-
       </motion.div>
     </div>
   );

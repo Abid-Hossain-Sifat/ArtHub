@@ -2,9 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { FiExternalLink, FiChevronLeft, FiChevronRight } from "react-icons/fi";
-
 import Link from "next/link";
+import { MessageSquare, ArrowRight, ChevronLeft, ChevronRight, Calendar, Sparkles } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import { getUserComments } from "@/lib/data";
 
@@ -20,10 +19,9 @@ const UserDashboardCommentPage = () => {
 
       try {
         const data = await getUserComments(session.user.id);
-
-        setComments(data);
+        setComments(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error(error);
+        console.error("Failed to load comments:", error);
       } finally {
         setLoading(false);
       }
@@ -33,100 +31,127 @@ const UserDashboardCommentPage = () => {
   }, [session]);
 
   const [currentPage, setCurrentPage] = useState(1);
-
   const itemsPerPage = 4;
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-
   const currentComments = comments.slice(indexOfFirstItem, indexOfLastItem);
-
-  const totalPages = Math.ceil(comments.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(comments.length / itemsPerPage));
 
   return (
-    // max-w-6xl ব্যবহার করেছি চওড়া করার জন্য
-    <div className="w-full max-w-6xl mx-auto p-6 md:p-10 bg-gray-50 min-h-screen">
-      <div className="mb-10">
-        <h1 className="text-3xl font-bold text-gray-900">My Comments</h1>
-        <p className="text-gray-600">
-          Manage your interactions and feedback across the marketplace.
+    <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 md:p-8 bg-[#FAF8F5] min-h-screen font-sans text-stone-900 space-y-8">
+      {/* Header */}
+      <div className="space-y-1">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#B4136D]/10 text-[#B4136D] text-xs font-semibold uppercase tracking-wider mb-2">
+          <MessageSquare className="w-3.5 h-3.5" />
+          <span>Curator Guestbook</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-medium tracking-tight text-stone-900">
+          My Comments & Reviews
+        </h1>
+        <p className="text-stone-500 text-xs sm:text-sm">
+          Review your curatorial feedback, appreciation notes, and public impressions across the exhibition salon.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
+      {/* Comments List */}
+      <div className="grid grid-cols-1 gap-5">
         {loading ? (
-          <div className="bg-white rounded-2xl p-10 text-center">
-            Loading...
-          </div>
+          Array.from({ length: 3 }).map((_, idx) => (
+            <div key={idx} className="bg-white rounded-[2rem] p-6 border border-stone-200/90 shadow-2xs flex gap-6 items-center animate-pulse">
+              <div className="w-20 h-20 rounded-2xl bg-stone-200 shrink-0" />
+              <div className="space-y-2 flex-1">
+                <div className="h-5 bg-stone-200 rounded w-48" />
+                <div className="h-4 bg-stone-200 rounded w-full max-w-md" />
+                <div className="h-4 bg-stone-200 rounded w-28" />
+              </div>
+            </div>
+          ))
         ) : currentComments.length === 0 ? (
-          <div className="bg-white rounded-2xl p-10 text-center text-gray-500">
-            You haven't posted any comments yet.
+          <div className="bg-white rounded-[2.5rem] p-12 text-center border border-stone-200/90 shadow-2xs space-y-3">
+            <MessageSquare className="w-12 h-12 mx-auto text-stone-300" />
+            <h3 className="font-serif text-xl font-bold text-stone-800">No Guestbook Notes Yet</h3>
+            <p className="text-xs sm:text-sm text-stone-500 max-w-md mx-auto leading-relaxed">
+              Whenever you share impressions or critiques on exhibition pieces, your guestbook notes will be archived here.
+            </p>
+            <Link
+              href="/artworks"
+              className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 rounded-xl bg-[#B4136D] hover:bg-[#930f58] text-white text-xs font-bold transition-all shadow-md shadow-[#B4136D]/20 cursor-pointer"
+            >
+              <span>Explore Gallery Salons</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         ) : (
           currentComments.map((comment) => (
             <div
               key={comment._id}
-              className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 flex gap-8 items-start"
+              className="bg-white p-6 rounded-[2rem] border border-stone-200/90 shadow-2xs hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row gap-6 items-start"
             >
-              <div className="flex-shrink-0">
-                <Image
-                  src={comment.artworkImage}
-                  alt={comment.artworkTitle}
-                  width={80}
-                  height={80}
-                  style={{
-                    width: "80px",
-                    height: "80px",
-                    objectFit: "cover",
-                  }}
-                  className="rounded-lg"
-                />
+              {/* Artwork Preview Thumbnail */}
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shrink-0 shadow-inner">
+                {comment.artworkImage ? (
+                  <Image
+                    src={comment.artworkImage}
+                    alt={comment.artworkTitle || "Artwork"}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-stone-200 text-xs">🎨</div>
+                )}
               </div>
 
-              <div className="flex flex-col w-full">
-                <h2 className="text-lg font-bold text-gray-900">
-                  {comment.artworkTitle}
-                </h2>
+              {/* Comment Content */}
+              <div className="flex flex-col w-full min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                  <h2 className="text-base sm:text-lg font-serif font-bold text-stone-900 truncate">
+                    {comment.artworkTitle || "Curated Artwork"}
+                  </h2>
+                  <div className="flex items-center gap-1.5 text-xs text-stone-400">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>{new Date(comment.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
 
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
-                  Posted on {new Date(comment.createdAt).toLocaleDateString()}
-                </p>
+                <div className="p-3.5 bg-stone-50/70 rounded-xl border border-stone-200/70 text-stone-700 text-xs sm:text-sm leading-relaxed my-2 italic">
+                  "{comment.comment}"
+                </div>
 
-                <p className="text-gray-600 text-sm leading-relaxed mb-3">
-                  {comment.comment}
-                </p>
-
-                <Link
-                  href={`/artworks/${comment.artworkId}`}
-                  className="text-indigo-600 text-sm font-semibold flex items-center gap-1 hover:underline w-fit"
-                >
-                  View Artwork <FiExternalLink size={14} />
-                </Link>
+                <div className="pt-1">
+                  <Link
+                    href={`/artworks/${comment.artworkId}`}
+                    className="inline-flex items-center gap-1.5 text-[#B4136D] hover:text-[#930f58] text-xs font-bold group cursor-pointer"
+                  >
+                    <span>View Artwork</span>
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </div>
               </div>
             </div>
           ))
         )}
       </div>
 
-      {/* প্যাজিনেশন */}
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-6 mt-10">
+        <div className="flex justify-center items-center gap-3 pt-6">
           <button
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((prev) => prev - 1)}
-            className="p-3 bg-white rounded-full shadow border hover:bg-gray-50 disabled:opacity-50 transition-all"
+            className="p-2.5 bg-white rounded-xl shadow-2xs border border-stone-200 text-stone-600 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
           >
-            <FiChevronLeft size={20} />
+            <ChevronLeft size={18} />
           </button>
-          <span className="text-sm font-semibold text-gray-700">
+          <span className="text-xs font-semibold text-stone-600 px-2">
             Page {currentPage} of {totalPages}
           </span>
           <button
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage((prev) => prev + 1)}
-            className="p-3 bg-white rounded-full shadow border hover:bg-gray-50 disabled:opacity-50 transition-all"
+            className="p-2.5 bg-white rounded-xl shadow-2xs border border-stone-200 text-stone-600 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
           >
-            <FiChevronRight size={20} />
+            <ChevronRight size={18} />
           </button>
         </div>
       )}

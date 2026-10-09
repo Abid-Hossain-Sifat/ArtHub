@@ -3,7 +3,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import SignInImg from "../../../public/Assets/Login.png";
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, EyeOff, Mail, Lock, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Sparkles, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { signIn, useSession } from "@/lib/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -92,23 +92,23 @@ const SignInPageContent = () => {
 
   // Framer Motion Variants
   const containerVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 24 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.1 },
+      transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.08 },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 15 },
+    hidden: { opacity: 0, y: 12 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
   };
 
   if (isPending) {
     return (
-      <div className="w-full min-h-screen flex items-center justify-center bg-[#f8fafc]">
-        <div className="w-10 h-10 border-4 border-violet-600 border-t-transparent rounded-full animate-spin" />
+      <div className="w-full min-h-screen flex items-center justify-center bg-[#FAF8F5]">
+        <div className="w-10 h-10 border-3 border-[#B4136D] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -118,56 +118,60 @@ const SignInPageContent = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] text-[#0F172A] flex items-center justify-center font-sans antialiased py-6 sm:py-12 md:py-16 px-4">
-      {/* main */}
+    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 flex items-center justify-center font-sans antialiased py-8 sm:py-14 md:py-20 px-4 selection:bg-[#B4136D]/15 selection:text-[#B4136D]">
+      {/* Main Container Card */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="w-full max-w-[1140px] bg-white rounded-[24px] sm:rounded-[32px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col md:flex-row overflow-hidden items-stretch"
+        className="w-full max-w-[1140px] bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.06)] border border-stone-200/90 flex flex-col md:flex-row overflow-hidden items-stretch"
       >
-        {/* form side*/}
-        <div className="w-full md:w-1/2 flex flex-col justify-center px-4 py-8 sm:px-8 md:px-12 lg:px-16 self-center order-2 md:order-1">
+        {/* Form Side */}
+        <div className="w-full md:w-1/2 flex flex-col justify-center px-6 py-10 sm:px-10 md:px-12 lg:px-16 self-center order-2 md:order-1">
           <div className="w-full max-w-[420px] mx-auto">
-            {/* Form Title Header */}
-            <motion.div variants={itemVariants} className="mb-6">
-              <h2 className="text-[24px] sm:text-[30px] lg:text-[34px] font-black tracking-tight text-[#0F172A] leading-tight mb-2 text-center md:text-left">
+            {/* Header */}
+            <motion.div variants={itemVariants} className="mb-7">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#B4136D]/10 border border-[#B4136D]/20 text-[#B4136D] text-[11px] font-bold uppercase tracking-widest mb-3">
+                <Sparkles size={12} className="text-[#B4136D]" />
+                <span>Collector & Artist Portal</span>
+              </div>
+              <h2 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 leading-tight mb-2 text-left">
                 Welcome Back
               </h2>
-              <p className="text-slate-500 text-[12px] sm:text-[13px] font-medium text-center md:text-left">
-                Enter your credentials to access your curated gallery.
+              <p className="text-stone-500 text-xs sm:text-sm font-normal text-left leading-relaxed">
+                Enter your credentials to access your curated gallery collection and acquisitions.
               </p>
             </motion.div>
 
             {/* Input Form Fields */}
             <form className="space-y-4" onSubmit={handleSignIn}>
-              {/* Email Address field */}
+              {/* Email Address */}
               <motion.div variants={itemVariants}>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1.5 tracking-wide uppercase">
+                <label className="block text-[11px] font-bold text-stone-600 mb-1.5 tracking-wider uppercase">
                   Email Address
                 </label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within:text-purple-500 transition-colors">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-stone-400 group-focus-within:text-[#B4136D] transition-colors">
                     <Mail size={16} />
                   </span>
                   <input
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="name@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 text-sm transition-all text-slate-800 shadow-sm placeholder-slate-400 font-medium"
+                    className="w-full pl-11 pr-4 py-3 bg-[#FAF8F5] border border-stone-200 rounded-xl focus:outline-none focus:border-[#B4136D] focus:bg-white focus:ring-3 focus:ring-[#B4136D]/10 text-sm transition-all text-stone-900 placeholder:text-stone-400 font-medium"
                     required
                   />
                 </div>
               </motion.div>
 
-              {/* Password field */}
+              {/* Password */}
               <motion.div variants={itemVariants}>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1.5 tracking-wide uppercase">
+                <label className="block text-[11px] font-bold text-stone-600 mb-1.5 tracking-wider uppercase">
                   Password
                 </label>
                 <div className="relative group">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within:text-purple-500 transition-colors">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-stone-400 group-focus-within:text-[#B4136D] transition-colors">
                     <Lock size={16} />
                   </span>
                   <input
@@ -175,30 +179,29 @@ const SignInPageContent = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-12 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 text-sm transition-all text-slate-800 shadow-sm font-medium placeholder-slate-300"
+                    className="w-full pl-11 pr-12 py-3 bg-[#FAF8F5] border border-stone-200 rounded-xl focus:outline-none focus:border-[#B4136D] focus:bg-white focus:ring-3 focus:ring-[#B4136D]/10 text-sm transition-all text-stone-900 font-medium placeholder:text-stone-300"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-stone-400 hover:text-stone-600 transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
               </motion.div>
 
-              {/* signin button */}
+              {/* Sign In Button */}
               <motion.div variants={itemVariants} className="pt-2">
-                <motion.button
-                  whileHover={{ scale: loading ? 1 : 1.01 }}
-                  whileTap={{ scale: loading ? 1 : 0.99 }}
+                <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-[#7042F4] to-[#FF47A6] hover:opacity-[0.97] text-white font-bold py-3 px-4 rounded-xl transition-all text-sm shadow-lg shadow-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2 bg-[#B4136D] hover:bg-[#930f58] text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-200 text-sm shadow-md shadow-[#B4136D]/20 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  {loading ? "Signing In..." : "Sign In"}
-                </motion.button>
+                  <span>{loading ? "Verifying Credentials..." : "Sign In to ArtHub"}</span>
+                  <ArrowRight size={14} />
+                </button>
               </motion.div>
             </form>
 
@@ -207,11 +210,11 @@ const SignInPageContent = () => {
               variants={itemVariants}
               className="flex items-center my-5"
             >
-              <div className="flex-1 border-t border-slate-200"></div>
-              <span className="px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Or login with
+              <div className="flex-1 border-t border-stone-200"></div>
+              <span className="px-3 text-[11px] font-bold text-stone-400 uppercase tracking-wider">
+                Or Continue With
               </span>
-              <div className="flex-1 border-t border-slate-200"></div>
+              <div className="flex-1 border-t border-stone-200"></div>
             </motion.div>
 
             {/* Google Login Button */}
@@ -219,7 +222,7 @@ const SignInPageContent = () => {
               <button
                 type="button"
                 onClick={handleGoogleSignIn}
-                className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm cursor-pointer"
+                className="w-full flex items-center justify-center gap-3 bg-white border border-stone-200 rounded-xl py-3 px-4 text-sm font-semibold text-stone-700 hover:bg-stone-50 hover:border-stone-300 transition-all shadow-2xs cursor-pointer"
               >
                 <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
                   <path
@@ -246,27 +249,27 @@ const SignInPageContent = () => {
             {/* SignUp Page Link */}
             <motion.div
               variants={itemVariants}
-              className="mt-6 text-center text-xs font-semibold text-slate-500"
+              className="mt-6 text-center text-xs font-medium text-stone-500"
             >
-              Don't have an account?{" "}
+              Don't have an ArtHub account?{" "}
               <Link
                 href="/sign-up"
-                className="text-[#7042F4] font-bold hover:underline transition-colors"
+                className="text-[#B4136D] font-bold hover:underline transition-colors ml-1"
               >
-                Sign Up
+                Create Account
               </Link>
             </motion.div>
           </div>
         </div>
 
-        {/* image side */}
+        {/* Exhibition Imagery Side */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.15 }}
           className="hidden md:flex w-1/2 relative p-3 items-stretch self-stretch order-1 md:order-2"
         >
-          <div className="relative w-full min-h-full rounded-[24px] overflow-hidden shadow-inner flex">
+          <div className="relative w-full min-h-full rounded-[2rem] overflow-hidden shadow-inner flex bg-stone-100">
             <Image
               src={SignInImg}
               alt="ArtHub Security Hub"
@@ -277,54 +280,24 @@ const SignInPageContent = () => {
               className="transition-transform duration-700 hover:scale-105"
             />
 
-            {/* Top tooltip */}
-            <motion.div
-              animate={{
-                boxShadow: [
-                  "0 0 10px 2px rgba(112,66,244,0.2), 0 4px 20px rgba(0,0,0,0.3)",
-                  "0 0 22px 6px rgba(255,71,166,0.5), 0 4px 20px rgba(0,0,0,0.3)",
-                  "0 0 10px 2px rgba(112,66,244,0.2), 0 4px 20px rgba(0,0,0,0.3)",
-                ],
-                borderColor: [
-                  "rgba(255,255,255,0.15)",
-                  "rgba(255,71,166,0.6)",
-                  "rgba(112,66,244,0.6)",
-                  "rgba(255,255,255,0.15)",
-                ],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="absolute top-4 right-4 lg:top-8 lg:right-8 bg-black/40 backdrop-blur-md px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-[10px] lg:text-[11px] font-bold uppercase tracking-widest text-white border z-10 select-none"
-            >
-              <motion.span
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className="mr-1 text-purple-400"
-              >
-                ✦
-              </motion.span>
-              Secure Platform
-            </motion.div>
+            {/* Top Badge */}
+            <div className="absolute top-6 right-6 bg-stone-900/80 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest text-white border border-white/10 z-10 select-none">
+              <span className="mr-1.5 text-amber-400">✦</span>
+              Fine Art Registry
+            </div>
 
-            {/* Bottom Tooltip */}
-            <div className="absolute bottom-4 left-4 right-4 lg:bottom-8 lg:left-8 lg:right-8 bg-white/20 backdrop-blur-xl p-4 lg:p-5 rounded-2xl border border-white/20 flex items-center justify-between text-white shadow-2xl z-10">
-              <div className="flex items-center gap-3 lg:gap-4">
-                <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-gradient-to-tr from-[#7042F4] to-[#FF47A6] flex items-center justify-center shadow-md text-white flex-shrink-0">
-                  <Sparkles size={16} className="animate-pulse" />
+            {/* Bottom Plaque */}
+            <div className="absolute bottom-6 left-6 right-6 bg-stone-900/75 backdrop-blur-xl p-5 rounded-[1.4rem] border border-white/15 flex items-center justify-between text-white shadow-xl z-10">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-[#B4136D] flex items-center justify-center shadow-md text-white shrink-0">
+                  <Sparkles size={18} />
                 </div>
                 <div>
-                  <p className="text-xs lg:text-sm font-bold tracking-tight">
-                    Welcome Back to ArtHub
+                  <p className="text-sm font-bold tracking-tight font-serif">
+                    The ArtHub Gallery Exchange
                   </p>
-                  <p className="text-[11px] lg:text-xs text-white/80">
-                    Your digital assets are waiting for you.
+                  <p className="text-[11px] text-stone-300">
+                    Connecting vanguard creators with global art patrons.
                   </p>
                 </div>
               </div>
@@ -338,7 +311,13 @@ const SignInPageContent = () => {
 
 const SignInPage = () => {
   return (
-    <Suspense fallback={<div className="w-full min-h-screen flex items-center justify-center bg-[#F1F5F9]"><div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense
+      fallback={
+        <div className="w-full min-h-screen flex items-center justify-center bg-[#FAF8F5]">
+          <div className="w-10 h-10 border-3 border-[#B4136D] border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
       <SignInPageContent />
     </Suspense>
   );

@@ -1,65 +1,82 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { getTransactions } from '@/lib/data';
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-
+import React, { useState, useEffect } from "react";
+import { getTransactions } from "@/lib/data";
+import { ChevronLeft, ChevronRight, Receipt, Sparkles, Calendar, CheckCircle2 } from "lucide-react";
 
 const AdminDashboardTransaction = () => {
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 11;
+  const itemsPerPage = 10;
   const [transactions, setTransactions] = useState([]);
-const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
+  const filteredData =
+    filter === "All"
+      ? transactions
+      : transactions.filter((t) => t.type === filter);
 
-  const filteredData = filter === 'All' ? transactions : transactions.filter(t => t.type === filter);
-  
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const currentData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / itemsPerPage));
+  const currentData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const handleFilterChange = (type) => {
     setFilter(type);
     setCurrentPage(1);
   };
+
   useEffect(() => {
-  const loadTransactions = async () => {
-    try {
-      const data = await getTransactions();
-      setTransactions(data);
-    } catch (error) {
-      console.error("Failed to load transactions", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const loadTransactions = async () => {
+      try {
+        const data = await getTransactions();
+        setTransactions(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Failed to load transactions", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  loadTransactions();
-}, []);
+    loadTransactions();
+  }, []);
 
-if (loading) {
+  if (loading) {
+    return (
+      <div className="w-full min-h-screen bg-[#FAF8F5] flex justify-center items-center p-10 text-stone-500 font-sans text-sm">
+        Loading financial transactions...
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full flex justify-center items-center p-10 text-gray-500">
-      Loading transactions...
-    </div>
-  );
-}
-
-  return (
-    <div className="w-full max-w-6xl mx-auto p-4 md:p-8 bg-white shadow-sm rounded-xl border border-gray-100">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+    <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 bg-[#FAF8F5] min-h-screen font-sans text-stone-900 space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Transaction History</h1>
-          <p className="text-gray-500 text-sm">Monitor and manage all marketplace financial activities.</p>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#B4136D]/10 text-[#B4136D] text-xs font-semibold uppercase tracking-wider mb-2">
+            <Receipt className="w-3.5 h-3.5" />
+            <span>Platform Treasury</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-medium tracking-tight text-stone-900">
+            Marketplace Ledger
+          </h1>
+          <p className="text-stone-500 text-xs sm:text-sm mt-1">
+            Audit and verify all platform purchases, Stripe checkouts, and patron memberships.
+          </p>
         </div>
-        
-        <div className="flex gap-2">
-          {['All', 'Subscription', 'Purchase'].map((item) => (
+
+        {/* Filter Pills */}
+        <div className="flex gap-1.5 bg-white p-1.5 rounded-2xl border border-stone-200/90 shadow-2xs self-start md:self-auto">
+          {["All", "Subscription", "Purchase"].map((item) => (
             <button
               key={item}
               onClick={() => handleFilterChange(item)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                filter === item ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                filter === item
+                  ? "bg-[#B4136D] text-white shadow-sm"
+                  : "text-stone-600 hover:bg-stone-50"
               }`}
             >
               {item}
@@ -68,54 +85,90 @@ if (loading) {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left min-w-[600px]">
-          <thead>
-            <tr className="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-100">
-              <th className="pb-4 font-semibold">Transaction ID</th>
-              <th className="pb-4 font-semibold">Type</th>
-              <th className="pb-4 font-semibold">Email</th>
-              <th className="pb-4 font-semibold">Amount</th>
-              <th className="pb-4 font-semibold">Date</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {currentData?.map((tx) => (
-              <tr key={tx.transactionId} className="hover:bg-gray-50 transition-colors">
-                <td className="py-5 font-medium text-gray-900">{tx.transactionId}</td>
-                <td className="py-5">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    tx.type === 'Purchase' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-                  }`}>● {tx.type}</span>
-                </td>
-                <td className="py-5 text-gray-600 truncate max-w-[200px]">{tx.email}</td>
-                <td className="py-5 font-bold text-gray-900">{tx.amount}</td>
-                <td className="py-5 text-gray-500">{tx.date}</td>
+      {/* Table Container */}
+      <div className="bg-white rounded-2xl md:rounded-3xl border border-stone-200/90 shadow-2xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left min-w-[650px] border-collapse">
+            <thead>
+              <tr className="border-b border-stone-200/80 bg-stone-50/80 text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+                <th className="py-4 px-6">Transaction ID</th>
+                <th className="py-4 px-6">Type</th>
+                <th className="py-4 px-6">Customer Email</th>
+                <th className="py-4 px-6">Amount</th>
+                <th className="py-4 px-6 text-right">Timestamp</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-8">
-          <button 
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(prev => prev - 1)}
-            className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 disabled:opacity-50"
-          >
-            <FiChevronLeft />
-          </button>
-          <span className="text-sm font-medium text-gray-600">Page {currentPage} of {totalPages}</span>
-          <button 
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(prev => prev + 1)}
-            className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 disabled:opacity-50"
-          >
-            <FiChevronRight />
-          </button>
+            </thead>
+            <tbody className="divide-y divide-stone-100 text-sm text-stone-700">
+              {currentData.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-stone-400">
+                    No transactions found for this filter.
+                  </td>
+                </tr>
+              ) : (
+                currentData.map((tx) => (
+                  <tr key={tx.transactionId} className="hover:bg-stone-50/60 transition-colors">
+                    <td className="py-4 px-6 font-mono text-xs font-bold text-stone-900">
+                      {tx.transactionId}
+                    </td>
+                    <td className="py-4 px-6">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                          tx.type === "Purchase"
+                            ? "bg-emerald-50 text-emerald-800 border-emerald-200/60"
+                            : "bg-[#B4136D]/10 text-[#B4136D] border-[#B4136D]/20"
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            tx.type === "Purchase" ? "bg-emerald-600" : "bg-[#B4136D]"
+                          }`}
+                        />
+                        <span>{tx.type}</span>
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-stone-600 text-xs font-medium truncate max-w-[220px]">
+                      {tx.email}
+                    </td>
+                    <td className="py-4 px-6 font-bold text-stone-900">
+                      {tx.amount}
+                    </td>
+                    <td className="py-4 px-6 text-stone-400 text-xs text-right">
+                      {tx.date}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-stone-200/80 bg-stone-50/50">
+            <span className="text-xs text-stone-500">
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <div className="flex items-center gap-2">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                className="w-8 h-8 flex items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-600 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                className="w-8 h-8 flex items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-600 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

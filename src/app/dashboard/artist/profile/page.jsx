@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { getInitials, isRemote } from '@/lib/avatar';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ProfileSkeleton } from '@/Components/Skeleton';
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { getInitials, isRemote } from "@/lib/avatar";
+import { motion, AnimatePresence } from "framer-motion";
+import { ProfileSkeleton } from "@/Components/Skeleton";
 import {
   Camera,
   Pencil,
@@ -15,10 +15,13 @@ import {
   ShieldCheck,
   X,
   DollarSign,
-  Award
-} from 'lucide-react';
-import { useSession, updateUser, changePassword, changeEmail } from '@/lib/auth-client';
-import { toast } from 'react-hot-toast';
+  Award,
+  Sparkles,
+  ArrowLeft,
+  CheckCircle2
+} from "lucide-react";
+import { useSession, updateUser, changePassword, changeEmail } from "@/lib/auth-client";
+import { toast } from "react-hot-toast";
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
@@ -26,28 +29,28 @@ const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 const ProfilePage = () => {
   const { data: session, isPending } = useSession();
   const user = session?.user;
-  const [profile, setProfile] = useState({ name: '', email: '', image: '', role: '' });
-  const [previewImage, setPreviewImage] = useState('');
-  const [tempProfile, setTempProfile] = useState({ name: '', email: '', image: '' });
-  const [tempPreviewImage, setTempPreviewImage] = useState('');
+  const [profile, setProfile] = useState({ name: "", email: "", image: "", role: "" });
+  const [previewImage, setPreviewImage] = useState("");
+  const [tempProfile, setTempProfile] = useState({ name: "", email: "", image: "" });
+  const [tempPreviewImage, setTempPreviewImage] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
-  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [stats, setStats] = useState({ total: 0, sold: 0, available: 0 });
 
   useEffect(() => {
     if (!user) return;
 
     setProfile({
-      name: user.name || '',
-      email: user.email || '',
-      image: user.image || '',
-      role: user.role || 'artist',
+      name: user.name || "",
+      email: user.email || "",
+      image: user.image || "",
+      role: user.role || "artist",
     });
-    setPreviewImage(user.image || '');
+    setPreviewImage(user.image || "");
   }, [user]);
 
   useEffect(() => {
@@ -61,12 +64,12 @@ const ProfilePage = () => {
         const artworks = await response.json();
         const total = Array.isArray(artworks) ? artworks.length : 0;
         const sold = Array.isArray(artworks)
-          ? artworks.filter((item) => item.isSold || item.status?.toLowerCase() === 'sold').length
+          ? artworks.filter((item) => item.isSold || item.status?.toLowerCase() === "sold").length
           : 0;
 
         setStats({ total, sold, available: total - sold });
       } catch (error) {
-        console.error('Error loading artwork stats:', error);
+        console.error("Error loading artwork stats:", error);
       }
     };
 
@@ -85,10 +88,6 @@ const ProfilePage = () => {
     setEditOpen(true);
   };
 
-  const handleProfileField = (field, value) => {
-    setProfile((prev) => ({ ...prev, [field]: value }));
-  };
-
   const handleTempProfileField = (field, value) => {
     setTempProfile((prev) => ({ ...prev, [field]: value }));
   };
@@ -99,29 +98,29 @@ const ProfilePage = () => {
 
   const uploadImageToImgbb = async (file) => {
     if (!imgbbKey) {
-      toast.error('IMGBB API key is missing.');
+      toast.error("IMGBB API key is missing.");
       return null;
     }
 
     setUploadingImage(true);
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append("image", file);
 
     try {
       const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
-        method: 'POST',
+        method: "POST",
         body: formData,
       });
 
       const result = await response.json();
       if (!result.success) {
-        throw new Error(result.error?.message || 'Upload failed');
+        throw new Error(result.error?.message || "Upload failed");
       }
 
       return result.data.url;
     } catch (error) {
-      console.error('ImgBB upload error:', error);
-      toast.error('Avatar upload failed.');
+      console.error("ImgBB upload error:", error);
+      toast.error("Avatar upload failed.");
       return null;
     } finally {
       setUploadingImage(false);
@@ -138,13 +137,13 @@ const ProfilePage = () => {
     const imageUrl = await uploadImageToImgbb(file);
     if (imageUrl) {
       setTempProfile((prev) => ({ ...prev, image: imageUrl }));
-      toast.success('Avatar uploaded successfully.');
+      toast.success("Avatar uploaded successfully.");
     }
   };
 
   const saveProfile = async () => {
     if (!tempProfile.name.trim()) {
-      toast.error('Name is required.');
+      toast.error("Name is required.");
       return;
     }
 
@@ -181,12 +180,12 @@ const ProfilePage = () => {
       }));
       setPreviewImage(tempPreviewImage);
 
-      toast.success('Profile updated successfully.');
+      toast.success("Profile updated successfully.");
       setEditOpen(false);
       window.location.reload();
     } catch (error) {
-      console.error('Profile save failed:', error);
-      toast.error(error.message || 'Could not update profile.');
+      console.error("Profile save failed:", error);
+      toast.error(error.message || "Could not update profile.");
     } finally {
       setSavingProfile(false);
     }
@@ -194,27 +193,27 @@ const ProfilePage = () => {
 
   const changePasswordSubmit = async () => {
     if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-      toast.error('Complete all password fields.');
+      toast.error("Complete all password fields.");
       return;
     }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error('New passwords do not match.');
+      toast.error("New passwords do not match.");
       return;
     }
     if (passwordForm.newPassword.length < 8) {
-      toast.error('Password must be at least 8 characters.');
+      toast.error("Password must be at least 8 characters.");
       return;
     }
 
     setSavingPassword(true);
     try {
       await changePassword({ currentPassword: passwordForm.currentPassword, newPassword: passwordForm.newPassword });
-      toast.success('Password changed successfully.');
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      toast.success("Password changed successfully.");
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
       setPasswordOpen(false);
     } catch (error) {
-      console.error('Password change failed:', error);
-      toast.error(error.message || 'Could not change password.');
+      console.error("Password change failed:", error);
+      toast.error(error.message || "Could not change password.");
     } finally {
       setSavingPassword(false);
     }
@@ -222,11 +221,9 @@ const ProfilePage = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full min-h-screen bg-[#F8F9FC] p-6 lg:p-10 font-sans text-slate-800">
-        <div className="mb-8 max-w-[1440px] mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-[#0F172A] animate-pulse">Profile Management</h1>
-          </div>
+      <div className="w-full min-h-screen bg-[#FAF8F5] p-6 lg:p-10 font-sans text-stone-900">
+        <div className="mb-8 max-w-7xl mx-auto">
+          <div className="h-8 bg-stone-200 rounded-lg w-64 animate-pulse" />
         </div>
         <ProfileSkeleton />
       </div>
@@ -234,31 +231,41 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#F8F9FC] p-6 lg:p-10 font-sans text-slate-800">
+    <div className="w-full min-h-screen bg-[#FAF8F5] p-4 sm:p-6 lg:p-10 font-sans text-stone-900">
       
       {/* Top Profile Header Section */}
-      <div className="mb-8 max-w-[1440px] mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-8 max-w-7xl mx-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#0F172A]">Profile Management</h1>
-          <p className="text-slate-500 text-sm mt-1">Manage your studio identity, artwork stats, and account security.</p>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#B4136D]/10 text-[#B4136D] text-xs font-semibold uppercase tracking-wider mb-2">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Studio Identity</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-medium tracking-tight text-stone-900">
+            Artist Dossier
+          </h1>
+          <p className="text-stone-500 text-xs sm:text-sm mt-1">
+            Manage your public artist signature, studio metrics, and verification security.
+          </p>
         </div>
-        <Link href="/dashboard" className="self-start sm:self-auto inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all">
-          Back to dashboard
+        <Link 
+          href="/dashboard" 
+          className="self-start sm:self-auto inline-flex items-center gap-2 rounded-2xl border border-stone-200/90 bg-white px-5 py-2.5 text-xs font-bold text-stone-700 hover:bg-stone-50 transition-all shadow-2xs cursor-pointer"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Dashboard</span>
         </Link>
       </div>
       
-      {/* Container tracking layout config w-9xl layout constraint system */}
-      <div className="w-full max-w-[1440px] mx-auto bg-white rounded-3xl border border-slate-100 shadow-sm p-6 lg:p-10">
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-stretch">
+      {/* Main Container */}
+      <div className="w-full max-w-7xl mx-auto bg-white rounded-[2rem] border border-stone-200/90 shadow-2xs p-6 lg:p-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-stretch">
           
-          {/* Main profile identity segment info pane row */}
-          <div className="lg:col-span-2 flex flex-col sm:flex-row gap-10 items-start">
+          {/* Main Profile Info */}
+          <div className="lg:col-span-2 flex flex-col sm:flex-row gap-8 items-center sm:items-start">
             
-            <div className="flex flex-col items-center sm:items-start gap-6 flex-shrink-0 w-full sm:w-auto">
-              
-              <div className="relative group cursor-pointer mx-auto sm:mx-0">
-                <div className="w-32 h-32 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm overflow-hidden flex items-center justify-center p-2 relative">
+            <div className="flex flex-col items-center sm:items-start gap-5 flex-shrink-0 w-full sm:w-auto">
+              <div className="relative group mx-auto sm:mx-0">
+                <div className="w-32 h-32 rounded-2xl bg-stone-50 border border-stone-200 shadow-inner overflow-hidden flex items-center justify-center p-2 relative">
                   {previewImage ? (
                     <Image
                       src={previewImage}
@@ -267,125 +274,122 @@ const ProfilePage = () => {
                       height={128}
                       priority
                       unoptimized={isRemote(previewImage)}
-                      className="w-full h-full object-contain rounded-xl"
+                      className="w-full h-full object-cover rounded-xl"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white text-3xl font-extrabold tracking-wider select-none rounded-xl">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#B4136D] to-[#800d4d] text-white text-3xl font-serif font-bold tracking-wider select-none rounded-xl">
                       {getInitials(profile.name)}
                     </div>
                   )}
                 </div>
                 
-                {/* Floating Camera Upload Button Trigger */}
+                {/* Floating Camera Upload Button */}
                 <button 
                   onClick={handleOpenEdit}
-                  className="absolute -bottom-1 -right-1 bg-white text-slate-700 hover:text-slate-900 p-2 rounded-full border border-slate-200 shadow-md transition-all duration-200 hover:scale-105"
+                  className="absolute -bottom-1 -right-1 bg-white text-stone-700 hover:text-[#B4136D] p-2 rounded-full border border-stone-200 shadow-md transition-all duration-200 hover:scale-105 cursor-pointer"
                   title="Update Profile Picture"
                 >
                   <Camera className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Stacked Vertical Interaction Buttons Layer */}
-              <div className="flex flex-col gap-3 w-full sm:w-40">
-                {/* Edit Action Button */}
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-2.5 w-full sm:w-44">
                 <button 
                   onClick={handleOpenEdit}
-                  className="inline-flex items-center justify-center gap-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 w-full"
+                  className="inline-flex items-center justify-center gap-2 bg-[#B4136D] hover:bg-[#930f58] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-[#B4136D]/20 transition-all active:scale-95 w-full cursor-pointer"
                 >
                   <Pencil className="w-3.5 h-3.5" />
-                  Edit Profile
+                  <span>Edit Dossier</span>
                 </button>
 
-                {/* Password Action Button */}
                 <button 
                   onClick={() => setPasswordOpen(true)}
-                  className="inline-flex items-center justify-center gap-2 bg-[#DCE4EC] hover:bg-[#D1DCE8] text-slate-600 hover:text-slate-800 px-4 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 w-full"
+                  className="inline-flex items-center justify-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 w-full cursor-pointer"
                 >
                   <Lock className="w-3.5 h-3.5" />
-                  Change Password
+                  <span>Change Password</span>
                 </button>
               </div>
             </div>
 
-            <div className="flex-1 space-y-4 text-center sm:text-left w-full h-full flex flex-col justify-start pt-2">
-              
+            <div className="flex-1 space-y-4 text-center sm:text-left w-full h-full flex flex-col justify-start pt-1">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-center sm:justify-start">
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900">{profile.name}</h2>
-                
-                <span className="inline-flex items-center gap-1 px-3 py-0.5 text-[11px] font-semibold rounded-full bg-[#F3E8FF] text-[#7C3AED] border border-[#E9D5FF]/30 capitalize">
-                  <ShieldCheck className="w-3 h-3" />
-                  {profile.role}
+                <h2 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-stone-900">{profile.name}</h2>
+                <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-[#B4136D]/10 text-[#B4136D] border border-[#B4136D]/20 capitalize">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Verified Master Artist</span>
                 </span>
               </div>
 
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-slate-500">{profile.email}</p>
+                <p className="text-sm font-semibold text-stone-600">{profile.email}</p>
                 {!user.emailVerified && (
-                  <p className="text-[10px] text-amber-600 font-medium bg-amber-50 border border-amber-100 rounded-md px-2 py-0.5 inline-block">
-                    Pending Verification
+                  <p className="text-[10px] text-amber-800 font-medium bg-amber-50 border border-amber-200 rounded-md px-2 py-0.5 inline-block">
+                    Verification In Progress
                   </p>
                 )}
               </div>
 
               <div className="space-y-1">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">System Bio Summary</h4>
-                <p className="text-slate-600 text-xs md:text-sm font-normal leading-relaxed max-w-lg">
-                  Creative partner at ArtHub workspace network ecosystem. Manage assets parameters securely.
+                <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Curator Bio</h4>
+                <p className="text-stone-600 text-xs sm:text-sm font-normal leading-relaxed max-w-lg">
+                  Resident artist and exhibition contributor at ArtHub. Specializing in timeless traditional crafts, oil compositions, and digital fine-art curations.
                 </p>
               </div>
               
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-slate-400 font-medium pt-4 mt-auto">
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-stone-400 font-medium pt-4 mt-auto">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>Account Sync: Active</span>
+                <span>Studio Guild Status: Active</span>
               </div>
             </div>
 
           </div>
 
-          <div className="w-full bg-[#F8F9FC]/80 border border-slate-100 rounded-2xl p-6 space-y-6 flex flex-col justify-between">
-            
+          {/* Studio Analytics Side Card */}
+          <div className="w-full bg-stone-50/70 border border-stone-200/80 rounded-2xl p-6 space-y-6 flex flex-col justify-between">
             <div className="space-y-4">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Studio Analytics</h3>
+              <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider">Studio Analytics</h3>
               
-              {/* Analytics Metrics List */}
               <div className="flex flex-col gap-3.5">
-                <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
+                <div className="bg-white p-4 rounded-xl border border-stone-200/80 flex items-center justify-between shadow-2xs">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-purple-50 rounded-xl text-[#7C3AED]">
+                    <div className="p-2.5 bg-[#B4136D]/10 rounded-xl text-[#B4136D]">
                       <ImageIcon className="w-4 h-4" />
                     </div>
-                    <p className="text-xs text-slate-500 font-semibold">Total Artworks</p>
+                    <div>
+                      <p className="text-xs text-stone-500 font-medium">Curated Artworks</p>
+                      <p className="text-lg font-serif font-bold text-stone-900">{stats.total}</p>
+                    </div>
                   </div>
-                  <p className="text-lg font-bold text-slate-900">{stats.total}</p>
                 </div>
 
-                <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
+                <div className="bg-white p-4 rounded-xl border border-stone-200/80 flex items-center justify-between shadow-2xs">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
+                    <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-700">
                       <DollarSign className="w-4 h-4" />
                     </div>
-                    <p className="text-xs text-slate-500 font-semibold">Total Sold</p>
+                    <div>
+                      <p className="text-xs text-stone-500 font-medium">Sold Masterpieces</p>
+                      <p className="text-lg font-serif font-bold text-stone-900">{stats.sold}</p>
+                    </div>
                   </div>
-                  <p className="text-lg font-bold text-slate-900">{stats.sold}</p>
                 </div>
               </div>
             </div>
 
-            {/* Tier Status Alert Note Block */}
-            <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-start gap-3 shadow-sm">
-              <Award className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
-              <p className="text-[11px] text-slate-500 leading-normal">
-                You are currently verified as <span className="font-semibold text-slate-800">System Admin Control</span> tier level. Live endpoints sync is fully responsive.
+            <div className="bg-white p-4 rounded-xl border border-stone-200/80 flex items-start gap-3 shadow-2xs">
+              <Award className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+              <p className="text-[11px] text-stone-600 leading-normal">
+                Your artwork dossiers are featured in the global ArtHub exhibition. All certificates are cryptographically verified upon purchase.
               </p>
             </div>
           </div>
 
         </div>
-
       </div>
 
-      {/* EDIT IDENTITY PROFILE MODAL */}
+      {/* EDIT MODAL */}
       <AnimatePresence>
         {editOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
@@ -394,68 +398,68 @@ const ProfilePage = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-slate-100"
+              className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-stone-200"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-900">Edit profile</h2>
-                  <p className="text-sm text-slate-500">Change your display name, email address or avatar picture.</p>
+                  <h2 className="text-xl font-serif font-bold text-stone-900">Edit Artist Dossier</h2>
+                  <p className="text-sm text-stone-500">Update your display signature, contact address, or portrait avatar.</p>
                 </div>
-                <button onClick={() => setEditOpen(false)} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 transition-colors">
+                <button onClick={() => setEditOpen(false)} className="rounded-full p-2 text-stone-400 hover:bg-stone-100 transition-colors cursor-pointer">
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               <div className="mt-6 space-y-5">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Name</label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">Artist Name</label>
                     <input
                       type="text"
                       value={tempProfile.name}
-                      onChange={(e) => handleTempProfileField('name', e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white transition-all text-slate-800"
+                      onChange={(e) => handleTempProfileField("name", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm outline-none focus:border-[#B4136D] focus:bg-white transition-all text-stone-800"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">Email Address</label>
                     <input
                       type="email"
                       value={tempProfile.email}
-                      onChange={(e) => handleTempProfileField('email', e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white transition-all text-slate-800"
+                      onChange={(e) => handleTempProfileField("email", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm outline-none focus:border-[#B4136D] focus:bg-white transition-all text-stone-800"
                     />
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Profile picture source</p>
+                <div className="rounded-2xl border border-stone-200/80 bg-stone-50/50 p-4">
+                  <p className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-3">Portrait Avatar</p>
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-white border border-slate-200 p-1">
+                    <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-white border border-stone-200 p-1">
                       {tempPreviewImage ? (
-                        <Image src={tempPreviewImage} alt="preview" fill className="object-contain rounded-xl p-1" />
+                        <Image src={tempPreviewImage} alt="preview" fill className="object-cover rounded-xl" />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">No image</div>
+                        <div className="flex h-full w-full items-center justify-center text-xs text-stone-400">No image</div>
                       )}
                     </div>
-                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs">
-                      <Camera className="h-4 w-4 text-slate-500" />
-                      <span>{uploadingImage ? 'Uploading…' : 'Upload custom file'}</span>
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-xs font-bold text-stone-700 hover:bg-stone-50 transition-colors shadow-2xs">
+                      <Camera className="h-4 w-4 text-stone-500" />
+                      <span>{uploadingImage ? "Uploading…" : "Upload Portrait File"}</span>
                       <input type="file" accept="image/*" className="hidden" onChange={handleAvatarSelect} disabled={uploadingImage} />
                     </label>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-end pt-2">
-                  <button onClick={() => setEditOpen(false)} className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors">
+                  <button onClick={() => setEditOpen(false)} className="rounded-xl border border-stone-200 bg-white px-5 py-2.5 text-xs font-bold text-stone-700 hover:bg-stone-50 transition-colors cursor-pointer">
                     Cancel
                   </button>
                   <button
                     onClick={saveProfile}
                     disabled={savingProfile || uploadingImage}
-                    className="rounded-xl bg-[#7C3AED] px-5 py-2.5 text-xs font-bold text-white hover:bg-violet-600 disabled:opacity-70 transition-colors shadow-sm"
+                    className="rounded-xl bg-[#B4136D] hover:bg-[#930f58] px-5 py-2.5 text-xs font-bold text-white disabled:opacity-70 transition-colors shadow-md shadow-[#B4136D]/20 cursor-pointer"
                   >
-                    {savingProfile ? 'Saving…' : 'Save changes'}
+                    {savingProfile ? "Saving…" : "Save Changes"}
                   </button>
                 </div>
               </div>
@@ -464,7 +468,7 @@ const ProfilePage = () => {
         )}
       </AnimatePresence>
 
-      {/* PASSWORD UPDATE PORTAL MODAL */}
+      {/* PASSWORD MODAL */}
       <AnimatePresence>
         {passwordOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
@@ -473,60 +477,60 @@ const ProfilePage = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-slate-100"
+              className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-stone-200"
             >
               <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-900">Change password</h2>
-                <p className="text-sm text-slate-500">Provide authentication parameters securely below.</p>
+                <div>
+                  <h2 className="text-xl font-serif font-bold text-stone-900">Change Password</h2>
+                  <p className="text-sm text-stone-500">Update your security credentials safely.</p>
+                </div>
+                <button onClick={() => setPasswordOpen(false)} className="rounded-full p-2 text-stone-400 hover:bg-stone-100 transition-colors cursor-pointer">
+                  <X className="h-5 w-5" />
+                </button>
               </div>
-              <button onClick={() => setPasswordOpen(false)} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 transition-colors">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Current password</label>
-                <input
-                  type="password"
-                  value={passwordForm.currentPassword}
-                  onChange={(e) => handlePasswordField('currentPassword', e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white text-slate-800"
-                />
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">Current Password</label>
+                  <input
+                    type="password"
+                    value={passwordForm.currentPassword}
+                    onChange={(e) => handlePasswordField("currentPassword", e.target.value)}
+                    className="w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm outline-none focus:border-[#B4136D] focus:bg-white text-stone-800"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">New Password</label>
+                  <input
+                    type="password"
+                    value={passwordForm.newPassword}
+                    onChange={(e) => handlePasswordField("newPassword", e.target.value)}
+                    className="w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm outline-none focus:border-[#B4136D] focus:bg-white text-stone-800"
+                  />
+                </div>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">Confirm New Password</label>
+                  <input
+                    type="password"
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) => handlePasswordField("confirmPassword", e.target.value)}
+                    className="w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm outline-none focus:border-[#B4136D] focus:bg-white text-stone-800"
+                  />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">New password</label>
-                <input
-                  type="password"
-                  value={passwordForm.newPassword}
-                  onChange={(e) => handlePasswordField('newPassword', e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white text-slate-800"
-                />
-              </div>
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Confirm new password</label>
-                <input
-                  type="password"
-                  value={passwordForm.confirmPassword}
-                  onChange={(e) => handlePasswordField('confirmPassword', e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white text-slate-800"
-                />
-              </div>
-            </div>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <button onClick={() => setPasswordOpen(false)} className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors">
-                Cancel
-              </button>
-              <button
-                onClick={changePasswordSubmit}
-                disabled={savingPassword}
-                className="rounded-xl bg-[#7C3AED] px-5 py-2.5 text-xs font-bold text-white hover:bg-violet-600 disabled:opacity-70 transition-colors shadow-sm"
-              >
-                {savingPassword ? 'Updating…' : 'Update password'}
-              </button>
-            </div>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button onClick={() => setPasswordOpen(false)} className="rounded-xl border border-stone-200 bg-white px-5 py-2.5 text-xs font-bold text-stone-700 hover:bg-stone-50 transition-colors cursor-pointer">
+                  Cancel
+                </button>
+                <button
+                  onClick={changePasswordSubmit}
+                  disabled={savingPassword}
+                  className="rounded-xl bg-[#B4136D] hover:bg-[#930f58] px-5 py-2.5 text-xs font-bold text-white disabled:opacity-70 transition-colors shadow-md shadow-[#B4136D]/20 cursor-pointer"
+                >
+                  {savingPassword ? "Updating…" : "Update Password"}
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

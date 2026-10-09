@@ -13,7 +13,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { DollarSign, ShoppingBag, Palette, BarChart3 } from "lucide-react";
+import { DollarSign, ShoppingBag, Palette, BarChart3, Sparkles } from "lucide-react";
 import {
   artworkCollection,
   getDailyTransactions,
@@ -22,65 +22,61 @@ import {
 
 import { DashboardSkeleton } from "../../../Components/Skeleton";
 
+// Curated Fine Art Category Palette
 const CATEGORY_COLORS = [
-  "#207CE5", // Blue
-  "#E03131", // Red
-  "#22B371", // Green
-  "#F59F00", // Yellow/Orange
-  "#845EF7", // Purple
-  "#EE5A24", // Deep Orange
-  "#ED17BD", // Magenta/Pink
-  "#00C2CB", // Cyan/Teal
-  "#BE4BDB", // Violet
-  "#1098AD", // Ocean Blue
-  "#FF922B", // Light Orange
-  "#63E6BE", // Mint Green
-  "#F783AC", // Hot Pink
-  "#A9E34B", // Lime Green
-  "#A34E31", // Brown/Terra Cotta
+  "#B4136D", // Velvet Berry
+  "#D97706", // Amber / Gold
+  "#059669", // Emerald
+  "#4F46E5", // Indigo
+  "#E11D48", // Rose
+  "#0D9488", // Teal
+  "#7C3AED", // Violet
+  "#EA580C", // Warm Orange
+  "#2563EB", // Cobalt
+  "#65A30D", // Lime
+  "#9333EA", // Purple
+  "#0284C7", // Sky
 ];
 
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 },
+    transition: { staggerChildren: 0.08 },
   },
 };
 
 const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  show: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100 } },
+  hidden: { y: 16, opacity: 0 },
+  show: {
+    y: 0,
+    opacity: 1,
+    transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+  },
 };
 
 // ─── Stat Card Component
-const StatCard = ({ Icon, label, value, badge, badgeType }) => {
-  const badgeStyles = {
-    up: { background: "#eaf3de", color: "#3B6D11" },
-    down: { background: "#FCEBEB", color: "#A32D2D" },
-    stable: { background: "#f1f0f9", color: "#534AB7" },
-  };
-
+const StatCard = ({ Icon, label, value, badge, badgeColor }) => {
   return (
     <motion.div
       variants={itemVariants}
-      whileHover={{ y: -4, boxShadow: "0 10px 20px rgba(0,0,0,0.05)" }}
-      className="bg-white rounded-[14px] border border-black/5 p-4 flex flex-col gap-2 transition-all"
+      className="bg-white rounded-[2rem] border border-stone-200/90 p-5 sm:p-6 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-stone-300 transition-all min-h-[150px]"
     >
       <div className="flex justify-between items-center">
-        <div className="w-9 h-9 rounded-xl bg-[#eeedfe] flex items-center justify-center text-[#534AB7]">
-          <Icon size={18} strokeWidth={2.5} />
+        <div className="w-10 h-10 rounded-2xl bg-[#B4136D]/10 flex items-center justify-center text-[#B4136D]">
+          <Icon size={19} strokeWidth={2.2} />
         </div>
-        <span
-          style={badgeStyles[badgeType]}
-          className="text-[11px] font-medium px-2 py-0.5 rounded-full"
-        >
+        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/60 uppercase tracking-wider">
           {badge}
         </span>
       </div>
-      <div>
-        <div className="text-[12px] text-gray-400 mb-0.5">{label}</div>
-        <div className="text-2xl font-semibold text-[#1a1a2e]">{value}</div>
+      <div className="mt-3">
+        <div className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-0.5">
+          {label}
+        </div>
+        <div className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
+          {value}
+        </div>
       </div>
     </motion.div>
   );
@@ -90,12 +86,12 @@ const StatCard = ({ Icon, label, value, badge, badgeType }) => {
 const CustomTooltip = ({ active, payload, label, activeTab }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white border border-black/10 rounded-xl p-2.5 text-[13px]">
-        <div className="text-gray-400 mb-0.5">{label}</div>
-        <div className="font-semibold text-[#534AB7]">
+      <div className="bg-white border border-stone-200 rounded-2xl p-3 shadow-lg text-xs">
+        <div className="text-stone-400 font-medium mb-1">{label}</div>
+        <div className="font-serif font-bold text-sm text-[#B4136D]">
           {activeTab === "artwork"
-            ? `$${payload[0].value.toLocaleString()} Artwork Sales`
-            : `$${payload[0].value.toLocaleString()} Subscription Sales`}
+            ? `$${payload[0].value.toLocaleString()} Artwork Volume`
+            : `$${payload[0].value.toLocaleString()} Patron Subscriptions`}
         </div>
       </div>
     );
@@ -125,7 +121,7 @@ const AdminDashboardPage = () => {
         setArtworks(artworkData || []);
         setDailyData(dailyTx || []);
 
-        // Revenue calculation (purchase + subscription দুটো মিলিয়ে)
+        // Revenue calculation
         const revenue = allTransactions.reduce((sum, tx) => {
           const amount = parseFloat(tx.amount.replace("$", "")) || 0;
           return sum + amount;
@@ -146,6 +142,7 @@ const AdminDashboardPage = () => {
     };
     fetchData();
   }, []);
+
   const categoryCounts = artworks.reduce((acc, art) => {
     const cat = art.category || "Others";
     acc[cat] = (acc[cat] || 0) + 1;
@@ -159,26 +156,27 @@ const AdminDashboardPage = () => {
 
   const totalArtworks = artworks.length;
 
-  // Loading State with Dashboard Skeleton Effect
   if (loading) {
-    return (
-      <div className="bg-[#f5f4fc] min-h-screen p-4 sm:p-6 font-sans">
-        <DashboardSkeleton />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
-    <div className="bg-[#f5f4fc] min-h-screen p-4 sm:p-6 font-sans">
+    <div className="space-y-6 max-w-7xl mx-auto selection:bg-[#B4136D]/15 selection:text-[#B4136D]">
       {/* Page Title */}
       <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="mb-6"
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-2"
       >
-        <h1 className="text-2xl font-semibold text-[#1a1a2e] m-0">Dashboard</h1>
-        <p className="text-[13px] text-gray-400 mt-1">
-          Welcome back! Here's what's happening today.
+        <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#B4136D]/10 border border-[#B4136D]/20 text-[#B4136D] text-[10px] font-bold uppercase tracking-widest mb-1.5">
+          <Sparkles size={11} />
+          <span>Executive Intelligence</span>
+        </div>
+        <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-stone-900 tracking-tight">
+          Platform Overview
+        </h1>
+        <p className="text-xs sm:text-sm text-stone-500 mt-1">
+          Real-time curatorial transactions, inventory distribution, and network metrics.
         </p>
       </motion.div>
 
@@ -187,35 +185,37 @@ const AdminDashboardPage = () => {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
       >
         <StatCard
           Icon={DollarSign}
-          label="Total Revenue"
-          value={`$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          label="Total Gross Volume"
+          value={`$${totalRevenue.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}
           badge="Live"
-          badgeType="stable"
         />
         <StatCard
           Icon={ShoppingBag}
-          label="Total Orders"
+          label="Collector Acquisitions"
           value={totalOrders.toLocaleString()}
           badge="Live"
-          badgeType="stable"
         />
         <StatCard
           Icon={Palette}
-          label="Total Artworks"
+          label="Permanent Catalog"
           value={totalArtworks}
-          badge="Stable"
-          badgeType="stable"
+          badge="Catalog"
         />
         <StatCard
           Icon={BarChart3}
-          label="Avg. Order Value"
-          value={`$${avgOrderValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-          badge="Live"
-          badgeType="stable"
+          label="Average Acquisition"
+          value={`$${avgOrderValue.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}`}
+          badge="Est."
         />
       </motion.div>
 
@@ -224,63 +224,63 @@ const AdminDashboardPage = () => {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5"
+        className="grid grid-cols-1 lg:grid-cols-3 gap-5"
       >
         {/* Area Chart Component */}
         <motion.div
           variants={itemVariants}
-          className="lg:col-span-2 bg-white rounded-[14px] border border-black/5 p-5 flex flex-col justify-between"
+          className="lg:col-span-2 bg-white rounded-[2rem] border border-stone-200/90 p-6 flex flex-col justify-between shadow-2xs"
         >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <div>
-              <div className="text-[15px] font-semibold text-[#1a1a2e]">
-                Sales Overview
-              </div>
-              <div className="text-[12px] text-gray-400">
-                Daily performance for June 2026c
-              </div>
+              <h3 className="font-serif text-lg font-bold text-stone-900">
+                Acquisition & Sales Volume
+              </h3>
+              <p className="text-xs text-stone-400 mt-0.5">
+                Daily transaction progression across payment gateways
+              </p>
             </div>
-            <div className="flex gap-1.5 bg-gray-100 p-1 rounded-full">
+            <div className="flex gap-1 bg-[#FAF8F5] p-1 rounded-full border border-stone-200">
               {["artwork", "subscription"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`text-[12px] px-4 py-1.5 rounded-full cursor-pointer transition-all capitalize font-medium ${
+                  className={`text-xs px-4 py-1.5 rounded-full cursor-pointer transition-all capitalize font-semibold ${
                     activeTab === tab
-                      ? "bg-[#534AB7] text-white shadow-sm"
-                      : "text-gray-500 hover:text-gray-800"
+                      ? "bg-[#B4136D] text-white shadow-xs"
+                      : "text-stone-500 hover:text-stone-900"
                   }`}
                 >
-                  {tab}
+                  {tab === "artwork" ? "Artworks" : "Patron Subscriptions"}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="w-full h-[220px]">
+          <div className="w-full h-[240px] pt-2">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={dailyData}
-                margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
               >
                 <defs>
-                  <linearGradient id="colorFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#534AB7" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#534AB7" stopOpacity={0} />
+                  <linearGradient id="artColorFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#B4136D" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#B4136D" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="rgba(0,0,0,0.05)"
+                  stroke="rgba(0,0,0,0.04)"
                 />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 11, fill: "#aaa" }}
+                  tick={{ fontSize: 11, fill: "#888" }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 11, fill: "#aaa" }}
+                  tick={{ fontSize: 11, fill: "#888" }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) =>
@@ -291,11 +291,11 @@ const AdminDashboardPage = () => {
                 <Area
                   type="monotone"
                   dataKey={activeTab}
-                  stroke="#534AB7"
-                  strokeWidth={2}
-                  fill="url(#colorFill)"
+                  stroke="#B4136D"
+                  strokeWidth={2.5}
+                  fill="url(#artColorFill)"
                   dot={false}
-                  activeDot={{ r: 5, fill: "#534AB7", strokeWidth: 0 }}
+                  activeDot={{ r: 5, fill: "#B4136D", strokeWidth: 0 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -305,27 +305,27 @@ const AdminDashboardPage = () => {
         {/* Donut / Pie Chart Component */}
         <motion.div
           variants={itemVariants}
-          className="bg-white rounded-[14px] border border-black/5 p-5 flex flex-col justify-between"
+          className="bg-white rounded-[2rem] border border-stone-200/90 p-6 flex flex-col justify-between shadow-2xs"
         >
           <div>
-            <div className="text-[15px] font-semibold text-[#1a1a2e]">
-              Artworks by Category
-            </div>
-            <div className="text-[12px] text-gray-400 mb-3">
-              Inventory distribution
-            </div>
+            <h3 className="font-serif text-lg font-bold text-stone-900">
+              Inventory by Medium
+            </h3>
+            <p className="text-xs text-stone-400 mt-0.5 mb-2">
+              Catalog distribution by curatorial category
+            </p>
           </div>
 
           <div className="relative w-full flex justify-center py-2">
             {categoryData.length > 0 ? (
               <>
-                <PieChart width={180} height={180}>
+                <PieChart width={190} height={190}>
                   <Pie
                     data={categoryData}
-                    cx={85}
-                    cy={85}
-                    innerRadius={58}
-                    outerRadius={82}
+                    cx={95}
+                    cy={95}
+                    innerRadius={62}
+                    outerRadius={88}
                     dataKey="value"
                     strokeWidth={0}
                   >
@@ -337,34 +337,34 @@ const AdminDashboardPage = () => {
                     ))}
                   </Pie>
                 </PieChart>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                  <div className="text-xl font-semibold text-[#1a1a2e]">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                  <div className="font-serif text-2xl font-bold text-stone-900">
                     {totalArtworks >= 1000
                       ? `${(totalArtworks / 1000).toFixed(1)}k`
                       : totalArtworks}
                   </div>
-                  <div className="text-[9px] text-gray-400 tracking-wider">
-                    TOTAL ITEMS
+                  <div className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">
+                    TOTAL PIECES
                   </div>
                 </div>
               </>
             ) : (
-              <div className="h-[180px] flex items-center text-[13px] text-gray-400">
-                No data available
+              <div className="h-[190px] flex items-center text-xs text-stone-400">
+                No catalog items recorded
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 mt-3">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-2 mt-2 pt-3 border-t border-stone-100 max-h-28 overflow-y-auto">
             {categoryData.map((cat, i) => (
               <div key={cat.name} className="flex items-center gap-1.5 min-w-0">
                 <span
-                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
                   style={{
                     background: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
                   }}
                 />
-                <span className="text-[11px] text-gray-600 truncate">
+                <span className="text-[11px] font-medium text-stone-600 truncate">
                   {cat.name} ({cat.value})
                 </span>
               </div>

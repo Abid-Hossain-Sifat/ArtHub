@@ -1,25 +1,26 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import Logo from '../../../../public/Assets/Logo.png';
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import Logo from "../../../../public/Assets/Logo.png";
 import { signOut, useSession } from "@/lib/auth-client";
 import { toast } from "react-hot-toast";
 
-import { 
-  LayoutDashboard, 
+import {
+  LayoutDashboard,
   History,
   ShoppingBag,
   MessageSquare,
   CreditCard,
-  UserCircle, 
-  Home, 
-  LogOut, 
-  Menu, 
-  X 
-} from 'lucide-react';
+  UserCircle,
+  Home,
+  LogOut,
+  Menu,
+  X,
+  Award,
+} from "lucide-react";
 
 const UserDashboardLayout = ({ children }) => {
   const pathname = usePathname();
@@ -30,9 +31,9 @@ const UserDashboardLayout = ({ children }) => {
   useEffect(() => {
     if (!isPending) {
       if (!session) {
-        router.replace('/sign-in');
-      } else if (session.user?.role !== 'user') {
-        router.replace('/unauthorized');
+        router.replace("/sign-in");
+      } else if (session.user?.role !== "user") {
+        router.replace("/unauthorized");
       }
     }
   }, [session, isPending, router]);
@@ -41,7 +42,7 @@ const UserDashboardLayout = ({ children }) => {
     try {
       await signOut();
       toast.success("Successfully logged out!");
-      router.push('/sign-in');
+      router.push("/sign-in");
       router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
@@ -50,121 +51,146 @@ const UserDashboardLayout = ({ children }) => {
   };
 
   const navLinks = [
-    { name: 'Dashboard', href: '/dashboard/user', icon: <LayoutDashboard className="w-5 h-5" /> },
-    { name: 'Purchase History', href: '/dashboard/user/purchase-history', icon: <History className="w-5 h-5" /> },
-    { name: 'Bought Artworks', href: '/dashboard/user/bought-artworks', icon: <ShoppingBag className="w-5 h-5" /> },
-    { name: 'My Comments', href: '/dashboard/user/my-comments', icon: <MessageSquare className="w-5 h-5" /> },
-    { name: 'Subscription', href: '/dashboard/user/subscription', icon: <CreditCard className="w-5 h-5" /> },
-    { name: 'Profile', href: '/dashboard/user/profile', icon: <UserCircle className="w-5 h-5" /> },
+    {
+      name: "Collector Overview",
+      href: "/dashboard/user",
+      icon: <LayoutDashboard className="w-4.5 h-4.5" />,
+    },
+    {
+      name: "Purchase History",
+      href: "/dashboard/user/purchase-history",
+      icon: <History className="w-4.5 h-4.5" />,
+    },
+    {
+      name: "Acquired Artworks",
+      href: "/dashboard/user/bought-artworks",
+      icon: <ShoppingBag className="w-4.5 h-4.5" />,
+    },
+    {
+      name: "My Curatorial Notes",
+      href: "/dashboard/user/my-comments",
+      icon: <MessageSquare className="w-4.5 h-4.5" />,
+    },
+    {
+      name: "Membership & Tier",
+      href: "/dashboard/user/subscription",
+      icon: <CreditCard className="w-4.5 h-4.5" />,
+    },
+    {
+      name: "Collector Profile",
+      href: "/dashboard/user/profile",
+      icon: <UserCircle className="w-4.5 h-4.5" />,
+    },
   ];
 
   // Sidebar Content Component
   const SidebarContent = () => (
     <div className="flex flex-col justify-between h-full p-6 bg-white select-none">
-      
       {/* LOGO & LINKS */}
-      <div className="space-y-8">
+      <div className="space-y-7">
         {/* Logo */}
-        <div className="flex items-center justify-between px-2 py-3">
-          <Image 
-            src={Logo} 
-            alt="Logo" 
-            width={130} 
-            height={40} 
-            priority
-            className="object-contain"
-          />
-          <button 
+        <div className="flex items-center justify-between px-2 py-2">
+          <Link href="/">
+            <Image
+              src={Logo}
+              alt="ArtHub Logo"
+              width={124}
+              height={38}
+              priority
+              className="object-contain"
+            />
+          </Link>
+          <button
             onClick={() => setIsMobileOpen(false)}
-            className="lg:hidden p-1 text-slate-500 hover:text-slate-800 transition-colors"
+            className="lg:hidden p-1 text-stone-500 hover:text-stone-800 transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
+        {/* Role Badge */}
+        <div className="px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200/60 flex items-center gap-2">
+          <Award size={14} className="text-emerald-700 shrink-0" />
+          <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+            Art Patron & Collector
+          </span>
+        </div>
+
         {/* Navigation Links */}
-        <nav className="space-y-2 relative">
+        <nav className="space-y-1.5 relative">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
-            
+
             return (
-              <motion.div
+              <Link
                 key={link.href}
-                whileHover={{ x: isActive ? 0 : 4 }} 
-                whileTap={{ scale: 0.98 }} 
-                transition={{ type: "tween", duration: 0.15 }}
+                href={link.href}
+                onClick={() => setIsMobileOpen(false)}
+                className={`flex items-center gap-3.5 px-4 py-3 rounded-xl font-semibold transition-colors duration-150 relative z-10 text-xs sm:text-[13px] ${
+                  isActive
+                    ? "text-white"
+                    : "text-stone-600 hover:bg-[#B4136D]/5 hover:text-[#B4136D]"
+                }`}
               >
-                <Link
-                  href={link.href}
-                  onClick={() => setIsMobileOpen(false)}
-                  className={`flex items-center gap-4 px-4 py-3.5 rounded-xl font-medium transition-colors duration-200 relative z-10 ${
-                    isActive ? 'text-white' : 'text-slate-500 hover:bg-purple-50/50 hover:text-purple-600'
-                  }`}
-                >
-                  {/* Active Tab Slide Animation */}
-                  {isActive && (
-                    <motion.div 
-                      layoutId="activeUserIndicator"
-                      className="absolute inset-0 bg-[#7C3AED] rounded-xl shadow-md shadow-purple-200 -z-10"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                  {link.icon}
-                  <span className="text-[15px]">{link.name}</span>
-                </Link>
-              </motion.div>
+                {/* Active Tab Slide Animation */}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeUserIndicator"
+                    className="absolute inset-0 bg-[#B4136D] rounded-xl shadow-md shadow-[#B4136D]/20 -z-10"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+                {link.icon}
+                <span>{link.name}</span>
+              </Link>
             );
           })}
         </nav>
       </div>
 
       {/* BOTTOM SECTION */}
-      <div className="border-t border-slate-100 pt-4 space-y-1">
+      <div className="border-t border-stone-100 pt-4 space-y-1">
         {/* Home Button */}
-        <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }}>
-          <Link 
-            href="/"
-            onClick={() => setIsMobileOpen(false)}
-            className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-all duration-200"
-          >
-            <Home className="w-5 h-5" />
-            <span className="text-[15px]">Home</span>
-          </Link>
-        </motion.div>
+        <button
+          onClick={() => {
+            setIsMobileOpen(false);
+            router.push("/");
+          }}
+          className="w-full flex items-center gap-3.5 px-4 py-2.5 rounded-xl font-medium text-stone-600 hover:bg-stone-50 hover:text-stone-900 transition-all text-xs cursor-pointer"
+        >
+          <Home className="w-4.5 h-4.5 text-stone-400" />
+          <span>Gallery Home</span>
+        </button>
 
         {/* Logout Button */}
-        <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }}>
-          <button 
-            onClick={handleSignOut}
-            className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
-          >
-            <LogOut className="w-5 h-5" />
-            <span className="text-[15px]">Logout</span>
-          </button>
-        </motion.div>
+        <button
+          onClick={handleSignOut}
+          className="w-full flex items-center gap-3.5 px-4 py-2.5 rounded-xl font-medium text-stone-600 hover:bg-rose-50 hover:text-rose-700 transition-all text-xs cursor-pointer"
+        >
+          <LogOut className="w-4.5 h-4.5 text-stone-400 hover:text-rose-600" />
+          <span>Sign Out</span>
+        </button>
       </div>
     </div>
   );
 
-  if (isPending || !session || session.user?.role !== 'user') {
+  if (isPending || !session || session.user?.role !== "user") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 w-full">
-        <div className="flex flex-col items-center gap-4 text-center px-4">
-          <div className="relative w-12 h-12">
-            <div className="absolute inset-0 rounded-full border-4 border-purple-100"></div>
-            <div className="absolute inset-0 rounded-full border-4 border-[#7C3AED] border-t-transparent animate-spin"></div>
-          </div>
-          <p className="text-sm font-semibold text-slate-600">Checking access for your dashboard...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5] w-full">
+        <div className="flex flex-col items-center gap-3.5 text-center px-4">
+          <div className="w-10 h-10 border-3 border-[#B4136D] border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs font-semibold text-stone-500 uppercase tracking-widest">
+            Opening Collector Sanctuary...
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50 relative overflow-x-hidden w-full">
-      
+    <div className="flex min-h-screen bg-[#FAF8F5] relative overflow-x-hidden w-full selection:bg-[#B4136D]/15 selection:text-[#B4136D]">
       {/* DESKTOP VIEWPORT SIDEBAR */}
-      <aside className="hidden lg:block w-64 border-r border-slate-100 bg-white sticky top-0 h-screen">
+      <aside className="hidden lg:block w-64 border-r border-stone-200/80 bg-white sticky top-0 h-screen">
         <SidebarContent />
       </aside>
 
@@ -173,7 +199,7 @@ const UserDashboardLayout = ({ children }) => {
         {isMobileOpen && (
           <>
             {/* Dark Overlay Background */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 0.4 }}
               exit={{ opacity: 0 }}
@@ -181,11 +207,11 @@ const UserDashboardLayout = ({ children }) => {
               className="fixed inset-0 bg-black z-40 lg:hidden"
             />
             {/* Sliding Sidebar Body */}
-            <motion.aside 
-              initial={{ x: '-100%' }}
+            <motion.aside
+              initial={{ x: "-100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'tween', ease: 'easeInOut', duration: 0.3 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", ease: "easeInOut", duration: 0.25 }}
               className="fixed inset-y-0 left-0 w-64 bg-white z-50 shadow-2xl lg:hidden h-screen"
             >
               <SidebarContent />
@@ -196,33 +222,32 @@ const UserDashboardLayout = ({ children }) => {
 
       {/* MAIN APP AREA */}
       <div className="flex-1 flex flex-col min-w-0">
-        
         {/* Mobile Top Header */}
-        <header className="lg:hidden w-full bg-white border-b border-slate-100 p-4 flex items-center justify-between sticky top-0 z-30">
-          <Image 
-            src={Logo} 
-            alt="Logo" 
-            width={100} 
-            height={32} 
+        <header className="lg:hidden w-full bg-white border-b border-stone-200/80 p-4 flex items-center justify-between sticky top-0 z-30">
+          <Image
+            src={Logo}
+            alt="ArtHub Logo"
+            width={100}
+            height={32}
             className="object-contain"
           />
-          <button 
+          <button
             onClick={() => setIsMobileOpen(true)}
-            className="p-2 rounded-xl bg-slate-50 text-slate-700 hover:bg-slate-100 transition-colors"
+            className="p-2 rounded-xl bg-stone-50 text-stone-700 hover:bg-stone-100 transition-colors cursor-pointer"
           >
             <Menu className="w-6 h-6" />
           </button>
         </header>
 
         {/* Content Render Area */}
-        <main className="flex-1 p-4 md:p-6 bg-[#F8FAFC] overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 bg-[#FAF8F5] overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
             >
               {children}
             </motion.div>

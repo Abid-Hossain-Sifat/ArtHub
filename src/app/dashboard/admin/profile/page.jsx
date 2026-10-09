@@ -17,6 +17,8 @@ import {
   X,
   DollarSign,
   Activity,
+  Sparkles,
+  ArrowLeft
 } from "lucide-react";
 import {
   useSession,
@@ -296,13 +298,9 @@ const AdminProfilePage = () => {
 
   if (isLoading) {
     return (
-      <div className="w-full min-h-screen bg-[#F8F9FC] p-6 lg:p-10 font-sans text-slate-800">
-        <div className="mb-8 max-w-[1440px] mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-[#0F172A] animate-pulse">
-              Admin Control Panel
-            </h1>
-          </div>
+      <div className="w-full min-h-screen bg-[#FAF8F5] p-6 lg:p-10 font-sans text-stone-900">
+        <div className="mb-8 max-w-7xl mx-auto">
+          <div className="h-8 bg-stone-200 rounded-lg w-64 animate-pulse" />
         </div>
         <ProfileSkeleton />
       </div>
@@ -310,34 +308,38 @@ const AdminProfilePage = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#F8F9FC] p-4 sm:p-6 lg:p-10 font-sans text-slate-800">
+    <div className="w-full min-h-screen bg-[#FAF8F5] p-4 sm:p-6 lg:p-10 font-sans text-stone-900">
       {/* Top Profile Header Section */}
-      <div className="mb-6 sm:mb-8 max-w-[1440px] mx-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6 sm:mb-8 max-w-7xl mx-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A]">
-            Admin Control Panel
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#B4136D]/10 text-[#B4136D] text-xs font-semibold uppercase tracking-wider mb-2">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Executive Governance</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-medium tracking-tight text-stone-900">
+            Administrator Dossier
           </h1>
-          <p className="text-slate-500 text-xs sm:text-sm mt-1">
-            Manage your administrator identity, platform analytics, and account
-            security.
+          <p className="text-stone-500 text-xs sm:text-sm mt-1">
+            Supervise platform executive credentials, global analytics, and master access keys.
           </p>
         </div>
         <Link
           href="/dashboard"
-          className="w-full sm:w-auto text-center inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all"
+          className="self-start sm:self-auto inline-flex items-center gap-2 rounded-2xl border border-stone-200/90 bg-white px-5 py-2.5 text-xs font-bold text-stone-700 hover:bg-stone-50 transition-all shadow-2xs cursor-pointer"
         >
-          Back to dashboard
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Dashboard</span>
         </Link>
       </div>
 
       {/* Main Profile Box */}
-      <div className="w-full max-w-[1440px] mx-auto bg-white rounded-3xl border border-slate-100 shadow-sm p-5 sm:p-6 lg:p-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10 items-stretch">
+      <div className="w-full max-w-7xl mx-auto bg-white rounded-[2rem] border border-stone-200/90 shadow-2xs p-6 lg:p-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 items-stretch">
           {/* Identity Info Column */}
-          <div className="lg:col-span-2 flex flex-col sm:flex-row gap-6 sm:gap-10 items-center sm:items-start">
-            <div className="flex flex-col items-center sm:items-start gap-4 sm:gap-6 flex-shrink-0 w-full sm:w-auto">
-              <div className="relative group cursor-pointer mx-auto sm:mx-0">
-                <div className="w-32 h-32 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm overflow-hidden flex items-center justify-center p-2 relative">
+          <div className="lg:col-span-2 flex flex-col sm:flex-row gap-8 items-center sm:items-start">
+            <div className="flex flex-col items-center sm:items-start gap-5 flex-shrink-0 w-full sm:w-auto">
+              <div className="relative group mx-auto sm:mx-0">
+                <div className="w-32 h-32 rounded-2xl bg-stone-50 border border-stone-200 shadow-inner overflow-hidden flex items-center justify-center p-2 relative">
                   {previewImage ? (
                     <Image
                       src={previewImage}
@@ -346,186 +348,175 @@ const AdminProfilePage = () => {
                       height={128}
                       priority
                       unoptimized={isRemote(previewImage)}
-                      className="w-full h-full object-contain rounded-xl"
+                      className="w-full h-full object-cover rounded-xl"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-[#7042F4] to-[#FF47A6] text-white text-3xl font-extrabold tracking-wider select-none rounded-xl">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#B4136D] to-[#800d4d] text-white text-3xl font-serif font-bold tracking-wider select-none rounded-xl">
                       {getInitials(profile.name)}
                     </div>
                   )}
                 </div>
                 <button
                   onClick={handleOpenEdit}
-                  className="absolute -bottom-1 -right-1 bg-white text-slate-700 hover:text-slate-900 p-2 rounded-full border border-slate-200 shadow-md transition-all duration-200 hover:scale-105"
+                  className="absolute -bottom-1 -right-1 bg-white text-stone-700 hover:text-[#B4136D] p-2 rounded-full border border-stone-200 shadow-md transition-all duration-200 hover:scale-105 cursor-pointer"
                   title="Update Profile Picture"
                 >
                   <Camera className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="flex flex-col gap-2.5 w-full sm:w-40">
+              <div className="flex flex-col gap-2.5 w-full sm:w-44">
                 <button
                   onClick={handleOpenEdit}
-                  className="inline-flex items-center justify-center gap-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 w-full"
+                  className="inline-flex items-center justify-center gap-2 bg-[#B4136D] hover:bg-[#930f58] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-[#B4136D]/20 transition-all active:scale-95 w-full cursor-pointer"
                 >
                   <Pencil className="w-3.5 h-3.5" />
-                  Edit Profile
+                  <span>Edit Dossier</span>
                 </button>
                 <button
                   onClick={() => setPasswordOpen(true)}
-                  className="inline-flex items-center justify-center gap-2 bg-[#DCE4EC] hover:bg-[#D1DCE8] text-slate-600 hover:text-slate-800 px-4 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 w-full"
+                  className="inline-flex items-center justify-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-700 px-4 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 w-full cursor-pointer"
                 >
                   <Lock className="w-3.5 h-3.5" />
-                  Change Password
+                  <span>Change Password</span>
                 </button>
               </div>
             </div>
 
             {/* Profile Details */}
-            <div className="flex-1 space-y-4 text-center sm:text-left w-full h-full flex flex-col justify-start pt-2 items-center sm:items-start">
+            <div className="flex-1 space-y-4 text-center sm:text-left w-full h-full flex flex-col justify-start pt-1">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 justify-center sm:justify-start">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+                <h2 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-stone-900">
                   {profile.name}
                 </h2>
-                <span className="inline-flex items-center justify-center gap-1 px-3 py-0.5 text-[11px] font-semibold rounded-full bg-[#F3E8FF] text-[#7C3AED] border border-[#E9D5FF]/40 capitalize w-fit">
-                  <ShieldCheck className="w-3 h-3" />
-                  Administrator
+                <span className="inline-flex items-center justify-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/60 capitalize w-fit">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Super Curator</span>
                 </span>
               </div>
 
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-slate-500">
+                <p className="text-sm font-semibold text-stone-600">
                   {profile.email}
                 </p>
                 {!user.emailVerified && (
-                  <p className="text-[10px] text-amber-600 font-medium bg-amber-50 border border-amber-100 rounded-md px-2 py-0.5 inline-block">
-                    Pending Verification
+                  <p className="text-[10px] text-amber-800 font-medium bg-amber-50 border border-amber-200 rounded-md px-2 py-0.5 inline-block">
+                    Verification In Progress
                   </p>
                 )}
               </div>
 
               <div className="space-y-1 w-full">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Bio / Note
+                <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
+                  Executive Mandate
                 </h4>
-                <p className="text-slate-600 text-xs md:text-sm font-normal leading-relaxed max-w-lg mx-auto sm:mx-0">
-                  Platform administrator overseeing ArtHub operations,
-                  marketplace integrity, and user management.
+                <p className="text-stone-600 text-xs sm:text-sm font-normal leading-relaxed max-w-lg">
+                  Executive platform administrator overseeing ArtHub marketplace operations, artist authentications, curatorial standards, and payment settlements.
                 </p>
               </div>
 
-              <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-slate-400 font-medium pt-4 mt-auto">
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-stone-400 font-medium pt-4 mt-auto">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>Access Level: Full Platform Control</span>
+                <span>Privilege Tier: Full Root Control</span>
               </div>
             </div>
           </div>
 
           {/* Platform Analytics Side Pane */}
-          <div className="w-full bg-[#F8F9FC]/80 border border-slate-100 rounded-2xl p-5 sm:p-6 space-y-6 flex flex-col justify-between">
+          <div className="w-full bg-stone-50/70 border border-stone-200/80 rounded-2xl p-6 space-y-6 flex flex-col justify-between">
             <div className="space-y-4">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider text-center sm:text-left">
-                Platform Analytics
+              <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider">
+                Platform Intelligence
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3.5">
                 {/* Total Users */}
-                <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
+                <div className="bg-white p-3.5 rounded-xl border border-stone-200/80 flex items-center justify-between shadow-2xs">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-purple-50 rounded-xl text-[#7C3AED]">
+                    <div className="p-2 bg-blue-50 rounded-xl text-blue-700">
                       <Users className="w-4 h-4" />
                     </div>
-                    <p className="text-xs text-slate-500 font-semibold">
-                      Total Users
-                    </p>
+                    <div>
+                      <p className="text-[11px] text-stone-500 font-medium">Patrons</p>
+                      <p className="text-base font-serif font-bold text-stone-900">{stats.totalUsers}</p>
+                    </div>
                   </div>
-                  <p className="text-lg font-bold text-slate-900">
-                    {stats.totalUsers}
-                  </p>
                 </div>
 
                 {/* Total Artists */}
-                <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
+                <div className="bg-white p-3.5 rounded-xl border border-stone-200/80 flex items-center justify-between shadow-2xs">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-pink-50 rounded-xl text-pink-600">
+                    <div className="p-2 bg-[#B4136D]/10 rounded-xl text-[#B4136D]">
                       <Palette className="w-4 h-4" />
                     </div>
-                    <p className="text-xs text-slate-500 font-semibold">
-                      Total Artists
-                    </p>
+                    <div>
+                      <p className="text-[11px] text-stone-500 font-medium">Creators</p>
+                      <p className="text-base font-serif font-bold text-stone-900">{stats.totalArtists}</p>
+                    </div>
                   </div>
-                  <p className="text-lg font-bold text-slate-900">
-                    {stats.totalArtists}
-                  </p>
                 </div>
 
                 {/* Total Artworks */}
-                <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
+                <div className="bg-white p-3.5 rounded-xl border border-stone-200/80 flex items-center justify-between shadow-2xs">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-blue-50 rounded-xl text-blue-600">
+                    <div className="p-2 bg-purple-50 rounded-xl text-purple-700">
                       <Activity className="w-4 h-4" />
                     </div>
-                    <p className="text-xs text-slate-500 font-semibold">
-                      Total Artworks
-                    </p>
+                    <div>
+                      <p className="text-[11px] text-stone-500 font-medium">Artworks</p>
+                      <p className="text-base font-serif font-bold text-stone-900">{stats.totalArtworks}</p>
+                    </div>
                   </div>
-                  <p className="text-lg font-bold text-slate-900">
-                    {stats.totalArtworks}
-                  </p>
                 </div>
 
                 {/* Platform Revenue */}
-                <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-center justify-between shadow-sm">
+                <div className="bg-white p-3.5 rounded-xl border border-stone-200/80 flex items-center justify-between shadow-2xs">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
+                    <div className="p-2 bg-emerald-50 rounded-xl text-emerald-700">
                       <DollarSign className="w-4 h-4" />
                     </div>
-                    <p className="text-xs text-slate-500 font-semibold">
-                      Platform Revenue
-                    </p>
+                    <div>
+                      <p className="text-[11px] text-stone-500 font-medium">Platform Volume</p>
+                      <p className="text-base font-serif font-bold text-stone-900">${stats.totalRevenue}</p>
+                    </div>
                   </div>
-                  <p className="text-lg font-bold text-slate-900">
-                    ${stats.totalRevenue}
-                  </p>
                 </div>
               </div>
             </div>
 
-            {/* General Tip Badge */}
-            <div className="bg-white p-4 rounded-xl border border-slate-100 flex items-start gap-3 shadow-sm">
-              <ShieldCheck className="w-4 h-4 text-[#7C3AED] mt-0.5 flex-shrink-0" />
-              <p className="text-[11px] text-slate-500 leading-normal">
-                You have full administrative access. Please use account controls
-                responsibly to maintain platform security.
+            <div className="bg-white p-3.5 rounded-xl border border-stone-200/80 flex items-start gap-2.5 shadow-2xs">
+              <ShieldCheck className="w-4 h-4 text-emerald-700 mt-0.5 flex-shrink-0" />
+              <p className="text-[11px] text-stone-600 leading-normal">
+                Master administrator session active. System changes immediately propagate across the global marketplace.
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* EDIT IDENTITY MODAL */}
+      {/* EDIT MODAL */}
       <AnimatePresence>
         {editOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="w-full max-w-2xl rounded-3xl bg-white p-5 sm:p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-stone-200 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-semibold text-slate-900">
-                    Edit profile
+                  <h2 className="text-xl font-serif font-bold text-stone-900">
+                    Edit Administrator Dossier
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-500">
-                    Change your display name, email address or avatar picture.
+                  <p className="text-sm text-stone-500">
+                    Change administrative name, contact address, or portrait file.
                   </p>
                 </div>
                 <button
                   onClick={() => setEditOpen(false)}
-                  className="rounded-full p-2 text-slate-400 hover:bg-slate-100 transition-colors"
+                  className="rounded-full p-2 text-stone-400 hover:bg-stone-100 transition-colors cursor-pointer"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -533,9 +524,9 @@ const AdminProfilePage = () => {
 
               <div className="mt-6 space-y-5">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Name
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+                      Full Name
                     </label>
                     <input
                       type="text"
@@ -543,11 +534,11 @@ const AdminProfilePage = () => {
                       onChange={(e) =>
                         handleTempProfileField("name", e.target.value)
                       }
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white transition-all text-slate-800"
+                      className="w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm outline-none focus:border-[#B4136D] focus:bg-white transition-all text-stone-800"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">
                       Email Address
                     </label>
                     <input
@@ -556,34 +547,34 @@ const AdminProfilePage = () => {
                       onChange={(e) =>
                         handleTempProfileField("email", e.target.value)
                       }
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white transition-all text-slate-800"
+                      className="w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm outline-none focus:border-[#B4136D] focus:bg-white transition-all text-stone-800"
                     />
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-                    Profile picture source
+                <div className="rounded-2xl border border-stone-200/80 bg-stone-50/50 p-4">
+                  <p className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-3">
+                    Portrait Avatar
                   </p>
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                    <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-white border border-slate-200 p-1 mx-auto sm:mx-0">
+                    <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-white border border-stone-200 p-1 mx-auto sm:mx-0">
                       {tempPreviewImage ? (
                         <Image
                           src={tempPreviewImage}
                           alt="preview"
                           fill
-                          className="object-contain rounded-xl p-1"
+                          className="object-cover rounded-xl"
                         />
                       ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
+                        <div className="flex h-full w-full items-center justify-center text-xs text-stone-400">
                           No image
                         </div>
                       )}
                     </div>
-                    <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs w-full sm:w-auto">
-                      <Camera className="h-4 w-4 text-slate-500" />
+                    <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-xs font-bold text-stone-700 hover:bg-stone-50 transition-colors shadow-2xs w-full sm:w-auto">
+                      <Camera className="h-4 w-4 text-stone-500" />
                       <span>
-                        {uploadingImage ? "Uploading…" : "Upload custom file"}
+                        {uploadingImage ? "Uploading…" : "Upload Portrait File"}
                       </span>
                       <input
                         type="file"
@@ -599,16 +590,16 @@ const AdminProfilePage = () => {
                 <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end pt-2">
                   <button
                     onClick={() => setEditOpen(false)}
-                    className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors w-full sm:w-auto"
+                    className="rounded-xl border border-stone-200 bg-white px-5 py-2.5 text-xs font-bold text-stone-700 hover:bg-stone-50 transition-colors cursor-pointer w-full sm:w-auto"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={saveProfile}
                     disabled={savingProfile || uploadingImage}
-                    className="rounded-xl bg-[#7C3AED] px-5 py-2.5 text-xs font-bold text-white hover:bg-violet-600 disabled:opacity-70 transition-colors shadow-sm w-full sm:w-auto"
+                    className="rounded-xl bg-[#B4136D] hover:bg-[#930f58] px-5 py-2.5 text-xs font-bold text-white disabled:opacity-70 transition-colors shadow-md shadow-[#B4136D]/20 cursor-pointer w-full sm:w-auto"
                   >
-                    {savingProfile ? "Saving…" : "Save changes"}
+                    {savingProfile ? "Saving…" : "Save Changes"}
                   </button>
                 </div>
               </div>
@@ -617,29 +608,29 @@ const AdminProfilePage = () => {
         )}
       </AnimatePresence>
 
-      {/* PASSWORD UPDATE MODAL */}
+      {/* PASSWORD MODAL */}
       <AnimatePresence>
         {passwordOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="w-full max-w-2xl rounded-3xl bg-white p-5 sm:p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-stone-200 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-semibold text-slate-900">
-                    Change password
+                  <h2 className="text-xl font-serif font-bold text-stone-900">
+                    Change Administrator Password
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-500">
-                    Provide authentication parameters securely below.
+                  <p className="text-sm text-stone-500">
+                    Ensure credentials meet platform security requirements.
                   </p>
                 </div>
                 <button
                   onClick={() => setPasswordOpen(false)}
-                  className="rounded-full p-2 text-slate-400 hover:bg-slate-100 transition-colors"
+                  className="rounded-full p-2 text-stone-400 hover:bg-stone-100 transition-colors cursor-pointer"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -647,8 +638,8 @@ const AdminProfilePage = () => {
 
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Current password
+                  <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+                    Current Password
                   </label>
                   <input
                     type="password"
@@ -656,12 +647,12 @@ const AdminProfilePage = () => {
                     onChange={(e) =>
                       handlePasswordField("currentPassword", e.target.value)
                     }
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white text-slate-800"
+                    className="w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm outline-none focus:border-[#B4136D] focus:bg-white text-stone-800"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    New password
+                  <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+                    New Password
                   </label>
                   <input
                     type="password"
@@ -669,12 +660,12 @@ const AdminProfilePage = () => {
                     onChange={(e) =>
                       handlePasswordField("newPassword", e.target.value)
                     }
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white text-slate-800"
+                    className="w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm outline-none focus:border-[#B4136D] focus:bg-white text-stone-800"
                   />
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Confirm new password
+                  <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+                    Confirm New Password
                   </label>
                   <input
                     type="password"
@@ -682,7 +673,7 @@ const AdminProfilePage = () => {
                     onChange={(e) =>
                       handlePasswordField("confirmPassword", e.target.value)
                     }
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-[#7C3AED] focus:bg-white text-slate-800"
+                    className="w-full rounded-xl border border-stone-200 bg-stone-50/50 px-4 py-3 text-sm outline-none focus:border-[#B4136D] focus:bg-white text-stone-800"
                   />
                 </div>
               </div>
@@ -690,16 +681,16 @@ const AdminProfilePage = () => {
               <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button
                   onClick={() => setPasswordOpen(false)}
-                  className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors w-full sm:w-auto"
+                  className="rounded-xl border border-stone-200 bg-white px-5 py-2.5 text-xs font-bold text-stone-700 hover:bg-stone-50 transition-colors cursor-pointer w-full sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={changePasswordSubmit}
                   disabled={savingPassword}
-                  className="rounded-xl bg-[#7C3AED] px-5 py-2.5 text-xs font-bold text-white hover:bg-violet-600 disabled:opacity-70 transition-colors shadow-sm w-full sm:w-auto"
+                  className="rounded-xl bg-[#B4136D] hover:bg-[#930f58] px-5 py-2.5 text-xs font-bold text-white disabled:opacity-70 transition-colors shadow-md shadow-[#B4136D]/20 cursor-pointer w-full sm:w-auto"
                 >
-                  {savingPassword ? "Updating…" : "Update password"}
+                  {savingPassword ? "Updating…" : "Update Password"}
                 </button>
               </div>
             </motion.div>
