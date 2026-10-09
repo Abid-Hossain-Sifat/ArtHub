@@ -1,242 +1,188 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
-import { ArrowRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import React from "react";
+import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
+import { motion } from "framer-motion";
 
-// Images
-import Hero1 from "../../public/Assets/Hero1.png";
-import Hero2 from "../../public/Assets/Hero2.png";
-import Hero3 from "../../public/Assets/Hero3.png";
-import HeroTooltip1 from "../../public/Assets/ToolTip1.png";
-import HeroTooltip2 from "../../public/Assets/ToolTip2.png";
+// Bespoke Fine Art Assets
+import Hero1 from "../../public/Assets/Hero1.jpg";
+import Hero2 from "../../public/Assets/Hero2.jpg";
 
 const Banner = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  const slides = [
-    {
-      id: 1,
-      title: "Discover & Buy",
-      titleHighlight: "Original Art",
-      highlightColor: "text-[#B4136D]",
-      btnBg: "bg-[#B4136D] hover:bg-[#910f56] shadow-[0_24px_80px_rgba(180,19,109,0.4)]",
-      description:
-        "Explore a curated selection of global masterpieces from independent creators to world-renowned masters, handpicked to inspire your unique artistic taste and vision.",
-      image: Hero1,
-    },
-    {
-      id: 2,
-      title: "Support",
-      titleHighlight: "Creative Minds",
-      highlightColor: "text-fuchsia-500",
-      btnBg: "bg-fuchsia-600 hover:bg-fuchsia-500 shadow-[0_24px_80px_rgba(217,70,239,0.4)]",
-      description:
-        "Every purchase you make directly empowers the artist behind the work. Join our vibrant community that values transparency, creative freedom, and sustainable growth.",
-      image: Hero2,
-    },
-    {
-      id: 3,
-      title: "Find Your Next",
-      titleHighlight: "Masterpiece",
-      highlightColor: "text-cyan-400",
-      btnBg: "bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-[0_24px_80px_rgba(34,211,238,0.3)]",
-      description:
-        "Art that truly resonates with your inner soul. Easily search by style, medium, or color to discover the perfect addition that completes your personal collection.",
-      image: Hero3,
-    },
-  ];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prevSlide) =>
-        prevSlide === slides.length - 1 ? 0 : prevSlide + 1,
-      );
-    }, 5500);
-
-    return () => clearInterval(timer);
-  }, [slides.length]);
 
   return (
-    <section className="relative w-full overflow-hidden min-h-[100vh] lg:min-h-[calc(100vh-72px)] bg-slate-950 flex items-center">
-      {/* Background & Text Synchronized Transition*/}
-      <div className="absolute inset-0 w-full h-full">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: "easeInOut" }}
-            className="absolute inset-0 w-full h-full"
-          >
-            {/* Background Image scaling style */}
-            <motion.div
-              initial={{ scale: 1.06 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 1.5, ease: "easeOut" }}
-              className="absolute inset-0 w-full h-full"
-            >
-              <Image
-                src={slides[currentSlide].image}
-                alt={slides[currentSlide].title}
-                fill
-                sizes="100vw"
-                className="object-cover object-[50%_50%]"
-                priority
-              />
-            </motion.div>
+    <section className="relative w-full overflow-hidden min-h-[90vh] lg:min-h-[calc(100vh-68px)] bg-[#FAF8F5] flex items-center py-12 lg:py-16">
+      {/* Soft Gallery Ambient Lighting (Ivory / Berry / Amber) */}
+      <div className="absolute top-1/4 -left-20 w-[480px] h-[480px] rounded-full bg-[#B4136D]/6 blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-10 right-0 w-[500px] h-[500px] rounded-full bg-amber-500/6 blur-[140px] pointer-events-none" />
 
-            {/* Gradient Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/50 to-transparent max-lg:bg-slate-950/80" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/20 to-slate-950" />
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Content Layer */}
-      <div className="relative z-20 mx-auto w-full max-w-[80%] py-12 md:py-20 lg:py-0">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-8 items-center">
+      {/* Main Standard Width Container */}
+      <div className="relative z-20 w-full max-w-[90%] md:max-w-[85%] lg:max-w-[80%] mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
           
-          {/* Left Side Content */}
-          <div className="flex flex-col justify-center text-center lg:text-left items-center lg:items-start">
-            
-            {/* Main Shared AnimatePresence Wrapper for Full Left Side Sync */}
-            <div className="w-full h-auto min-h-[340px] sm:min-h-[380px] md:min-h-[420px] lg:min-h-[auto] flex flex-col justify-center items-center lg:items-start">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentSlide}
-                  initial={{ opacity: 0, x: -25 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 25 }}
-                  transition={{ duration: 0.8, ease: "easeInOut" }}
-                  className="flex flex-col items-center lg:items-start"
-                >
-                  {/* Top Line Tag Line */}
-                  <p className="text-xs sm:text-sm uppercase tracking-[0.32em] text-violet-400 mb-4 font-semibold">
-                    Explore curated digital art
-                  </p>
-
-                  {/* Dynamic Heading */}
-                  <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-[56px] xl:text-[64px] font-extrabold text-white leading-[1.15] tracking-tight">
-                    {slides[currentSlide].title} <br />
-                    <span className={slides[currentSlide].highlightColor}>
-                      {slides[currentSlide].titleHighlight}
-                    </span>
-                  </h1>
-
-                  {/* Dynamic Description Paragraph */}
-                  <p className="mt-6 max-w-xl text-sm sm:text-base md:text-lg text-slate-300/90 leading-relaxed balance">
-                    {slides[currentSlide].description}
-                  </p>
-
-                  {/* Dynamic Colored CTA Button & Secondary CTA */}
-                  <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                    <Link href="/artworks">
-                      <motion.button
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`inline-flex items-center gap-3 rounded-full px-6 sm:px-8 py-3.5 sm:py-4 text-sm font-semibold transition-all duration-300 group cursor-pointer ${
-                          slides[currentSlide].btnBg
-                        } ${currentSlide === 2 ? 'text-slate-950' : 'text-white'}`}
-                      >
-                        Browse Artworks
-                        <ArrowRight
-                          size={18}
-                          className="transform group-hover:translate-x-1 transition-transform"
-                        />
-                      </motion.button>
-                    </Link>
-
-                    <Link href="/sign-up">
-                      <motion.button
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.98 }}
-                        className="inline-flex items-center gap-2 rounded-full px-6 sm:px-7 py-3.5 sm:py-4 text-sm font-semibold text-white/90 bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-sm transition-all duration-300 cursor-pointer"
-                      >
-                        Join as Artist
-                      </motion.button>
-                    </Link>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+          {/* Left Column: Authoritative Editorial Typography & Metrics (7 Cols) */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="lg:col-span-7 flex flex-col justify-center text-center lg:text-left items-center lg:items-start"
+          >
+            {/* Curated Pill */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-100/90 border border-stone-200/90 text-[11px] sm:text-xs uppercase tracking-[0.2em] text-stone-700 mb-6 font-semibold shadow-xs">
+              <Sparkles size={13} className="text-[#B4136D]" />
+              <span>Curated Fine Art Marketplace</span>
             </div>
-          </div>
 
-          {/* Right Side Cards */}
-          <div className="relative w-full h-[320px] sm:h-[420px] lg:h-[500px] flex items-center justify-center lg:justify-end mt-8 lg:mt-25">
-            {/* Background Blurs */}
-            <div className="absolute right-1/4 top-1/4 h-48 w-48 rounded-full bg-violet-500/20 blur-[80px] pointer-events-none" />
-            <div className="absolute left-1/4 bottom-1/4 h-48 w-48 rounded-full bg-fuchsia-500/20 blur-[80px] pointer-events-none" />
+            {/* Monumental Headline */}
+            <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-[54px] xl:text-[62px] font-bold text-stone-950 leading-[1.12] tracking-tight">
+              Where Visionary Art <br />
+              Meets <span className="font-serif italic font-medium text-[#B4136D]">Curated Collectors</span>
+            </h1>
 
-            {/* Tooltip 2 (Back Card) */}
-            <motion.div
-              animate={{
-                y: [0, -12, 0],
-                rotate: [-4, -2, -4],
-              }}
-              transition={{
-                duration: 6,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              whileHover={{ scale: 1.03, rotate: -1, zIndex: 40 }}
-              className="absolute right-[15%] sm:right-[20%] lg:right-16 top-4 w-[160px] h-[220px] sm:w-[220px] sm:h-[300px] lg:w-[240px] lg:h-[320px] rounded-[24px] sm:rounded-[32px] bg-slate-950/80 border border-white/10 shadow-[0_40px_120px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-sm cursor-pointer"
-            >
-              <Image
-                src={HeroTooltip2}
-                alt="Featured art collection showcase"
-                fill
-                sizes="(max-width: 640px) 160px, (max-width: 1024px) 220px, 240px"
-                priority
-                className="object-cover p-2 rounded-[24px] sm:rounded-[32px]"
-              />
-            </motion.div>
+            {/* Clear, Grounded Platform Description */}
+            <p className="mt-6 max-w-xl text-base sm:text-lg text-stone-600 leading-relaxed font-normal">
+              Discover, collect, and sell authentic original masterpieces directly from independent creators worldwide. Verified provenance, direct artist royalties, and certified acquisitions.
+            </p>
 
-            {/* Tooltip 1 (Front Card) */}
-            <motion.div
-              animate={{
-                y: [0, 12, 0],
-                rotate: [6, 8, 6],
-              }}
-              transition={{
-                duration: 5,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: 0.5,
-              }}
-              whileHover={{ scale: 1.05, rotate: 2, zIndex: 40 }}
-              className="absolute right-[5%] sm:right-[10%] lg:right-0 top-16 w-[150px] h-[210px] sm:w-[200px] sm:h-[280px] lg:w-[220px] lg:h-[300px] rounded-[24px] sm:rounded-[32px] bg-white shadow-[0_32px_90px_rgba(0,0,0,0.3)] overflow-hidden cursor-pointer"
-            >
-              <Image
-                src={HeroTooltip1}
-                alt="Trending digital art masterpiece preview"
-                fill
-                sizes="(max-width: 640px) 150px, (max-width: 1024px) 200px, 220px"
-                priority
-                className="object-cover p-1.5 rounded-[24px] sm:rounded-[32px]"
-              />
-            </motion.div>
-          </div>
+            {/* High-Converting Action CTAs */}
+            <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center lg:justify-start gap-4">
+              <Link href="/artworks">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="inline-flex items-center gap-2.5 rounded-full px-8 py-4 bg-[#B4136D] hover:bg-[#930E58] text-white text-xs sm:text-sm font-semibold shadow-[0_12px_32px_rgba(180,19,109,0.28)] transition-all cursor-pointer"
+                >
+                  <span>Explore Gallery</span>
+                  <ArrowRight size={16} />
+                </motion.button>
+              </Link>
+
+              <Link href="/artworks">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="inline-flex items-center gap-2 rounded-full px-7 py-4 text-xs sm:text-sm font-medium text-stone-800 hover:text-stone-950 bg-white hover:bg-stone-50 border border-stone-200/90 shadow-xs transition-all cursor-pointer"
+                >
+                  <span>Featured Collections</span>
+                </motion.button>
+              </Link>
+            </div>
+
+            {/* Live Platform Proof & Metrics */}
+            <div className="grid grid-cols-3 gap-6 sm:gap-10 mt-12 pt-8 border-t border-stone-200/80 w-full max-w-lg">
+              <div>
+                <p className="font-serif text-2xl sm:text-3xl font-bold text-stone-950">2.4k+</p>
+                <p className="text-xs text-stone-500 font-medium mt-0.5">Original Works</p>
+              </div>
+              <div>
+                <p className="font-serif text-2xl sm:text-3xl font-bold text-stone-950">500+</p>
+                <p className="text-xs text-stone-500 font-medium mt-0.5">Verified Artists</p>
+              </div>
+              <div>
+                <p className="font-serif text-2xl sm:text-3xl font-bold text-[#B4136D]">100%</p>
+                <p className="text-xs text-stone-500 font-medium mt-0.5">Direct Patronage</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Right Column: Authentic Layered Gallery Art Showcase (5 Cols) */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.85, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            className="lg:col-span-5 flex justify-center lg:justify-end items-center"
+          >
+            {/* Gallery Composition Wrapper */}
+            <div className="relative w-full max-w-[420px] sm:max-w-[440px] pt-4 pb-8 px-2 sm:px-4">
+              
+              {/* Ambient Glow behind composition */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-gradient-to-tr from-[#B4136D]/15 to-amber-400/15 blur-[80px] pointer-events-none" />
+
+              {/* Floating Top Badge: Curated Exhibition */}
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="absolute top-0 right-2 sm:right-0 z-30 bg-white/90 backdrop-blur-xl px-4 py-2.5 rounded-2xl border border-stone-200/90 shadow-[0_12px_30px_rgba(28,25,23,0.08)] flex items-center gap-2.5"
+              >
+                <div className="w-2 h-2 rounded-full bg-[#B4136D] animate-pulse" />
+                <div className="text-left">
+                  <p className="text-[11px] font-bold text-stone-900 tracking-wide uppercase">
+                    Curated Exhibition
+                  </p>
+                  <p className="text-[10px] text-stone-500 font-medium">
+                    Originals & Limited Editions
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Primary Masterpiece Frame (Museum Matting & Elevation) */}
+              <motion.div
+                whileHover={{ y: -6, transition: { duration: 0.3 } }}
+                className="relative z-10 w-full aspect-[4/5] rounded-[2.2rem] bg-white p-3 sm:p-3.5 border border-stone-200/90 shadow-[0_25px_60px_-12px_rgba(28,25,23,0.15)] group transition-shadow duration-300 hover:shadow-[0_32px_75px_-12px_rgba(28,25,23,0.22)]"
+              >
+                <div className="relative w-full h-full rounded-[1.6rem] overflow-hidden bg-stone-100 shadow-inner">
+                  <Image
+                    src={Hero1}
+                    alt="Fine Art Masterpiece - Celestial Architecture"
+                    fill
+                    sizes="(max-width: 640px) 100vw, 440px"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    priority
+                  />
+                  {/* Subtle Museum Glass Reflection Sheen */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-black/25 via-transparent to-white/10 opacity-70 pointer-events-none" />
+                </div>
+              </motion.div>
+
+              {/* Secondary Overlapping Companion Art Frame (Depth & Layering) */}
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                whileHover={{ scale: 1.05, y: -8, transition: { duration: 0.25 } }}
+                className="absolute -bottom-4 -left-3 sm:-bottom-6 sm:-left-6 z-20 w-[175px] sm:w-[210px] aspect-[4/5] rounded-[1.6rem] bg-white p-2.5 border border-stone-200/90 shadow-[0_20px_45px_-8px_rgba(28,25,23,0.2)] cursor-pointer group"
+              >
+                <div className="relative w-full h-full rounded-2xl overflow-hidden bg-stone-100 shadow-inner">
+                  <Image
+                    src={Hero2}
+                    alt="Contemporary Abstract Expressionism"
+                    fill
+                    sizes="210px"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                  
+                  {/* Subtle Artwork Type Tag */}
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 text-left">
+                    <p className="text-[10px] uppercase font-bold text-white/90 tracking-wider">
+                      Contemporary Art
+                    </p>
+                    <p className="text-[11px] font-semibold text-white truncate drop-shadow-sm">
+                      Abstract Series
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Floating Bottom Trust Pill: Verified Authenticity */}
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.55, duration: 0.6 }}
+                className="absolute -bottom-2 right-1 sm:-bottom-3 sm:right-2 z-30 bg-white/95 backdrop-blur-xl px-3.5 py-2 rounded-full border border-stone-200/90 shadow-[0_10px_25px_rgba(28,25,23,0.08)] flex items-center gap-2"
+              >
+                <ShieldCheck size={14} className="text-emerald-600 shrink-0" />
+                <span className="text-[11px] font-semibold text-stone-800">
+                  Verified Provenance
+                </span>
+              </motion.div>
+
+            </div>
+          </motion.div>
+
         </div>
-      </div>
-
-      {/* Interactive Slide Indicator Dots */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 bg-slate-900/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg">
-        {slides.map((slide, idx) => (
-          <button
-            key={slide.id}
-            onClick={() => setCurrentSlide(idx)}
-            aria-label={`Go to slide ${idx + 1}: ${slide.title}`}
-            className={`transition-all duration-300 rounded-full cursor-pointer ${
-              currentSlide === idx
-                ? "w-7 h-2 bg-gradient-to-r from-violet-400 to-fuchsia-400 shadow-sm"
-                : "w-2 h-2 bg-white/30 hover:bg-white/60"
-            }`}
-          />
-        ))}
       </div>
     </section>
   );
