@@ -2,15 +2,118 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
+import { artworkCollection, topArtists } from "@/lib/data";
 
 // Bespoke Fine Art Assets
 import Hero1 from "../../public/Assets/Hero1.jpg";
 import Hero2 from "../../public/Assets/Hero2.jpg";
 
+// Smooth 60fps/120fps ease-out number counter
+const AnimatedCounter = ({ target, suffix = "", duration = 1.8 }) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (typeof target !== "number" || isNaN(target) || target <= 0) {
+      setCount(0);
+      return;
+    }
+
+    let startTime = null;
+    const startVal = 0;
+    const endVal = target;
+
+    const animateCount = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = (timestamp - startTime) / (duration * 1000);
+      const progress = Math.min(elapsed, 1);
+      // Smooth cubic ease-out
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(startVal + (endVal - startVal) * easeProgress);
+      setCount(current);
+
+      if (progress < 1) {
+        requestAnimationFrame(animateCount);
+      } else {
+        setCount(endVal);
+      }
+    };
+
+    const animId = requestAnimationFrame(animateCount);
+    return () => cancelAnimationFrame(animId);
+  }, [target, duration]);
+
+  const formatDisplay = (num) => {
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1) + "k";
+    }
+    return num;
+  };
+
+  return (
+    <span>
+      {formatDisplay(count)}
+      {suffix}
+    </span>
+  );
+};
+
 const Banner = () => {
+  const [stats, setStats] = useState({
+    artworks: 0,
+    artists: 0,
+    patronage: 100,
+    loaded: false,
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadStats = async () => {
+      try {
+        const [artworksRes, artistsRes] = await Promise.all([
+          artworkCollection({ page: 1, limit: 1 }).catch(() => null),
+          topArtists().catch(() => null),
+        ]);
+
+        if (!isMounted) return;
+
+        const totalArtworks =
+          artworksRes?.totalCount ??
+          (Array.isArray(artworksRes?.artworks)
+            ? artworksRes.artworks.length
+            : Array.isArray(artworksRes)
+            ? artworksRes.length
+            : 37);
+
+        const totalArtists = Array.isArray(artistsRes)
+          ? artistsRes.length
+          : 3;
+
+        setStats({
+          artworks: totalArtworks > 0 ? totalArtworks : 37,
+          artists: totalArtists > 0 ? totalArtists : 3,
+          patronage: 100,
+          loaded: true,
+        });
+      } catch (err) {
+        if (isMounted) {
+          setStats({
+            artworks: 37,
+            artists: 3,
+            patronage: 100,
+            loaded: true,
+          });
+        }
+      }
+    };
+
+    loadStats();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <section className="relative w-full overflow-hidden min-h-[90vh] lg:min-h-[calc(100vh-68px)] bg-[#FAF8F5] flex items-center py-12 lg:py-16">
@@ -70,18 +173,36 @@ const Banner = () => {
               </Link>
             </div>
 
-            {/* Live Platform Proof & Metrics */}
+            {/* Live Platform Proof & Metrics with Dynamic Counter Animation */}
             <div className="grid grid-cols-3 gap-6 sm:gap-10 mt-12 pt-8 border-t border-stone-200/80 w-full max-w-lg">
               <div>
-                <p className="font-serif text-2xl sm:text-3xl font-bold text-stone-950">2.4k+</p>
+                <p className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 tabular-nums">
+                  {stats.loaded ? (
+                    <AnimatedCounter target={stats.artworks} suffix="+" duration={1.8} />
+                  ) : (
+                    <span className="opacity-30">...</span>
+                  )}
+                </p>
                 <p className="text-xs text-stone-500 font-medium mt-0.5">Original Works</p>
               </div>
               <div>
-                <p className="font-serif text-2xl sm:text-3xl font-bold text-stone-950">500+</p>
+                <p className="font-serif text-2xl sm:text-3xl font-bold text-stone-950 tabular-nums">
+                  {stats.loaded ? (
+                    <AnimatedCounter target={stats.artists} suffix="+" duration={1.6} />
+                  ) : (
+                    <span className="opacity-30">...</span>
+                  )}
+                </p>
                 <p className="text-xs text-stone-500 font-medium mt-0.5">Verified Artists</p>
               </div>
               <div>
-                <p className="font-serif text-2xl sm:text-3xl font-bold text-[#B4136D]">100%</p>
+                <p className="font-serif text-2xl sm:text-3xl font-bold text-[#B4136D] tabular-nums">
+                  {stats.loaded ? (
+                    <AnimatedCounter target={stats.patronage} suffix="%" duration={1.5} />
+                  ) : (
+                    <span className="opacity-30">...</span>
+                  )}
+                </p>
                 <p className="text-xs text-stone-500 font-medium mt-0.5">Direct Patronage</p>
               </div>
             </div>
